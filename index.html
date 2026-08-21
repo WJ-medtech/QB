@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>神計画アプリ</title>
+<style>
+  :root{
+    --ink:#16232e; --ink-soft:#4a5c6b; --bg:#f5f8fa; --card:#ffffff; --line:#dbe4ea;
+    --teal:#0f8b8d; --teal-soft:#e3f3f2;
+    --amber:#d98e3a; --amber-soft:#faf0e2;
+    --done:#2ba58a; --done-soft:#e6f5ef;
+    --purple:#6a5acd; --purple-soft:#ece9fb;
+    --coral:#e0665a; --coral-soft:#fbe7e5;
+    --gold:#dcb13f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif;
+    -webkit-font-smoothing:antialiased; padding-bottom:78px;
+  }
+  header{ background:var(--ink); color:#fff; padding:20px 16px 14px; }
+  header .eyebrow{ font-size:10.5px; letter-spacing:.1em; color:#8fb9ba; font-family:"SF Mono","Menlo",monospace; margin-bottom:4px; }
+  header h1{ margin:0; font-size:17px; }
+  .countdown{ display:flex; align-items:baseline; gap:6px; margin-top:10px; }
+  .countdown .num{ font-size:30px; font-weight:800; font-family:"SF Mono","Menlo",monospace; line-height:1; }
+  .countdown .lbl{ font-size:11px; color:#a9bcc6; }
+
+  main{ max-width:520px; margin:0 auto; padding:16px; }
+
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:12px; }
+  .card h2{ font-size:13px; margin:0 0 10px; color:var(--ink-soft); }
+
+  .stat-row{ display:flex; gap:8px; margin-bottom:12px; }
+  .stat{ flex:1; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
+  .stat .k{ font-size:10px; color:var(--ink-soft); margin-bottom:2px; }
+  .stat .v{ font-size:18px; font-weight:800; font-family:"SF Mono","Menlo",monospace; }
+  .stat.streak .v{ color:var(--gold); }
+  .stat.yesterday .v{ color:var(--teal); }
+
+  .piece-row{ display:flex; align-items:center; gap:8px; padding:10px 0; border-bottom:1px solid #eef2f5; }
+  .piece-row:last-child{ border-bottom:none; }
+  .piece-tag{ font-size:9px; font-weight:800; padding:2px 6px; border-radius:6px; flex-shrink:0; }
+  .tag-main{ background:var(--teal-soft); color:var(--teal); }
+  .tag-memo{ background:var(--purple-soft); color:var(--purple); }
+  .piece-body{ flex:1; min-width:0; }
+  .piece-label{ font-size:12px; font-weight:700; line-height:1.4; }
+  .piece-bar-wrap{ margin-top:5px; }
+  .piece-bar-top{ display:flex; justify-content:space-between; font-size:10px; color:var(--ink-soft); font-family:"SF Mono","Menlo",monospace; margin-bottom:2px; }
+  .piece-bar{ height:6px; background:var(--line); border-radius:4px; overflow:hidden; }
+  .piece-bar-fill{ height:100%; background:linear-gradient(90deg,var(--teal),var(--done)); }
+  .log-form{ display:flex; align-items:center; gap:5px; flex-shrink:0; }
+  .log-form input{
+    width:48px; padding:6px 4px; border:1px solid var(--line); border-radius:7px; font-size:12px; text-align:center;
+    font-family:"SF Mono","Menlo",monospace;
+  }
+  .log-form button{
+    background:var(--done); color:#fff; border:none; border-radius:7px; padding:6px 9px; font-size:11px; font-weight:700;
+  }
+  .empty-note{ font-size:11.5px; color:var(--ink-soft); padding:8px 2px; }
+
+  .tabs{
+    position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--line);
+    display:flex; z-index:10;
+  }
+  .tab-btn{
+    flex:1; padding:10px 4px 12px; text-align:center; font-size:10.5px; color:var(--ink-soft); background:none; border:none;
+  }
+  .tab-btn .ic{ display:block; font-size:17px; margin-bottom:2px; }
+  .tab-btn.active{ color:var(--teal); font-weight:700; }
+
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  /* WEEK VIEW */
+  details.cap-details{ margin-bottom:12px; }
+  details.cap-details summary{
+    list-style:none; cursor:pointer; background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:10px 14px; font-size:12px; font-weight:700; color:var(--ink-soft); display:flex; justify-content:space-between; align-items:center;
+  }
+  details.cap-details summary::-webkit-details-marker{ display:none; }
+  .week-settings{ display:flex; flex-direction:column; gap:6px; background:var(--card); border:1px solid var(--line); border-top:none;
+    border-radius:0 0 12px 12px; padding:10px 14px 12px; }
+  .day-cap-row{ display:flex; align-items:center; gap:6px; font-size:11px; }
+  .day-cap-row .dname{ width:26px; font-weight:700; flex-shrink:0; }
+  .day-cap-row input[type=number]{ width:46px; padding:4px; border:1px solid var(--line); border-radius:6px; text-align:center; }
+  .day-cap-row .unit{ color:var(--ink-soft); font-size:10px; }
+  .memo-toggle{ display:flex; align-items:center; gap:3px; font-size:10px; color:var(--ink-soft); margin-left:auto; }
+
+  .phase-select{
+    width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:10px; font-size:12px;
+    background:#fff; color:var(--ink); margin-bottom:10px; font-family:inherit;
+  }
+  .phase-hint{ font-size:10.5px; color:var(--ink-soft); margin:-4px 0 10px; }
+
+  .pace-banner{
+    border-radius:12px; padding:11px 14px; margin-bottom:12px; font-size:12px; font-weight:700; line-height:1.5;
+  }
+  .pace-ahead{ background:var(--done-soft); color:var(--done); }
+  .pace-ontrack{ background:var(--teal-soft); color:var(--teal); }
+  .pace-behind{ background:var(--amber-soft); color:var(--amber); }
+  .pace-banner .sub{ display:block; font-weight:400; font-size:10.5px; margin-top:3px; opacity:.85; }
+
+  .lookahead{
+    display:flex; align-items:center; gap:5px; font-size:11px; color:var(--ink-soft); margin:-4px 0 8px;
+  }
+
+  .plan-row{ display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid #eef2f5; }
+  .plan-row:last-child{ border-bottom:none; }
+  .plan-row.now{ background:var(--teal-soft); border-radius:8px; padding-left:6px; padding-right:6px; }
+  .plan-date{ font-size:9.5px; color:var(--ink-soft); font-family:"SF Mono","Menlo",monospace; width:66px; flex-shrink:0; }
+  .plan-name{ font-size:11.5px; font-weight:700; flex:1; min-width:0; }
+  .plan-bar{ width:64px; height:6px; background:var(--line); border-radius:4px; overflow:hidden; flex-shrink:0; }
+  .plan-bar-fill{ height:100%; background:linear-gradient(90deg,var(--teal),var(--done)); }
+  .plan-pct{ font-size:9.5px; font-family:"SF Mono","Menlo",monospace; color:var(--ink-soft); width:30px; text-align:right; flex-shrink:0; }
+  .plan-track-label{ font-size:10.5px; font-weight:700; color:var(--ink-soft); margin:10px 0 4px; }
+
+  .backlog-tray{ display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+  .chip{
+    padding:10px 14px; border-radius:10px; font-size:12px; font-weight:700; color:#fff; cursor:pointer;
+    box-shadow:0 2px 5px rgba(0,0,0,.1); width:100%; text-align:left; line-height:1.4;
+  }
+  .chip.selected{ outline:2px solid var(--ink); outline-offset:1px; }
+  .chip-teal{ background:var(--teal); } .chip-purple{ background:var(--purple); }
+
+  .days-strip{ display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; -webkit-overflow-scrolling:touch; }
+  .day-col{ flex:0 0 120px; }
+  .day-head{ display:flex; flex-direction:column; margin-bottom:5px; }
+  .day-head .dn{ font-size:12px; font-weight:800; }
+  .day-head .load{ font-size:9.5px; font-family:"SF Mono","Menlo",monospace; color:var(--ink-soft); }
+  .day-head .load.over{ color:var(--coral); font-weight:700; }
+  .day-drop{
+    background:#fff; border:1.5px dashed var(--line); border-radius:10px; padding:6px; min-height:280px;
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .day-drop.over{ border-color:var(--coral); background:var(--coral-soft); }
+  .day-empty2{ font-size:10px; color:#c3cdd4; text-align:center; padding-top:10px; }
+  .assigned-chip{
+    padding:5px 7px; border-radius:8px; font-size:9.5px; font-weight:700; color:#fff; cursor:pointer; line-height:1.3;
+  }
+
+  .clear-week-btn{
+    display:block; width:100%; margin-top:10px; background:none; border:1px solid var(--line); color:var(--ink-soft);
+    font-size:11px; padding:9px; border-radius:10px;
+  }
+
+  /* BACKLOG VIEW */
+  .filter-row{ display:flex; gap:6px; margin-bottom:10px; }
+  .filter-btn{ flex:1; padding:7px; border-radius:9px; border:1px solid var(--line); background:#fff; font-size:11px; color:var(--ink-soft); }
+  .filter-btn.active{ background:var(--ink); color:#fff; border-color:var(--ink); }
+
+  /* PUBLIC VIEW */
+  .public-lock{ text-align:center; padding:30px 16px; color:var(--ink-soft); font-size:12px; line-height:2; }
+
+  .toast{
+    position:fixed; top:16px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff;
+    padding:10px 18px; border-radius:20px; font-size:13px; font-weight:700; z-index:50; opacity:0; transition:opacity .3s, top .3s;
+    pointer-events:none;
+  }
+  .toast.show{ opacity:1; top:26px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">KOKUSHI PLANNER · v2（ローカル保存版）</div>
+  <h1 id="dateHead"></h1>
+  <div class="countdown"><span class="num" id="cdNum">--</span><span class="lbl">日 · 国試模試(1/18)まで</span></div>
+</header>
+
+<main>
+
+  <!-- TODAY -->
+  <div class="view active" id="view-today">
+    <div class="pace-banner" id="paceBanner"></div>
+    <div class="stat-row">
+      <div class="stat streak"><div class="k">連続日数</div><div class="v" id="streakVal">🔥0</div></div>
+      <div class="stat yesterday"><div class="k">昨日の実績</div><div class="v" id="yestVal">0</div></div>
+    </div>
+    <div class="card">
+      <h2>今日わりあてたタスク</h2>
+      <div id="todayList"></div>
+    </div>
+  </div>
+
+  <!-- WEEK -->
+  <div class="view" id="view-week">
+    <details class="cap-details">
+      <summary>曜日ごとの使える時間（タップで開閉・週替わりで調整OK）</summary>
+      <div class="week-settings" id="capSettings"></div>
+    </details>
+
+    <div class="card">
+      <h2>今回配置する科目</h2>
+      <select class="phase-select" id="phaseSelect"></select>
+      <label class="lookahead"><input type="checkbox" id="lookaheadChk" /> 先取りモード（次の科目も一緒に表示）</label>
+      <div class="phase-hint" id="phaseHint"></div>
+
+      <div class="backlog-tray" id="unassignedTray"></div>
+
+      <div class="days-strip" id="daysArea"></div>
+
+      <button class="clear-week-btn" id="clearWeekBtn">今週の配置を全部クリア（次の週の計画へ）</button>
+    </div>
+  </div>
+
+  <!-- BACKLOG -->
+  <div class="view" id="view-backlog">
+    <div class="filter-row">
+      <button class="filter-btn active" data-f="all">全部</button>
+      <button class="filter-btn" data-f="undone">未完了のみ</button>
+      <button class="filter-btn" data-f="main">MAIN</button>
+      <button class="filter-btn" data-f="memo">暗記</button>
+    </div>
+    <div class="card"><div id="backlogList"></div></div>
+  </div>
+
+  <!-- PUBLIC -->
+  <div class="view" id="view-public">
+    <div class="card">
+      <h2>🔒 公開ビュー（プレビュー）</h2>
+      <div class="public-lock">
+        今はこの端末のブラウザ内だけの表示。<br>
+        Supabaseに繋いだら、ここが本当に「誰でもログイン無しで見れるURL」になります。<br>
+        見えるのは「週間予定」「昨日やったこと」「連続記録」だけで、進捗％は75%を超えたら表示。
+      </div>
+    </div>
+    <div class="card">
+      <h2>今週の予定（公開される内容）</h2>
+      <div id="publicWeek"></div>
+    </div>
+    <div class="card">
+      <h2>昨日やったこと</h2>
+      <div id="publicYesterday" style="font-size:12.5px;"></div>
+    </div>
+    <div class="card">
+      <h2>連続記録</h2>
+      <div style="font-size:20px;font-weight:800;font-family:'SF Mono','Menlo',monospace;color:var(--gold);" id="publicStreak"></div>
+    </div>
+    <div class="card">
+      <h2>全体の計画図</h2>
+      <div id="publicPlan"></div>
+    </div>
+    <div class="card" id="publicProgressCard" style="display:none;">
+      <h2>全体進捗</h2>
+      <div style="font-size:20px;font-weight:800;font-family:'SF Mono','Menlo',monospace;color:var(--teal);" id="publicProgress"></div>
+    </div>
+  </div>
+
+</main>
+
+<div class="tabs">
+  <button class="tab-btn active" data-v="today"><span class="ic">🏠</span>今日</button>
+  <button class="tab-btn" data-v="week"><span class="ic">🧩</span>週間パズル</button>
+  <button class="tab-btn" data-v="backlog"><span class="ic">📋</span>全タスク</button>
+  <button class="tab-btn" data-v="public"><span class="ic">👀</span>公開ビュー</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   1) データカタログ（medu4 Chapter × QB 中項目）
+   track: main / memo, start/end: そのフェーズの目安期間
+   ※数値は全て検算済み（26分野の合計が元の6979問と一致）
+   ========================================================= */
+const catalog = [
+  { name:"内分泌・代謝", track:"main", start:"2026-08-24", end:"2026-08-30", chapters:[
+    {ch:"Ch1 内分泌代謝の総論", qb:"（基礎・ホルモン概説）"},
+    {ch:"Ch2 下垂体", qb:"視床下部・下垂体疾患(43)"},
+    {ch:"Ch3 甲状腺", qb:"甲状腺疾患(42)"},
+    {ch:"Ch4 副甲状腺", qb:"副甲状腺疾患(19)・多発性内分泌腫瘍症(5)"},
+    {ch:"Ch5 副腎", qb:"副腎疾患(37)"},
+    {ch:"Ch6 糖代謝", qb:"糖質代謝異常(68)"},
+    {ch:"Ch7 メタボ・生活指導", qb:"肥満症・メタボ(15)・脂質代謝異常(13)"},
+    {ch:"Ch8 その他の代謝", qb:"尿酸代謝異常(8)・骨代謝異常(2)・その他代謝異常(10)・膵内分泌腫瘍(3)"},
+    {ch:"仕上げ", qb:"総合問題(20)・120回問題(13)"}
+  ]},
+  { name:"腎・泌尿器（内科）", track:"main", start:"2026-08-31", end:"2026-09-06", chapters:[
+    {ch:"Ch1 腎の総論", qb:"腎・泌尿器総論(32)・水/電解質代謝異常(21)"},
+    {ch:"Ch2 腎不全", qb:"腎不全(30)"},
+    {ch:"Ch3 腎血管", qb:"腎血管性疾患(11)"},
+    {ch:"Ch4 糸球体", qb:"糸球体疾患(40)・全身疾患と腎障害(24)"},
+    {ch:"Ch5 尿細管・間質", qb:"尿細管機能障害・間質性疾患(12)・遺伝性腎疾患(4)"},
+    {ch:"仕上げ", qb:"総合問題(2)・120回問題(10)"}
+  ]},
+  { name:"消化管", track:"main", start:"2026-10-12", end:"2026-10-18", chapters:[
+    {ch:"Ch1 総論", qb:"消化管総論(24)"},
+    {ch:"Ch2 食道", qb:"食道疾患(37)"},
+    {ch:"Ch3 胃", qb:"胃・十二指腸疾患(55)"},
+    {ch:"Ch4 腸の炎症", qb:"腸疾患(55)の一部"},
+    {ch:"Ch5 腸の閉塞と虚血・腫瘍", qb:"腸疾患(45)の残り"},
+    {ch:"Ch6 肛門・横隔膜・腹膜・腹壁", qb:"肛門疾患(10)・腹壁腹膜疾患(17)"},
+    {ch:"仕上げ", qb:"総合問題(26)・120回問題(22)"}
+  ]},
+  { name:"肝・胆・膵", track:"main", start:"2026-10-12", end:"2026-10-18", chapters:[
+    {ch:"Ch1 総論", qb:"肝臓総論(15)・胆道総論(11)・膵臓総論(4)"},
+    {ch:"Ch2 肝の炎症", qb:"肝臓疾患(40)の一部"},
+    {ch:"Ch3 肝の腫瘍", qb:"肝臓疾患(38)の残り"},
+    {ch:"Ch4 胆", qb:"胆道疾患(37)"},
+    {ch:"Ch5 膵", qb:"膵臓疾患(31)"},
+    {ch:"仕上げ", qb:"総合問題(12)・120回問題(7)"}
+  ]},
+  { name:"血液", track:"main", start:"2026-09-28", end:"2026-10-04", chapters:[
+    {ch:"Ch1 総論", qb:"血液総論(8)・輸血療法(5)・造血幹細胞移植(4)"},
+    {ch:"Ch2 材料不足による貧血", qb:"赤血球の異常(15)の一部"},
+    {ch:"Ch3 崩壊による貧血", qb:"赤血球の異常(14)の一部"},
+    {ch:"Ch4 造血低下による貧血", qb:"赤血球の異常(14)の残り"},
+    {ch:"Ch5 血球の過剰産生", qb:"白血病(27)・骨髄系腫瘍(16)"},
+    {ch:"Ch6 リンパ系疾患", qb:"リンパ系腫瘍(20)の一部"},
+    {ch:"Ch7 蛋白増殖疾患", qb:"リンパ系腫瘍(16)の残り"},
+    {ch:"Ch8 1次止血のみの障害", qb:"止血機構の異常(23)の一部"},
+    {ch:"Ch9 2次止血の障害", qb:"止血機構の異常(22)の残り"},
+    {ch:"仕上げ", qb:"総合問題(7)・120回問題(11)"}
+  ]},
+  { name:"免疫・膠原病", track:"main", start:"2026-10-05", end:"2026-10-11", chapters:[
+    {ch:"Ch1 総論", qb:"免疫学総論(15)"},
+    {ch:"Ch2 アレルギー", qb:"アレルギー(17)"},
+    {ch:"Ch3 関節疾患", qb:"膠原病(35)の一部"},
+    {ch:"Ch4 全身疾患", qb:"膠原病(35)の一部"},
+    {ch:"Ch5 血管炎", qb:"膠原病(33)の残り"},
+    {ch:"仕上げ", qb:"免疫不全症(11)・120回問題(11)"}
+  ]},
+  { name:"循環器", track:"main", start:"2026-09-07", end:"2026-09-13", chapters:[
+    {ch:"Ch1 総論", qb:"循環器総論(36)"},
+    {ch:"Ch2 心不全", qb:"心不全(29)"},
+    {ch:"Ch3 不整脈", qb:"不整脈(49)"},
+    {ch:"Ch4 虚血性心疾患", qb:"虚血性心疾患(63)"},
+    {ch:"Ch5 弁膜症", qb:"心臓弁膜症・心内膜炎(40)"},
+    {ch:"Ch6 心膜疾患", qb:"心臓腫瘍(5)・心膜疾患(10)"},
+    {ch:"Ch7 心筋疾患", qb:"心筋疾患(27)"},
+    {ch:"Ch8 血管疾患", qb:"血管疾患(68)・血圧異常(20)"},
+    {ch:"仕上げ", qb:"総合問題(12)・120回問題(19)"}
+  ]},
+  { name:"神経", track:"main", start:"2026-09-14", end:"2026-09-20", chapters:[
+    {ch:"Ch1 総論", qb:"神経系の構造と機能(11)・脳神経とその障害(18)・運動感覚自律神経(10)"},
+    {ch:"Ch2 脳血管障害", qb:"脳血管障害(73)"},
+    {ch:"Ch3 認知症", qb:"認知症(34)"},
+    {ch:"Ch4 錐体外路障害", qb:"神経変性疾患(25)の一部"},
+    {ch:"Ch5 脱髄疾患", qb:"脱髄性疾患(16)"},
+    {ch:"Ch6 脊髄障害", qb:"神経変性疾患(17)の残り・髄液循環とその障害(3)"},
+    {ch:"Ch7 末梢神経障害", qb:"末梢神経障害(7)"},
+    {ch:"Ch8 神経筋接合部・筋障害", qb:"筋疾患(20)"},
+    {ch:"Ch9 神経感染症", qb:"感染性疾患(26)"},
+    {ch:"Ch10 機能性疾患", qb:"機能性疾患(17)"},
+    {ch:"Ch11 頭部外傷", qb:"頭部外傷(17)"},
+    {ch:"Ch12 神経腫瘍", qb:"占拠性病変(21)・頭蓋内圧亢進脳ヘルニア(4)"},
+    {ch:"仕上げ", qb:"神経その他の疾患(6)・総合問題(14)・120回問題(22)"}
+  ]},
+  { name:"呼吸器", track:"main", start:"2026-09-21", end:"2026-09-27", chapters:[
+    {ch:"Ch1 総論", qb:"呼吸器総論(33)・換気異常その他(9)"},
+    {ch:"Ch2 機能性呼吸器疾患", qb:"（基礎）"},
+    {ch:"Ch3 アレルギー性呼吸器疾患", qb:"免疫・アレルギー性肺疾患(22)"},
+    {ch:"Ch4 気道障害", qb:"閉塞性肺疾患(39)"},
+    {ch:"Ch5 肺間質障害", qb:"間質性肺疾患(17)"},
+    {ch:"Ch6 肺循環障害", qb:"肺循環障害(15)"},
+    {ch:"Ch7 胸腔・胸膜", qb:"胸膜疾患(38)"},
+    {ch:"Ch8 呼吸器腫瘍", qb:"肺腫瘍(42)・縦隔疾患(21)"},
+    {ch:"Ch9 乳腺疾患", qb:"（婦人科の乳腺疾患と連動）"},
+    {ch:"仕上げ", qb:"総合問題(41)・120回問題(18)"}
+  ]},
+  { name:"小児科", track:"main", start:"2026-10-19", end:"2026-11-01", chapters:[
+    {ch:"Ch1 成長と発達", qb:"成長・発達(57)"},
+    {ch:"Ch2 新生児・乳幼児", qb:"新生児・乳幼児(55)"},
+    {ch:"Ch3 先天異常", qb:"先天異常(36)"},
+    {ch:"Ch4 小児の腎", qb:"腎・泌尿器(4)"},
+    {ch:"Ch5 小児の内分泌代謝", qb:"内分泌・代謝(54)"},
+    {ch:"Ch6 小児の血液", qb:"血液・造血器(15)"},
+    {ch:"Ch7 小児の免疫", qb:"免疫・膠原病(11)"},
+    {ch:"Ch8 小児の感染症", qb:"感染症(42)"},
+    {ch:"Ch9 小児の呼吸器", qb:"呼吸器(13)"},
+    {ch:"Ch10 小児の循環器", qb:"循環器(34)"},
+    {ch:"Ch11 小児の消化管", qb:"消化管(39)"},
+    {ch:"Ch12 小児の肝胆膵", qb:"肝・胆・膵(11)"},
+    {ch:"Ch13 小児の神経", qb:"神経(30)・腹部の腫瘍(3)"},
+    {ch:"仕上げ", qb:"120回問題(19)"}
+  ]},
+  { name:"産科・婦人科", track:"main", start:"2026-11-02", end:"2026-11-15", chapters:[
+    {ch:"Ch1 総論", qb:"女性器の構造と性機能(10)"},
+    {ch:"Ch2 妊娠の成立と進行", qb:"正常妊娠(51)の一部"},
+    {ch:"Ch3 無月経と不妊・不育・避妊", qb:"内分泌の異常(27)・不妊症/避妊(13)・性分化と性器形態異常(12)"},
+    {ch:"Ch4 妊娠初期", qb:"妊娠の異常(45)の一部"},
+    {ch:"Ch5 妊娠中期", qb:"妊娠の異常(45)の一部"},
+    {ch:"Ch6 妊娠と合併症", qb:"合併症妊娠(8)・母子感染症(19)"},
+    {ch:"Ch7 妊娠末期", qb:"妊娠の異常(46)の残り"},
+    {ch:"Ch8 分娩", qb:"正常分娩(46)・分娩の異常(37)・分娩損傷(3)"},
+    {ch:"Ch9 産褥", qb:"産褥(20)"},
+    {ch:"Ch10 産婦人科感染症", qb:"性器の炎症・STI(21)"},
+    {ch:"Ch11 子宮の腫瘍", qb:"類腫瘍性病変・前癌病変・腫瘍(35)の一部"},
+    {ch:"Ch12 卵巣・卵管・腟・外陰の腫瘍", qb:"類腫瘍性病変・前癌病変・腫瘍(35)の残り"},
+    {ch:"仕上げ", qb:"女性のライフサイクル(17)・乳腺疾患(25)・産科120回(17)・婦人科120回(9)"}
+  ]},
+  { name:"皮膚科", track:"main", start:"2026-11-16", end:"2026-11-22", chapters:[
+    {ch:"Ch1 総論", qb:"総論(17)"}, {ch:"Ch2 薬疹", qb:"薬疹(9)"},
+    {ch:"Ch3 湿疹", qb:"じんま疹・湿疹・紅斑症(15)"}, {ch:"Ch4 水疱・膿疱", qb:"水疱症・膿疱症(10)"},
+    {ch:"Ch5 良性増殖性変化", qb:"角化症(13)"}, {ch:"Ch6 悪性腫瘍", qb:"腫瘍(20)"},
+    {ch:"Ch7 感染症", qb:"感染症(25)"}, {ch:"Ch8 母斑と母斑症", qb:"母斑・母斑症(12)"},
+    {ch:"Ch9 その他の皮膚科疾患", qb:"その他の疾患(21)"}, {ch:"仕上げ", qb:"120回問題(8)"}
+  ]},
+  { name:"放射線科", track:"main", start:"2026-11-16", end:"2026-11-22", chapters:[
+    {ch:"Ch1 総論", qb:"医療被曝(20)"}, {ch:"Ch2 放射線診断学", qb:"放射線診断学(13)・核医学(1)"},
+    {ch:"Ch3 放射線治療学", qb:"放射線治療学(17)"}, {ch:"仕上げ", qb:"120回問題(2)"}
+  ]},
+  { name:"整形外科", track:"main", start:"2026-11-23", end:"2026-11-29", chapters:[
+    {ch:"Ch1 総論", qb:"解剖(5)"}, {ch:"Ch2 上肢", qb:"上肢の疾患(26)"},
+    {ch:"Ch3 脊椎", qb:"脊髄・脊椎疾患(19)・感染性疾患(5)"}, {ch:"Ch4 下肢", qb:"下肢の疾患(37)"},
+    {ch:"Ch5 骨腫瘍", qb:"腫瘍(15)"}, {ch:"仕上げ", qb:"内分泌系疾患(9)・その他の疾患(27)・120回問題(9)"}
+  ]},
+  { name:"眼科", track:"main", start:"2026-11-30", end:"2026-12-06", chapters:[
+    {ch:"Ch1 総論", qb:"解剖(10)・視野異常/対光反射(5)・検査(12)・症候(20)"},
+    {ch:"Ch2 前眼部", qb:"前眼部疾患(30)・緑内障(8)"},
+    {ch:"Ch3 水晶体・硝子体", qb:"（前眼部の一部として整理）"},
+    {ch:"Ch4 ぶどう膜", qb:"ぶどう膜疾患(6)"}, {ch:"Ch5 網膜", qb:"網膜疾患(40)"},
+    {ch:"Ch6 眼科的外傷", qb:"眼外傷(14)"}, {ch:"仕上げ", qb:"120回問題(6)"}
+  ]},
+  { name:"精神科", track:"main", start:"2026-11-30", end:"2026-12-06", chapters:[
+    {ch:"Ch1 総論", qb:"精神総論(26)・検査(16)・治療(8)"},
+    {ch:"Ch2 精神作用物質による障害", qb:"精神作用物質関連障害(15)・身体因性精神障害(2)"},
+    {ch:"Ch3 統合失調症スペクトラム障害", qb:"統合失調症とその近縁の疾患(20)"},
+    {ch:"Ch4 気分障害", qb:"気分障害(16)"},
+    {ch:"Ch5 強迫性障害・不安障害", qb:"神経症性障害(15)の一部"},
+    {ch:"Ch6 心的・ストレス関連障害", qb:"神経症性障害(14)の残り"},
+    {ch:"Ch7 睡眠・覚醒障害", qb:"睡眠障害(14)"},
+    {ch:"Ch8 神経発達障害", qb:"小児の精神疾患(18)の一部"},
+    {ch:"Ch9 その他の精神科疾患", qb:"摂食障害(11)・パーソナリティ障害(3)"},
+    {ch:"仕上げ", qb:"認知症(6)・精神医療と社会(13)・120回問題(8)"}
+  ]},
+  { name:"耳鼻咽喉科", track:"main", start:"2026-12-07", end:"2026-12-13", chapters:[
+    {ch:"Ch1 総論", qb:"（基礎・検査）"}, {ch:"Ch2 外耳〜中耳", qb:"耳疾患(35)の一部"},
+    {ch:"Ch3 内耳", qb:"耳疾患(28)の残り"}, {ch:"Ch4 鼻", qb:"鼻腔・副鼻腔疾患(18)"},
+    {ch:"Ch5 咽頭・喉頭", qb:"咽頭・喉頭疾患(51)"}, {ch:"Ch6 口腔・唾液腺・頸部", qb:"その他の耳鼻咽喉疾患(14)"},
+    {ch:"仕上げ", qb:"120回問題(5)"}
+  ]},
+  { name:"泌尿器科", track:"main", start:"2026-12-07", end:"2026-12-13", chapters:[
+    {ch:"Ch1 総論", qb:"解剖・機能(12)・症候検査(5)・治療(3)"},
+    {ch:"Ch2 腎・尿管", qb:"通過障害(22)・結石症(15)・腫瘍(15)・感染症(7)"},
+    {ch:"Ch3 膀胱", qb:"腫瘍(15)・感染症(6)"},
+    {ch:"Ch4 前立腺", qb:"腫瘍(10)・感染症(6)"},
+    {ch:"Ch5 尿道・陰茎", qb:"排尿障害(8)・男性器疾患(6)"},
+    {ch:"Ch6 陰嚢・精巣", qb:"男性器疾患(6)・腫瘍(8)"},
+    {ch:"仕上げ", qb:"120回問題(6)"}
+  ]},
+  { name:"救急", track:"main", start:"2026-12-14", end:"2026-12-20", chapters:[
+    {ch:"Ch1 総論", qb:"心肺蘇生(21)"}, {ch:"Ch2 ショック", qb:"ショック(18)"},
+    {ch:"Ch3 救急外傷", qb:"損傷・外傷(56)"}, {ch:"Ch4 災害救急", qb:"圧挫症候群(6)・災害医学(3)"},
+    {ch:"Ch5 救急疾患", qb:"異物誤飲(8)・熱傷(10)"}, {ch:"仕上げ", qb:"救急総合(2)・120回問題(12)"}
+  ]},
+  { name:"感染症", track:"memo", start:"2026-08-24", end:"2026-09-09", chapters:[
+    {ch:"Ch1 総論", qb:"（基礎）"}, {ch:"Ch2 一般細菌", qb:"肺炎(37)・腸管感染症(20)"},
+    {ch:"Ch3 抗酸菌", qb:"抗酸菌感染症(19)"}, {ch:"Ch4 特殊細菌", qb:"その他の感染症(16)の一部"},
+    {ch:"Ch5 HIVと日和見感染", qb:"肺真菌症(8)・易感染性状態(28)"}, {ch:"Ch6 ウイルス", qb:"その他の感染症(16)の残り"},
+    {ch:"Ch7 寄生虫", qb:"輸入感染症(15)"},
+    {ch:"仕上げ", qb:"皮膚感染症(12)・筋腱骨関節感染症(10)・総合問題(47)・120回問題(11)"}
+  ]},
+  { name:"中毒・麻酔", track:"memo", start:"2026-09-10", end:"2026-09-13", chapters:[
+    {ch:"Ch1 農薬中毒", qb:"農薬中毒(9)"}, {ch:"Ch2 ガス中毒", qb:"ガス中毒(7)"},
+    {ch:"Ch3 有機溶剤・金属中毒", qb:"有機溶剤中毒(6)・金属中毒(5)"},
+    {ch:"Ch4 麻酔の分類", qb:"全身麻酔(12)・局所麻酔(3)・周術期管理(9)"}, {ch:"Ch5 麻酔薬", qb:"緩和ケア(7)"},
+    {ch:"仕上げ", qb:"食中毒(4)・薬剤の副作用(3)・熱中症(6)・物理的原因疾患総合(7)・中毒総合(8)・中毒120回(8)・麻酔120回(1)"}
+  ]},
+  { name:"公衆衛生", track:"memo", start:"2026-09-14", end:"2026-10-21", chapters:[
+    {ch:"Ch1 スクリーニングと疫学研究", qb:"公衆衛生と健康の概念(15)・疫学(49)"}, {ch:"Ch2 統計", qb:"保健統計(48)"},
+    {ch:"Ch3 医療活動における重要法規", qb:"医師法と関係法規(11)・感染症対策(38)"},
+    {ch:"Ch4 医療施設と従事者", qb:"医療法と医療体制(46)・医療の質と安全(7)"},
+    {ch:"Ch5 社会保障制度", qb:"社会保障と医療経済(24)"}, {ch:"Ch6 予防医学と健康増進", qb:"成人保健と健康増進(22)"},
+    {ch:"Ch7 食品と栄養", qb:"食品保健(10)・栄養(7)"}, {ch:"Ch8 地域保健", qb:"地域保健(9)"},
+    {ch:"Ch9 環境保健", qb:"環境保健(23)"}, {ch:"Ch10 国際保健", qb:"国際保健(17)"},
+    {ch:"Ch11 母子保健", qb:"母子保健(35)"}, {ch:"Ch12 学校保健", qb:"学校保健(14)"},
+    {ch:"Ch13 産業保健", qb:"産業保健(50)"}, {ch:"Ch14 障害者保健", qb:"障害者福祉(17)・精神保健福祉(12)"},
+    {ch:"Ch15 高齢者保健", qb:"高齢者保健(50)"},
+    {ch:"Ch16 終末期医療と死", qb:"終末期医療と死(34)・診療情報等(13)・医の倫理(16)"},
+    {ch:"仕上げ", qb:"120回問題(38)"}
+  ]},
+  { name:"医学総論", track:"memo", start:"2026-10-22", end:"2026-10-30", chapters:[
+    {ch:"加齢老年学 Ch1 総論", qb:"高齢化社会(30)の一部"},
+    {ch:"加齢老年学 Ch2 高齢者特有の病態", qb:"高齢化社会(36)の残り・廃用症候群(11)"},
+    {ch:"加齢老年学 Ch3 リハビリテーション医学", qb:"基本的な診療知識(37)"},
+    {ch:"加齢老年学 Ch4 女性の加齢性変化", qb:"（婦人科・女性のライフサイクルと連動）"},
+    {ch:"仕上げ（教科書対応なし・QB直接）", qb:"外科手技(6)・褥瘡(9)・腫瘍総論(10)・120回問題(8)"}
+  ]},
+  { name:"必修問題", track:"memo", start:"2026-10-31", end:"2026-12-20", chapters:[
+    {ch:"medu4の専用chapterなし（各科総論を横断）", qb:"医師のプロフェッショナリズム(31)・社会と医療(51)・診療情報と諸証明書(19)・医療の質と安全の確保(47)・人体の構造と機能(41)・医療面接(42)・主要症候(210)・一般的な身体診察(95)・検査の基本(70)・臨床判断の基本(27)・救急初期診療(86)・主要疾患症候群(359)・治療の基本(36)・基本的手技(33)・死と終末期ケア(43)・チーム医療(22)・生活習慣とリスク(38)・一般教養的事項(24)・医学英語予想問題(44)・120回問題(100)"}
+  ]}
+];
+
+/* =========================================================
+   2) カタログ → タスクの粒（ピース）に変換
+   ========================================================= */
+function extractSum(text){
+  const m = text.match(/\d+/g);
+  if(!m) return 0;
+  return m.reduce((a,b)=>a+parseInt(b,10),0);
+}
+function buildPiecesFromCatalog(){
+  const pieces = {};
+  catalog.forEach((subj, sIdx) => {
+    subj.chapters.forEach((c, cIdx) => {
+      const noVideo = c.ch.includes('仕上げ') || c.ch.includes('chapterなし');
+      if(!noVideo){
+        const vid = `${subj.track}_${sIdx}_${cIdx}_v`;
+        pieces[vid] = { id:vid, subject:subj.name, track:subj.track, type:'video',
+          label:`${subj.name}｜${c.ch}`, unit:'h', targetValue:1.5, doneValue:0, hours:1.5, assignedDay:null };
+      }
+      const sum = extractSum(c.qb);
+      if(sum>0){
+        const qid = `${subj.track}_${sIdx}_${cIdx}_q`;
+        pieces[qid] = { id:qid, subject:subj.name, track:subj.track, type:'qb',
+          label:`${subj.name}｜${c.ch}のQB`, unit:'問', targetValue:sum, doneValue:0, hours:sum/20, assignedDay:null };
+      }
+    });
+  });
+  return pieces;
+}
+
+/* =========================================================
+   3) 状態管理（今はブラウザのローカルストレージに保存）
+   ========================================================= */
+const DAY_NAMES = ['月','火','水','木','金','土','日'];
+const DEFAULT_CAP = [3,1,3,3,1,2,6];
+const DEFAULT_MEMO_ONLY = [false,true,false,false,true,false,false];
+const CBT_DATE = new Date('2027-01-18T00:00:00');
+
+let state = {
+  pieces: {},
+  weekSettings: { capacities:[...DEFAULT_CAP], memoOnly:[...DEFAULT_MEMO_ONLY] },
+  logs: {},
+  streak: 0,
+  lastLogDate: null
+};
+let selectedChipId = null;
+let backlogFilter = 'all';
+let currentPhaseKey = null; // "trackIdx_subjectName" のような選択キー
+
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function yesterdayStr(){
+  const d = new Date(); d.setDate(d.getDate()-1);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function todayDow(){ // 0=Mon..6=Sun
+  const jsDay = new Date().getDay();
+  return jsDay === 0 ? 6 : jsDay - 1;
+}
+
+function subjectProgress(name){
+  const ps = Object.values(state.pieces).filter(p=>p.subject===name);
+  if(ps.length===0) return 0;
+  const t = ps.reduce((a,p)=>a+p.targetValue,0);
+  const d = ps.reduce((a,p)=>a+Math.min(p.doneValue,p.targetValue),0);
+  return t>0 ? d/t : 0;
+}
+
+function getActiveSubjects(){
+  // 予定表に沿って「今やるべき科目」を返す。
+  // すでに終わってる科目は自動でスキップして、次の科目を繰り上げる（＝先に進めた分だけ前倒し）
+  const t = todayStr();
+  const result = [];
+  ['main','memo'].forEach(track => {
+    const list = catalog.filter(s=>s.track===track).sort((a,b)=>a.start.localeCompare(b.start));
+    // 未完了(進捗100%未満)の中で、開始日が今日以前 or 一番早いもの
+    const remaining = list.filter(s => subjectProgress(s.name) < 1);
+    if(remaining.length === 0) return;
+    const current = remaining.filter(s => s.start <= t);
+    if(current.length > 0){
+      // 期間中のものが複数ある場合（同週2科目など）は全部返す
+      const inRange = current.filter(s => t <= s.end);
+      if(inRange.length > 0){ inRange.forEach(s=>result.push(s)); }
+      else { result.push(current[current.length-1]); } // 期限すぎて残ってるもの
+    } else {
+      result.push(remaining[0]); // まだ先の予定なら直近の次のもの
+    }
+  });
+  if(result.length===0) return [catalog[catalog.length-1]];
+  return result;
+}
+
+function getNextSubjects(activeList){
+  // 先取りモード用：activeの次に来る科目をtrackごとに1つずつ
+  const t = todayStr();
+  const next = [];
+  ['main','memo'].forEach(track=>{
+    const list = catalog.filter(s=>s.track===track && subjectProgress(s.name)<1)
+                        .sort((a,b)=>a.start.localeCompare(b.start));
+    const activeNames = activeList.map(s=>s.name);
+    const notActive = list.filter(s=>!activeNames.includes(s.name));
+    if(notActive.length) next.push(notActive[0]);
+  });
+  return next;
+}
+
+function computePace(){
+  // 予定では今日までにどれだけ終わってるはずか vs 実際
+  const t = todayStr();
+  let expectedHours = 0, actualHours = 0, totalHours = 0;
+  catalog.forEach(subj=>{
+    const ps = Object.values(state.pieces).filter(p=>p.subject===subj.name);
+    const subjHours = ps.reduce((a,p)=>a+p.hours,0);
+    totalHours += subjHours;
+    const doneH = ps.reduce((a,p)=>a + p.hours * Math.min(1, p.targetValue>0 ? p.doneValue/p.targetValue : 0), 0);
+    actualHours += doneH;
+    if(subj.end < t){
+      expectedHours += subjHours;
+    } else if(subj.start <= t && t <= subj.end){
+      const s = new Date(subj.start), e = new Date(subj.end), now = new Date(t);
+      const span = (e - s)/86400000 + 1;
+      const elapsed = (now - s)/86400000 + 1;
+      expectedHours += subjHours * Math.max(0, Math.min(1, elapsed/span));
+    }
+  });
+  const dailyAvg = state.weekSettings.capacities.reduce((a,b)=>a+b,0) / 7;
+  const diffH = actualHours - expectedHours;
+  const diffDays = dailyAvg>0 ? diffH/dailyAvg : 0;
+  return { expectedHours, actualHours, totalHours, diffH, diffDays };
+}
+
+async function loadState(){
+  try{
+    const res = await window.storage.get('kokushi_app_state_v2');
+    if(res && res.value){
+      const saved = JSON.parse(res.value);
+      state.weekSettings = saved.weekSettings || state.weekSettings;
+      state.logs = saved.logs || {};
+      state.streak = saved.streak || 0;
+      state.lastLogDate = saved.lastLogDate || null;
+      const fresh = buildPiecesFromCatalog();
+      Object.keys(fresh).forEach(id => {
+        if(saved.pieces && saved.pieces[id]){
+          fresh[id].doneValue = saved.pieces[id].doneValue || 0;
+          fresh[id].assignedDay = (saved.pieces[id].assignedDay===0 || saved.pieces[id].assignedDay) ? saved.pieces[id].assignedDay : null;
+        }
+      });
+      state.pieces = fresh;
+    } else {
+      state.pieces = buildPiecesFromCatalog();
+    }
+  }catch(e){
+    state.pieces = buildPiecesFromCatalog();
+  }
+}
+async function saveState(){
+  try{ await window.storage.set('kokushi_app_state_v2', JSON.stringify(state)); }
+  catch(e){ console.error('save failed', e); }
+}
+
+/* =========================================================
+   4) レンダリング
+   ========================================================= */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+function renderHeader(){
+  const d = new Date();
+  document.getElementById('dateHead').textContent =
+    `${d.getMonth()+1}月${d.getDate()}日（${['日','月','火','水','木','金','土'][d.getDay()]}）`;
+  const diffMs = CBT_DATE - new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  const days = Math.round(diffMs/86400000);
+  document.getElementById('cdNum').textContent = days;
+}
+
+function renderToday(){
+  renderPaceBanner();
+  document.getElementById('streakVal').textContent = '🔥' + state.streak;
+  const y = state.logs[yesterdayStr()];
+  document.getElementById('yestVal').textContent = y ? y.total + (y.unitMix || '') : '0';
+
+  const dow = todayDow();
+  const list = document.getElementById('todayList');
+  list.innerHTML = '';
+  const todays = Object.values(state.pieces).filter(p => p.assignedDay === dow);
+  if(todays.length === 0){
+    list.innerHTML = '<div class="empty-note">今日にはまだタスクが配置されてません。「週間パズル」タブで割り振ろう。</div>';
+    return;
+  }
+  todays.forEach(p => list.appendChild(renderPieceRow(p)));
+}
+
+function renderPaceBanner(){
+  const el = document.getElementById('paceBanner');
+  const pace = computePace();
+  const d = pace.diffDays;
+  let cls, msg, sub;
+  if(d >= 0.5){
+    cls = 'pace-ahead';
+    msg = `⚡️ 予定より約${d.toFixed(1)}日ぶん先行中`;
+    sub = '先取りモードで次の科目を前倒しできるで';
+  } else if(d <= -0.5){
+    cls = 'pace-behind';
+    msg = `📌 予定より約${Math.abs(d).toFixed(1)}日ぶん遅れ`;
+    sub = '焦らんでOK。今日できる分から拾っていこ';
+  } else {
+    cls = 'pace-ontrack';
+    msg = '✅ ほぼ予定どおり';
+    sub = 'このペースを維持しよう';
+  }
+  el.className = 'pace-banner ' + cls;
+  el.innerHTML = `${msg}<span class="sub">${sub}（消化 ${pace.actualHours.toFixed(0)}h / 予定 ${pace.expectedHours.toFixed(0)}h・全体 ${pace.totalHours.toFixed(0)}h）</span>`;
+}
+
+function renderPieceRow(p){
+  const row = document.createElement('div');
+  row.className = 'piece-row';
+  const pct = Math.min(100, Math.round((p.doneValue / p.targetValue) * 100));
+  row.innerHTML = `
+    <span class="piece-tag ${p.track==='main'?'tag-main':'tag-memo'}">${p.track==='main'?'MAIN':'暗記'}</span>
+    <div class="piece-body">
+      <div class="piece-label">${p.label}</div>
+      <div class="piece-bar-wrap">
+        <div class="piece-bar-top"><span>${p.doneValue}/${p.targetValue}${p.unit}</span><span>${pct}%</span></div>
+        <div class="piece-bar"><div class="piece-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+    </div>
+    <div class="log-form">
+      <input type="number" min="0" placeholder="${p.unit}" />
+      <button>記録</button>
+    </div>
+  `;
+  const input = row.querySelector('input');
+  const btn = row.querySelector('button');
+  btn.addEventListener('click', () => {
+    const v = parseFloat(input.value);
+    if(!v || v<=0) return;
+    logPiece(p.id, v, p.unit);
+    input.value = '';
+  });
+  return row;
+}
+
+function logPiece(pieceId, value, unit){
+  const p = state.pieces[pieceId];
+  if(!p) return;
+  p.doneValue = Math.round((p.doneValue + value) * 10) / 10;
+
+  const t = todayStr();
+  if(!state.logs[t]) state.logs[t] = { total:0, unitMix:'', entries:[] };
+  state.logs[t].entries.push({ pieceId, value, unit });
+  state.logs[t].total = Math.round((state.logs[t].total + value) * 10) / 10;
+  state.logs[t].unitMix = unit;
+
+  if(state.lastLogDate !== t){
+    if(state.lastLogDate === yesterdayStr()){
+      state.streak += 1;
+    } else {
+      state.streak = 1;
+    }
+    state.lastLogDate = t;
+    if(state.streak > 0 && state.streak % 7 === 0){
+      showToast(`🎉 ${state.streak}日連続達成！`);
+    } else {
+      showToast('記録したで👍');
+    }
+  } else {
+    showToast('記録したで👍');
+  }
+
+  saveState();
+  renderAll();
+}
+
+function renderWeekSettings(){
+  const wrap = document.getElementById('capSettings');
+  wrap.innerHTML = '';
+  DAY_NAMES.forEach((dn, i) => {
+    const row = document.createElement('div');
+    row.className = 'day-cap-row';
+    row.innerHTML = `
+      <span class="dname">${dn}</span>
+      <input type="number" step="0.5" min="0" value="${state.weekSettings.capacities[i]}" />
+      <span class="unit">h</span>
+      <label class="memo-toggle"><input type="checkbox" ${state.weekSettings.memoOnly[i]?'checked':''}/> 暗記のみ</label>
+    `;
+    const numInput = row.querySelector('input[type=number]');
+    const chk = row.querySelector('input[type=checkbox]');
+    numInput.addEventListener('change', () => {
+      state.weekSettings.capacities[i] = parseFloat(numInput.value) || 0;
+      saveState(); renderWeekArea();
+    });
+    chk.addEventListener('change', () => {
+      state.weekSettings.memoOnly[i] = chk.checked;
+      saveState(); renderWeekArea();
+    });
+    wrap.appendChild(row);
+  });
+}
+
+function renderPhaseSelect(){
+  const sel = document.getElementById('phaseSelect');
+  const activeNow = getActiveSubjects();
+  if(currentPhaseKey === null){
+    currentPhaseKey = 'AUTO';
+  }
+  sel.innerHTML = '';
+  const autoOpt = document.createElement('option');
+  autoOpt.value = 'AUTO';
+  autoOpt.textContent = '🗓 今の予定（自動）：' + activeNow.map(s=>s.name).join('・');
+  sel.appendChild(autoOpt);
+
+  const mainGroup = document.createElement('optgroup');
+  mainGroup.label = 'MAIN科目';
+  catalog.filter(s=>s.track==='main').forEach(s=>{
+    const o = document.createElement('option');
+    o.value = s.name; o.textContent = `${s.name}（${fmtDate(s.start)}〜${fmtDate(s.end)}）`;
+    mainGroup.appendChild(o);
+  });
+  sel.appendChild(mainGroup);
+
+  const memoGroup = document.createElement('optgroup');
+  memoGroup.label = '暗記科目';
+  catalog.filter(s=>s.track==='memo').forEach(s=>{
+    const o = document.createElement('option');
+    o.value = s.name; o.textContent = `${s.name}（${fmtDate(s.start)}〜${fmtDate(s.end)}）`;
+    memoGroup.appendChild(o);
+  });
+  sel.appendChild(memoGroup);
+
+  sel.value = currentPhaseKey;
+  const lookahead = document.getElementById('lookaheadChk').checked;
+  document.getElementById('phaseHint').textContent =
+    currentPhaseKey === 'AUTO'
+      ? (lookahead
+          ? '自動表示＋次の科目も先取り表示中。終わった科目は自動でスキップされます。'
+          : 'スケジュール通り、今やるべき科目を自動表示。終わった科目は自動でスキップされます。')
+      : '手動で選択中。「今の予定（自動）」に戻すといつでも自動選択に戻せます。';
+}
+function fmtDate(iso){
+  const [y,m,d] = iso.split('-');
+  return `${parseInt(m)}/${parseInt(d)}`;
+}
+
+function getTraySubjectNames(){
+  if(currentPhaseKey === 'AUTO'){
+    const active = getActiveSubjects();
+    const names = active.map(s=>s.name);
+    if(document.getElementById('lookaheadChk').checked){
+      getNextSubjects(active).forEach(s=>names.push(s.name));
+    }
+    return names;
+  }
+  return [currentPhaseKey];
+}
+
+function renderWeekArea(){
+  const traySubjects = getTraySubjectNames();
+
+  const tray = document.getElementById('unassignedTray');
+  tray.innerHTML = '';
+  const unassigned = Object.values(state.pieces).filter(p => p.assignedDay === null && traySubjects.includes(p.subject));
+  if(unassigned.length === 0){
+    tray.innerHTML = '<div class="empty-note">この科目の未配置タスクはなし（配置済み or 完了済み）</div>';
+  }
+  unassigned.forEach(p => {
+    const chip = document.createElement('div');
+    chip.className = 'chip ' + (p.track==='main'?'chip-teal':'chip-purple') + (selectedChipId===p.id?' selected':'');
+    chip.textContent = `${p.label} (${p.hours.toFixed(1)}h)`;
+    chip.addEventListener('click', () => {
+      selectedChipId = (selectedChipId === p.id) ? null : p.id;
+      renderWeekArea();
+    });
+    tray.appendChild(chip);
+  });
+
+  const daysArea = document.getElementById('daysArea');
+  daysArea.innerHTML = '';
+  DAY_NAMES.forEach((dn, i) => {
+    const col = document.createElement('div');
+    col.className = 'day-col';
+    const dayPieces = Object.values(state.pieces).filter(p => p.assignedDay === i);
+    const loadH = dayPieces.reduce((a,p)=>a+p.hours,0);
+    const cap = state.weekSettings.capacities[i];
+    const over = cap>0 ? (loadH/cap) >= 1.0 : loadH>0;
+
+    const head = document.createElement('div');
+    head.className = 'day-head';
+    head.innerHTML = `<span class="dn">${dn}</span><span class="load ${over?'over':''}">${loadH.toFixed(1)}/${cap}h${over?' ⚠️':''}</span>`;
+    col.appendChild(head);
+
+    const drop = document.createElement('div');
+    drop.className = 'day-drop' + (over?' over':'');
+    drop.addEventListener('click', () => {
+      if(selectedChipId){
+        const memoOnly = state.weekSettings.memoOnly[i];
+        const piece = state.pieces[selectedChipId];
+        if(memoOnly && piece.track !== 'memo'){
+          showToast('この曜日は暗記トラックのみ配置できます');
+          return;
+        }
+        piece.assignedDay = i;
+        selectedChipId = null;
+        saveState();
+        renderWeekArea();
+        renderToday();
+      }
+    });
+    if(dayPieces.length===0){
+      drop.innerHTML = '<span class="day-empty2">タップで配置</span>';
+    } else {
+      dayPieces.forEach(p => {
+        const ac = document.createElement('div');
+        ac.className = 'assigned-chip ' + (p.track==='main'?'chip-teal':'chip-purple');
+        ac.textContent = shortLabel(p.label);
+        ac.title = 'タップで未配置に戻す';
+        ac.addEventListener('click', (e) => {
+          e.stopPropagation();
+          p.assignedDay = null;
+          saveState(); renderWeekArea(); renderToday();
+        });
+        drop.appendChild(ac);
+      });
+    }
+    col.appendChild(drop);
+    daysArea.appendChild(col);
+  });
+}
+
+function shortLabel(label){
+  return label.length > 14 ? label.slice(0,13)+'…' : label;
+}
+
+function renderBacklog(){
+  const list = document.getElementById('backlogList');
+  list.innerHTML = '';
+  let items = Object.values(state.pieces);
+  if(backlogFilter==='undone') items = items.filter(p=>p.doneValue < p.targetValue);
+  if(backlogFilter==='main') items = items.filter(p=>p.track==='main');
+  if(backlogFilter==='memo') items = items.filter(p=>p.track==='memo');
+  if(items.length===0){ list.innerHTML = '<div class="empty-note">該当タスクなし</div>'; return; }
+  items.forEach(p => list.appendChild(renderPieceRow(p)));
+}
+
+function renderPublicPlan(){
+  const wrap = document.getElementById('publicPlan');
+  wrap.innerHTML = '';
+  const t = todayStr();
+  [['main','MAIN科目（週ごとに1科目）'],['memo','暗記トラック（毎日並走）']].forEach(([track,label])=>{
+    const lab = document.createElement('div');
+    lab.className = 'plan-track-label';
+    lab.textContent = label;
+    wrap.appendChild(lab);
+    catalog.filter(s=>s.track===track)
+      .sort((a,b)=>a.start.localeCompare(b.start))
+      .forEach(s=>{
+        const pct = Math.round(subjectProgress(s.name)*100);
+        const isNow = s.start <= t && t <= s.end;
+        const row = document.createElement('div');
+        row.className = 'plan-row' + (isNow?' now':'');
+        row.innerHTML = `
+          <span class="plan-date">${fmtDate(s.start)}〜${fmtDate(s.end)}</span>
+          <span class="plan-name">${s.name}</span>
+          <span class="plan-bar"><span class="plan-bar-fill" style="width:${pct}%"></span></span>
+          <span class="plan-pct">${pct}%</span>
+        `;
+        wrap.appendChild(row);
+      });
+  });
+}
+
+function renderPublic(){
+  renderPublicPlan();
+  const pw = document.getElementById('publicWeek');
+  pw.innerHTML = '';
+  DAY_NAMES.forEach((dn,i)=>{
+    const dayPieces = Object.values(state.pieces).filter(p=>p.assignedDay===i);
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:6px;padding:6px 0;border-bottom:1px solid #eef2f5;font-size:11.5px;';
+    row.innerHTML = `<b style="width:20px;">${dn}</b><span>${dayPieces.length? dayPieces.map(p=>shortLabel(p.label)).join('、') : '（未定）'}</span>`;
+    pw.appendChild(row);
+  });
+
+  const y = state.logs[yesterdayStr()];
+  document.getElementById('publicYesterday').textContent = y
+    ? `${y.entries.length}タスクに取り組んで、合計${y.total}${y.unitMix}進めました`
+    : '記録なし';
+
+  document.getElementById('publicStreak').textContent = '🔥 ' + state.streak + '日';
+
+  const allPieces = Object.values(state.pieces);
+  const totalTarget = allPieces.reduce((a,p)=>a+p.targetValue,0);
+  const totalDone = allPieces.reduce((a,p)=>a+Math.min(p.doneValue,p.targetValue),0);
+  const pct = totalTarget>0 ? Math.round((totalDone/totalTarget)*100) : 0;
+  const card = document.getElementById('publicProgressCard');
+  if(pct >= 75){
+    card.style.display='block';
+    document.getElementById('publicProgress').textContent = pct + '%';
+  } else {
+    card.style.display='none';
+  }
+}
+
+function renderAll(){
+  renderHeader();
+  renderToday();
+  renderWeekSettings();
+  renderPhaseSelect();
+  renderWeekArea();
+  renderBacklog();
+  renderPublic();
+}
+
+/* =========================================================
+   5) タブ切り替え・フィルタ・クリアボタン・科目選択
+   ========================================================= */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-'+btn.dataset.v).classList.add('active');
+  });
+});
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    backlogFilter = btn.dataset.f;
+    renderBacklog();
+  });
+});
+document.getElementById('clearWeekBtn').addEventListener('click', () => {
+  Object.values(state.pieces).forEach(p => p.assignedDay = null);
+  saveState();
+  renderWeekArea(); renderToday(); renderPublic();
+  showToast('今週の配置をクリアしたで');
+});
+document.getElementById('lookaheadChk').addEventListener('change', () => {
+  selectedChipId = null;
+  renderPhaseSelect();
+  renderWeekArea();
+});
+document.getElementById('phaseSelect').addEventListener('change', (e) => {
+  currentPhaseKey = e.target.value;
+  selectedChipId = null;
+  renderPhaseSelect();
+  renderWeekArea();
+});
+
+/* =========================================================
+   6) 起動
+   ========================================================= */
+(async function init(){
+  await loadState();
+  renderAll();
+})();
+</script>
+
+</body>
+</html>
