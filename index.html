@@ -21,7 +21,31 @@
     -webkit-font-smoothing:antialiased; padding-bottom:78px;
   }
   header{ background:var(--ink); color:#fff; padding:20px 16px 14px; }
-  header .eyebrow{ font-size:10.5px; letter-spacing:.1em; color:#8fb9ba; font-family:"SF Mono","Menlo",monospace; margin-bottom:4px; }
+  .eyebrow-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+  header .eyebrow{ font-size:10.5px; letter-spacing:.1em; color:#8fb9ba; font-family:"SF Mono","Menlo",monospace; }
+  .auth-btn{
+    background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.25); border-radius:20px;
+    padding:5px 10px; font-size:10.5px; font-weight:700;
+  }
+  .auth-btn.logged-in{ background:var(--done-soft); color:var(--done); border-color:var(--done); }
+
+  .login-overlay{
+    display:none; position:fixed; inset:0; background:rgba(22,35,46,.55); z-index:60;
+    align-items:center; justify-content:center; padding:20px;
+  }
+  .login-overlay.show{ display:flex; }
+  .login-card{ background:#fff; border-radius:16px; padding:18px; width:100%; max-width:320px; }
+  .login-head{ display:flex; justify-content:space-between; align-items:center; font-size:14px; font-weight:800; margin-bottom:12px; }
+  .login-close{ background:none; border:none; font-size:18px; color:var(--ink-soft); }
+  .login-card input{
+    width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:9px; font-size:13px; margin-bottom:8px;
+  }
+  .login-submit{
+    width:100%; background:var(--ink); color:#fff; border:none; border-radius:9px; padding:10px; font-size:13px; font-weight:700;
+  }
+  .login-msg{ font-size:11px; color:var(--coral); margin-top:8px; min-height:14px; }
+
+  .lock-note{ font-size:10.5px; color:var(--ink-soft); display:flex; align-items:center; gap:4px; flex-shrink:0; }
   header h1{ margin:0; font-size:17px; }
   .countdown{ display:flex; align-items:baseline; gap:6px; margin-top:10px; }
   .countdown .num{ font-size:30px; font-weight:800; font-family:"SF Mono","Menlo",monospace; line-height:1; }
@@ -164,10 +188,26 @@
 <body>
 
 <header>
-  <div class="eyebrow">KOKUSHI PLANNER · v2（ローカル保存版）</div>
+  <div class="eyebrow-row">
+    <div class="eyebrow">KOKUSHI PLANNER · v3（Supabase版）</div>
+    <button class="auth-btn" id="authBtn">🔑 ログイン</button>
+  </div>
   <h1 id="dateHead"></h1>
   <div class="countdown"><span class="num" id="cdNum">--</span><span class="lbl">日 · 国試模試(1/18)まで</span></div>
 </header>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <div class="login-head">
+      <span>ログイン</span>
+      <button class="login-close" id="loginClose">×</button>
+    </div>
+    <input type="email" id="loginEmail" placeholder="メールアドレス" />
+    <input type="password" id="loginPassword" placeholder="パスワード" />
+    <button class="login-submit" id="loginSubmit">ログイン</button>
+    <div class="login-msg" id="loginMsg"></div>
+  </div>
+</div>
 
 <main>
 
@@ -259,7 +299,70 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+/* =========================================================
+   0) Supabase接続
+   ========================================================= */
+const SUPABASE_URL = 'https://zowzowjfzwzxomxkwtxc.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpvd3pvd2pmend6eG9teGt3dHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczMjg4MjAsImV4cCI6MjEwMjkwNDgyMH0.cRTTymBqU6ikOVwMU_5yi1CsbTGQKt6UDBJYXay5c9Y';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let isLoggedIn = false;
+
+async function checkSession(){
+  const { data } = await sb.auth.getSession();
+  isLoggedIn = !!data.session;
+  updateAuthUI();
+}
+function updateAuthUI(){
+  const btn = document.getElementById('authBtn');
+  if(isLoggedIn){
+    btn.textContent = '🔓 編集中（タップでログアウト）';
+    btn.classList.add('logged-in');
+  } else {
+    btn.textContent = '🔑 ログイン';
+    btn.classList.remove('logged-in');
+  }
+}
+document.getElementById('authBtn').addEventListener('click', async () => {
+  if(isLoggedIn){
+    await sb.auth.signOut();
+    isLoggedIn = false;
+    updateAuthUI();
+    showToast('ログアウトしたで');
+  } else {
+    document.getElementById('loginOverlay').classList.add('show');
+  }
+});
+document.getElementById('loginClose').addEventListener('click', () => {
+  document.getElementById('loginOverlay').classList.remove('show');
+});
+document.getElementById('loginSubmit').addEventListener('click', async () => {
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  const msg = document.getElementById('loginMsg');
+  msg.textContent = '確認中...';
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if(error){
+    msg.textContent = 'ログイン失敗：' + error.message;
+    return;
+  }
+  isLoggedIn = true;
+  updateAuthUI();
+  document.getElementById('loginOverlay').classList.remove('show');
+  msg.textContent = '';
+  showToast('ログインしたで、編集モードON');
+  renderAll();
+});
+function requireLogin(){
+  if(!isLoggedIn){
+    showToast('編集にはログインが必要です🔒');
+    document.getElementById('loginOverlay').classList.add('show');
+    return false;
+  }
+  return true;
+}
 /* =========================================================
    1) データカタログ（medu4 Chapter × QB 中項目）
    track: main / memo, start/end: そのフェーズの目安期間
@@ -617,32 +720,74 @@ function computePace(){
 }
 
 async function loadState(){
-  try{
-    const res = await window.storage.get('kokushi_app_state_v2');
-    if(res && res.value){
-      const saved = JSON.parse(res.value);
-      state.weekSettings = saved.weekSettings || state.weekSettings;
-      state.logs = saved.logs || {};
-      state.streak = saved.streak || 0;
-      state.lastLogDate = saved.lastLogDate || null;
-      const fresh = buildPiecesFromCatalog();
-      Object.keys(fresh).forEach(id => {
-        if(saved.pieces && saved.pieces[id]){
-          fresh[id].doneValue = saved.pieces[id].doneValue || 0;
-          fresh[id].assignedDay = (saved.pieces[id].assignedDay===0 || saved.pieces[id].assignedDay) ? saved.pieces[id].assignedDay : null;
-        }
-      });
-      state.pieces = fresh;
-    } else {
-      state.pieces = buildPiecesFromCatalog();
-    }
-  }catch(e){
-    state.pieces = buildPiecesFromCatalog();
+  // 設定を取得
+  const { data: settingsRows, error: setErr } = await sb.from('settings').select('*').eq('id', 1).single();
+  if(!setErr && settingsRows){
+    state.weekSettings.capacities = settingsRows.capacities || DEFAULT_CAP;
+    state.weekSettings.memoOnly = settingsRows.memo_only || DEFAULT_MEMO_ONLY;
+    state.streak = settingsRows.streak || 0;
+    state.lastLogDate = settingsRows.last_log_date || null;
   }
+
+  // タスク（pieces）を取得。無ければ初回シード
+  const { data: pieceRows, error: pieceErr } = await sb.from('pieces').select('*');
+  if(pieceErr){
+    showToast('Supabase接続エラー：' + pieceErr.message);
+    state.pieces = buildPiecesFromCatalog();
+    return;
+  }
+  if(!pieceRows || pieceRows.length === 0){
+    // 初回のみ：カタログから全ピースを作ってDBに流し込む
+    const fresh = buildPiecesFromCatalog();
+    const rows = Object.values(fresh).map(p => ({
+      id:p.id, subject:p.subject, track:p.track, type:p.type, label:p.label,
+      unit:p.unit, target_value:p.targetValue, done_value:0, hours:p.hours, assigned_day:null
+    }));
+    const { error: insErr } = await sb.from('pieces').insert(rows);
+    if(insErr){ showToast('初期データ投入エラー：' + insErr.message); }
+    state.pieces = fresh;
+  } else {
+    const pieces = {};
+    pieceRows.forEach(r => {
+      pieces[r.id] = {
+        id:r.id, subject:r.subject, track:r.track, type:r.type, label:r.label,
+        unit:r.unit, targetValue:Number(r.target_value), doneValue:Number(r.done_value),
+        hours:Number(r.hours), assignedDay: r.assigned_day===null?null:Number(r.assigned_day)
+      };
+    });
+    state.pieces = pieces;
+  }
+
+  // 昨日・今日のログ集計（daily_logsから）
+  const { data: logRows } = await sb.from('daily_logs').select('*')
+    .in('log_date', [todayStr(), yesterdayStr()]);
+  state.logs = {};
+  (logRows||[]).forEach(r => {
+    const d = r.log_date;
+    if(!state.logs[d]) state.logs[d] = { total:0, unitMix:'', entries:[] };
+    state.logs[d].entries.push({ pieceId:r.piece_id, value:Number(r.value), unit:r.unit });
+    state.logs[d].total = Math.round((state.logs[d].total + Number(r.value)) * 10) / 10;
+    state.logs[d].unitMix = r.unit;
+  });
 }
-async function saveState(){
-  try{ await window.storage.set('kokushi_app_state_v2', JSON.stringify(state)); }
-  catch(e){ console.error('save failed', e); }
+
+async function saveSettings(){
+  await sb.from('settings').update({
+    capacities: state.weekSettings.capacities,
+    memo_only: state.weekSettings.memoOnly,
+    streak: state.streak,
+    last_log_date: state.lastLogDate,
+    updated_at: new Date().toISOString()
+  }).eq('id', 1);
+}
+
+async function savePiece(pieceId){
+  const p = state.pieces[pieceId];
+  await sb.from('pieces').update({
+    done_value: p.doneValue,
+    assigned_day: p.assignedDay,
+    updated_at: new Date().toISOString()
+  }).eq('id', pieceId);
 }
 
 /* =========================================================
@@ -732,7 +877,8 @@ function renderPieceRow(p){
   return row;
 }
 
-function logPiece(pieceId, value, unit){
+async function logPiece(pieceId, value, unit){
+  if(!requireLogin()) return;
   const p = state.pieces[pieceId];
   if(!p) return;
   p.doneValue = Math.round((p.doneValue + value) * 10) / 10;
@@ -743,6 +889,7 @@ function logPiece(pieceId, value, unit){
   state.logs[t].total = Math.round((state.logs[t].total + value) * 10) / 10;
   state.logs[t].unitMix = unit;
 
+  let streakUp = false;
   if(state.lastLogDate !== t){
     if(state.lastLogDate === yesterdayStr()){
       state.streak += 1;
@@ -750,16 +897,19 @@ function logPiece(pieceId, value, unit){
       state.streak = 1;
     }
     state.lastLogDate = t;
-    if(state.streak > 0 && state.streak % 7 === 0){
-      showToast(`🎉 ${state.streak}日連続達成！`);
-    } else {
-      showToast('記録したで👍');
-    }
+    streakUp = true;
+  }
+
+  await savePiece(pieceId);
+  await sb.from('daily_logs').insert({ log_date:t, piece_id:pieceId, value, unit });
+  await saveSettings();
+
+  if(streakUp && state.streak > 0 && state.streak % 7 === 0){
+    showToast(`🎉 ${state.streak}日連続達成！`);
   } else {
     showToast('記録したで👍');
   }
 
-  saveState();
   renderAll();
 }
 
@@ -778,12 +928,14 @@ function renderWeekSettings(){
     const numInput = row.querySelector('input[type=number]');
     const chk = row.querySelector('input[type=checkbox]');
     numInput.addEventListener('change', () => {
+      if(!requireLogin()){ numInput.value = state.weekSettings.capacities[i]; return; }
       state.weekSettings.capacities[i] = parseFloat(numInput.value) || 0;
-      saveState(); renderWeekArea();
+      saveSettings(); renderWeekArea();
     });
     chk.addEventListener('change', () => {
+      if(!requireLogin()){ chk.checked = state.weekSettings.memoOnly[i]; return; }
       state.weekSettings.memoOnly[i] = chk.checked;
-      saveState(); renderWeekArea();
+      saveSettings(); renderWeekArea();
     });
     wrap.appendChild(row);
   });
@@ -884,6 +1036,7 @@ function renderWeekArea(){
     drop.className = 'day-drop' + (over?' over':'');
     drop.addEventListener('click', () => {
       if(selectedChipId){
+        if(!requireLogin()) return;
         const memoOnly = state.weekSettings.memoOnly[i];
         const piece = state.pieces[selectedChipId];
         if(memoOnly && piece.track !== 'memo'){
@@ -891,8 +1044,9 @@ function renderWeekArea(){
           return;
         }
         piece.assignedDay = i;
+        const pid = selectedChipId;
         selectedChipId = null;
-        saveState();
+        savePiece(pid);
         renderWeekArea();
         renderToday();
       }
@@ -907,8 +1061,9 @@ function renderWeekArea(){
         ac.title = 'タップで未配置に戻す';
         ac.addEventListener('click', (e) => {
           e.stopPropagation();
+          if(!requireLogin()) return;
           p.assignedDay = null;
-          saveState(); renderWeekArea(); renderToday();
+          savePiece(p.id); renderWeekArea(); renderToday();
         });
         drop.appendChild(ac);
       });
@@ -1021,9 +1176,13 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
     renderBacklog();
   });
 });
-document.getElementById('clearWeekBtn').addEventListener('click', () => {
+document.getElementById('clearWeekBtn').addEventListener('click', async () => {
+  if(!requireLogin()) return;
+  const assignedIds = Object.values(state.pieces).filter(p=>p.assignedDay!==null).map(p=>p.id);
   Object.values(state.pieces).forEach(p => p.assignedDay = null);
-  saveState();
+  if(assignedIds.length){
+    await sb.from('pieces').update({ assigned_day:null, updated_at:new Date().toISOString() }).in('id', assignedIds);
+  }
   renderWeekArea(); renderToday(); renderPublic();
   showToast('今週の配置をクリアしたで');
 });
@@ -1043,6 +1202,11 @@ document.getElementById('phaseSelect').addEventListener('change', (e) => {
    6) 起動
    ========================================================= */
 (async function init(){
+  await checkSession();
+  sb.auth.onAuthStateChange((event, session) => {
+    isLoggedIn = !!session;
+    updateAuthUI();
+  });
   await loadState();
   renderAll();
 })();
