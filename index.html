@@ -163,6 +163,12 @@
   .losub{width:100%;background:var(--ink);color:#fff;border:none;border-radius:9px;padding:11px;font-size:13px;font-weight:700;}
   .lomsg{font-size:11px;color:var(--coral);margin-top:8px;min-height:14px;}
 
+  .errbar{display:none;background:var(--coral-soft);color:#8a2f26;padding:10px 13px;font-size:11px;
+    line-height:1.6;border-bottom:1px solid var(--coral);word-break:break-all;}
+  .errbar.show{display:block;}
+  .errbar b{display:block;margin-bottom:3px;}
+  .errbar button{margin-top:6px;background:#fff;border:1px solid var(--coral);color:var(--coral);
+    border-radius:7px;padding:5px 9px;font-size:10.5px;font-weight:700;}
   .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;
     padding:10px 18px;border-radius:20px;font-size:12.5px;font-weight:700;z-index:70;opacity:0;
     transition:opacity .3s,top .3s;pointer-events:none;max-width:88%;text-align:center;}
@@ -181,6 +187,8 @@
   </div>
   <div class="cd"><span class="n" id="cdNum">--</span><span class="l">日 · 国試模試(1/18)まで</span></div>
 </header>
+
+<div class="errbar" id="errbar"></div>
 
 <div class="lo" id="lo">
   <div class="locard">
@@ -593,8 +601,11 @@ function pace(){
 
 /* ===== supabase io ===== */
 async function loadAll(){
-  const {data:st}=await sb.from('settings').select('*').eq('id',1).single();
-  if(st){state.caps=st.capacities||DEFAULT_CAP;state.streak=st.streak||0;state.lastLog=st.last_log_date||null;}
+  try{
+    const {data:st}=await sb.from('settings').select('*').eq('id',1).single();
+    if(st){state.caps=Array.isArray(st.capacities)?st.capacities:DEFAULT_CAP;
+      state.streak=st.streak||0;state.lastLog=st.last_log_date||null;}
+  }catch(e){ console.warn('settings load skipped',e); }
   const {data:rows,error}=await sb.from('pieces').select('*');
   if(error){toast('接続エラー: '+error.message);state.pieces=buildPieces();return;}
   if(!rows||!rows.length){
@@ -609,7 +620,9 @@ async function loadAll(){
       assignedDay:r.assigned_day===null?null:+r.assigned_day};});
     state.pieces=P;
   }
-  const {data:lg}=await sb.from('daily_logs').select('*').in('log_date',[today(),yest()]);
+  let lg=[];
+  try{ const r=await sb.from('daily_logs').select('*').in('log_date',[today(),yest()]); lg=r.data||[]; }
+  catch(e){ console.warn('logs load skipped',e); }
   state.logs={};
   (lg||[]).forEach(r=>{const d=r.log_date;
     if(!state.logs[d])state.logs[d]={total:0,entries:[]};
@@ -641,7 +654,7 @@ async function logIt(id,val){
   await sb.from('daily_logs').insert({log_date:t,piece_id:id,value:val,unit:p.unit});
   await saveSettings();
   toast(up&&state.streak%7===0?`🎉 ${state.streak}日連続達成！`:`記録した：${p.label} +${val}${p.unit}`);
-  renderAll();
+  safeRender();
 }
 
 /* ===== ui helpers ===== */
@@ -767,7 +780,7 @@ function renderWeek(){
       if(!gate())return;
       state.pieces[selChip].assignedDay=i;
       const id=selChip;selChip=null;
-      savePiece(id);renderAll();
+      savePiece(id);safeRender();
     };
     if(!ps.length)slot.innerHTML='<span class="ph">タップで配置</span>';
     ps.forEach(p=>{
@@ -775,7 +788,7 @@ function renderWeek(){
       c.className='ac '+(p.track==='main'?'ac-m':'ac-a');
       c.textContent=short(p.label,13);
       c.onclick=e=>{e.stopPropagation();if(!gate())return;
-        p.assignedDay=null;savePiece(p.id);renderAll();};
+        p.assignedDay=null;savePiece(p.id);safeRender();};
       slot.appendChild(c);
     });
     row.appendChild(slot);
@@ -808,7 +821,7 @@ async function autoAssign(){
   });
   for(const id of changed)await savePiece(id);
   toast(`${changed.length}件を自動配置したで⚡️`);
-  renderAll();
+  safeRender();
 }
 
 /* ===== render: tasks/editor ===== */
@@ -842,13 +855,13 @@ function renderTasks(){
       if(!gate()){ti.value=p.targetValue;return;}
       const v=parseFloat(ti.value);if(!(v>0))return;
       p.targetValue=v;p.hours=p.type==='qb'?v/QB_PER_HOUR:v;
-      await savePiece(p.id);toast('目標を更新したで');renderAll();
+      await savePiece(p.id);toast('目標を更新したで');safeRender();
     };
     r.querySelector('.ed-del').onclick=async()=>{
       if(!gate())return;
       if(!confirm(`「${p.label}」を削除する？`))return;
       await sb.from('pieces').delete().eq('id',p.id);
-      delete state.pieces[p.id];toast('削除したで');renderAll();
+      delete state.pieces[p.id];toast('削除したで');safeRender();
     };
     list.appendChild(r);
   });
@@ -870,7 +883,7 @@ document.getElementById('addBtn').onclick=async()=>{
   state.pieces[id]={id,subject:edSubj,track:meta.track,type,label,unit,
     targetValue:target,doneValue:0,hours,assignedDay:null};
   document.getElementById('addLabel').value='';document.getElementById('addTarget').value='';
-  toast('タスクを追加したで');renderAll();
+  toast('タスクを追加したで');safeRender();
 };
 
 /* ===== render: public ===== */
@@ -946,7 +959,7 @@ document.getElementById('clearBtn').onclick=async()=>{
   const ids=Object.values(state.pieces).filter(p=>p.assignedDay!==null).map(p=>p.id);
   Object.values(state.pieces).forEach(p=>p.assignedDay=null);
   if(ids.length)await sb.from('pieces').update({assigned_day:null}).in('id',ids);
-  toast('配置をクリアしたで');renderAll();
+  toast('配置をクリアしたで');safeRender();
 };
 function authUI(){
   document.body.classList.toggle('owner',owner);
@@ -969,16 +982,43 @@ document.getElementById('loSub').onclick=async()=>{
   if(error){msg.textContent='失敗：'+error.message;return;}
   owner=true;authUI();tab('today');
   document.getElementById('lo').classList.remove('show');
-  msg.textContent='';toast('ログインしたで、編集モードON');renderAll();
+  msg.textContent='';toast('ログインしたで、編集モードON');
+  try{ await loadAll(); }catch(e){ showErr('データ再読み込み',e); }
+  safeRender();
 };
+
+/* ===== error reporting ===== */
+function showErr(where,e){
+  const b=document.getElementById('errbar');
+  const msg=(e&&(e.message||e.error_description||e.msg))||String(e);
+  b.innerHTML=`<b>⚠️ ${where} でエラー</b>${msg}
+    <button onclick="location.reload()">再読み込み</button>`;
+  b.classList.add('show');
+  console.error(where,e);
+}
+window.onerror=(m,src,l,c,e)=>{showErr('画面表示',e||m);};
+window.addEventListener('unhandledrejection',ev=>{showErr('通信',ev.reason);});
+function safeRender(){
+  try{ renderAll(); }
+  catch(e){ showErr('画面表示',e); }
+}
 
 /* ===== init ===== */
 (async function(){
-  const {data}=await sb.auth.getSession();
-  owner=!!data.session;authUI();
-  sb.auth.onAuthStateChange((e,s)=>{owner=!!s;authUI();});
-  await loadAll();
-  renderAll();
+  try{
+    const {data}=await sb.auth.getSession();
+    owner=!!(data&&data.session);
+  }catch(e){ showErr('ログイン確認',e); owner=false; }
+  authUI();
+  try{ sb.auth.onAuthStateChange((e,s)=>{owner=!!s;authUI();}); }catch(e){}
+
+  try{
+    await loadAll();
+  }catch(e){
+    showErr('データ読み込み',e);
+    if(!Object.keys(state.pieces).length) state.pieces=buildPieces();
+  }
+  safeRender();
   tab(owner?'today':'public');
 })();
 </script>
