@@ -3,7 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>神計画アプリ</title>
+<title>国試対策アプリ</title>
+
+<meta property="og:title" content="国試対策アプリ">
+<meta property="og:description" content="medu4 × QBの進捗を管理する国試対策アプリ">
+<meta property="og:type" content="website">
+<meta property="og:image" content="icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="国試対策アプリ">
+<meta name="twitter:image" content="icon-512.png">
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="国試対策アプリ">
+<meta name="theme-color" content="#16232e">
 <style>
   :root{
     --ink:#16232e; --ink-soft:#4a5c6b; --bg:#f5f8fa; --card:#ffffff; --line:#dbe4ea;
@@ -93,6 +109,8 @@
   }
   .tab-btn .ic{ display:block; font-size:17px; margin-bottom:2px; }
   .tab-btn.active{ color:var(--teal); font-weight:700; }
+  .owner-only{ display:none; }
+  body.is-owner .owner-only{ display:block; }
 
   .view{ display:none; }
   .view.active{ display:block; }
@@ -212,7 +230,7 @@
 <main>
 
   <!-- TODAY -->
-  <div class="view active" id="view-today">
+  <div class="view" id="view-today">
     <div class="pace-banner" id="paceBanner"></div>
     <div class="stat-row">
       <div class="stat streak"><div class="k">連続日数</div><div class="v" id="streakVal">🔥0</div></div>
@@ -257,15 +275,7 @@
   </div>
 
   <!-- PUBLIC -->
-  <div class="view" id="view-public">
-    <div class="card">
-      <h2>🔒 公開ビュー（プレビュー）</h2>
-      <div class="public-lock">
-        今はこの端末のブラウザ内だけの表示。<br>
-        Supabaseに繋いだら、ここが本当に「誰でもログイン無しで見れるURL」になります。<br>
-        見えるのは「週間予定」「昨日やったこと」「連続記録」だけで、進捗％は75%を超えたら表示。
-      </div>
-    </div>
+  <div class="view active" id="view-public">
     <div class="card">
       <h2>今週の予定（公開される内容）</h2>
       <div id="publicWeek"></div>
@@ -291,10 +301,10 @@
 </main>
 
 <div class="tabs">
-  <button class="tab-btn active" data-v="today"><span class="ic">🏠</span>今日</button>
-  <button class="tab-btn" data-v="week"><span class="ic">🧩</span>週間パズル</button>
-  <button class="tab-btn" data-v="backlog"><span class="ic">📋</span>全タスク</button>
-  <button class="tab-btn" data-v="public"><span class="ic">👀</span>公開ビュー</button>
+  <button class="tab-btn owner-only" data-v="today"><span class="ic">🏠</span>今日</button>
+  <button class="tab-btn owner-only" data-v="week"><span class="ic">🧩</span>週間パズル</button>
+  <button class="tab-btn owner-only" data-v="backlog"><span class="ic">📋</span>全タスク</button>
+  <button class="tab-btn active" data-v="public"><span class="ic">👀</span>公開ビュー</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -310,13 +320,23 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let isLoggedIn = false;
 
+function switchTab(v){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  const btn = document.querySelector(`.tab-btn[data-v="${v}"]`);
+  if(btn) btn.classList.add('active');
+  document.getElementById('view-'+v).classList.add('active');
+}
+
 async function checkSession(){
   const { data } = await sb.auth.getSession();
   isLoggedIn = !!data.session;
   updateAuthUI();
+  if(isLoggedIn) switchTab('today');
 }
 function updateAuthUI(){
   const btn = document.getElementById('authBtn');
+  document.body.classList.toggle('is-owner', isLoggedIn);
   if(isLoggedIn){
     btn.textContent = '🔓 編集中（タップでログアウト）';
     btn.classList.add('logged-in');
@@ -330,6 +350,7 @@ document.getElementById('authBtn').addEventListener('click', async () => {
     await sb.auth.signOut();
     isLoggedIn = false;
     updateAuthUI();
+    switchTab('public');
     showToast('ログアウトしたで');
   } else {
     document.getElementById('loginOverlay').classList.add('show');
@@ -350,6 +371,7 @@ document.getElementById('loginSubmit').addEventListener('click', async () => {
   }
   isLoggedIn = true;
   updateAuthUI();
+  switchTab('today');
   document.getElementById('loginOverlay').classList.remove('show');
   msg.textContent = '';
   showToast('ログインしたで、編集モードON');
