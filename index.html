@@ -20,6 +20,7 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="国試対策">
 <meta name="theme-color" content="#16232e">
@@ -131,7 +132,7 @@
   .tb{flex:1;padding:9px 3px 11px;text-align:center;font-size:10px;color:var(--ink-soft);background:none;border:none;}
   .tb .ic{display:block;font-size:16px;margin-bottom:2px;}
   .tb.active{color:var(--teal);font-weight:700;}
-  .owner{display:none;} body.owner .owner{display:block;}
+  .owner{display:none;} body.is-owner .owner{display:block;}
   .view{display:none;} .view.active{display:block;}
 
   /* plan chart */
@@ -185,7 +186,7 @@
     <div>
       <div class="htitle">国試対策アプリ</div>
       <div class="hsub" id="dateHead"></div>
-      <div class="hsub" style="opacity:.6;">build 2026-08-23-v4</div>
+      <div class="hsub" style="opacity:.6;">build 2026-08-23-v6</div>
     </div>
     <button class="auth-btn" id="authBtn">🔑</button>
   </div>
@@ -634,20 +635,27 @@ function pace(){
 }
 
 /* ===== supabase io ===== */
+function withTimeout(promise, ms, label){
+  return Promise.race([
+    promise,
+    new Promise((_,reject)=>setTimeout(()=>reject(new Error(`${label}が${ms/1000}秒たっても応答なし（通信が固まってる可能性）`)),ms))
+  ]);
+}
+
 async function loadAll(){
   if(sbBroken || !sb){ state.pieces=buildPieces(); return; }
   try{
-    const {data:st}=await sb.from('settings').select('*').eq('id',1).single();
+    const {data:st}=await withTimeout(sb.from('settings').select('*').eq('id',1).single(),8000,'設定の読み込み');
     if(st){state.caps=Array.isArray(st.capacities)?st.capacities:DEFAULT_CAP;
       state.streak=st.streak||0;state.lastLog=st.last_log_date||null;}
   }catch(e){ console.warn('settings load skipped',e); }
-  const {data:rows,error}=await sb.from('pieces').select('*');
+  const {data:rows,error}=await withTimeout(sb.from('pieces').select('*'),8000,'タスク一覧の読み込み');
   if(error){toast('接続エラー: '+error.message);state.pieces=buildPieces();return;}
   if(!rows||!rows.length){
     const fresh=buildPieces();
     const ins=Object.values(fresh).map(p=>({id:p.id,subject:p.subject,track:p.track,type:p.type,
       label:p.label,unit:p.unit,target_value:p.targetValue,done_value:0,hours:p.hours,assigned_day:null}));
-    for(let i=0;i<ins.length;i+=200){await sb.from('pieces').insert(ins.slice(i,i+200));}
+    for(let i=0;i<ins.length;i+=200){await withTimeout(sb.from('pieces').insert(ins.slice(i,i+200)),8000,'初期データ投入');}
     state.pieces=fresh;
   }else{
     const P={};rows.forEach(r=>{P[r.id]={id:r.id,subject:r.subject,track:r.track,type:r.type,label:r.label,
@@ -656,7 +664,7 @@ async function loadAll(){
     state.pieces=P;
   }
   let lg=[];
-  try{ const r=await sb.from('daily_logs').select('*').in('log_date',[today(),yest()]); lg=r.data||[]; }
+  try{ const r=await withTimeout(sb.from('daily_logs').select('*').in('log_date',[today(),yest()]),8000,'ログの読み込み'); lg=r.data||[]; }
   catch(e){ console.warn('logs load skipped',e); }
   state.logs={};
   (lg||[]).forEach(r=>{const d=r.log_date;
@@ -997,7 +1005,7 @@ document.getElementById('clearBtn').onclick=async()=>{
   toast('配置をクリアしたで');safeRender();
 };
 function authUI(){
-  document.body.classList.toggle('owner',owner);
+  document.body.classList.toggle('is-owner',owner);
   const b=document.getElementById('authBtn');
   b.textContent=owner?'🔓 編集中':'🔑 ログイン';
   b.classList.toggle('on',owner);
@@ -1048,8 +1056,18 @@ function safeRender(){
     tab('public');
     return;
   }
+  let rendered=false;
+  const masterTimer=setTimeout(()=>{
+    if(rendered)return;
+    showErr('初期化', new Error('10秒たっても応答がありません。通信環境が悪いか、Supabase側で問題が起きています。'));
+    if(!Object.keys(state.pieces).length) state.pieces=buildPieces();
+    safeRender();
+    tab('public');
+    rendered=true;
+  },10000);
+
   try{
-    const {data}=await sb.auth.getSession();
+    const {data}=await withTimeout(sb.auth.getSession(),8000,'ログイン状態の確認');
     owner=!!(data&&data.session);
   }catch(e){ showErr('ログイン確認',e); owner=false; }
   authUI();
@@ -1061,8 +1079,12 @@ function safeRender(){
     showErr('データ読み込み',e);
     if(!Object.keys(state.pieces).length) state.pieces=buildPieces();
   }
-  safeRender();
-  tab(owner?'today':'public');
+  if(!rendered){
+    clearTimeout(masterTimer);
+    safeRender();
+    tab(owner?'today':'public');
+    rendered=true;
+  }
 })();
 </script>
 </body>
