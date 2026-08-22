@@ -93,6 +93,9 @@
 
   /* week planner */
   .wk-actions{display:flex;gap:6px;margin-bottom:10px;}
+  .week-nav{display:flex;align-items:center;gap:6px;margin-bottom:9px;}
+  .week-nav .wk-btn{flex:0 0 auto;padding:7px 10px;font-size:10.5px;}
+  .week-nav .wk-label{flex:1;text-align:center;font-size:11.5px;font-weight:700;font-family:"SF Mono",Menlo,monospace;color:var(--ink-soft);}
   .wk-btn{flex:1;padding:10px;border-radius:10px;border:none;font-size:11.5px;font-weight:700;}
   .wk-primary{background:var(--teal);color:#fff;}
   .wk-ghost{background:#fff;border:1px solid var(--line);color:var(--ink-soft);}
@@ -186,7 +189,7 @@
     <div>
       <div class="htitle">国試対策アプリ</div>
       <div class="hsub" id="dateHead"></div>
-      <div class="hsub" style="opacity:.6;">build 2026-08-23-v6</div>
+      <div class="hsub" style="opacity:.6;">build 2026-08-23-v7</div>
     </div>
     <button class="auth-btn" id="authBtn">🔑</button>
   </div>
@@ -235,12 +238,19 @@
     </div>
     <div id="selHint"></div>
     <div class="tray" id="tray"></div>
+    <div id="weekNav" class="week-nav"></div>
     <div id="days"></div>
   </div>
 </div>
 
 <!-- ========== TASKS / EDITOR ========== -->
 <div class="view" id="view-tasks">
+  <div class="card">
+    <h2>📊 medu4×QB 全科目の進捗
+      <button class="wk-btn wk-ghost" id="resyncBtn" style="flex:0 0 auto;padding:5px 9px;font-size:10px;">🔄 カタログと同期</button>
+    </h2>
+    <div id="ownerPlan"></div>
+  </div>
   <div class="card">
     <h2>タスク一覧・編集</h2>
     <select id="edSubjSel"></select>
@@ -547,7 +557,7 @@ const TARGET_DATE=new Date('2027-01-18T00:00:00');
 const QB_PER_HOUR=20, CH_HOURS=1.5;
 
 let state={pieces:{},caps:[...DEFAULT_CAP],logs:{},streak:0,lastLog:null};
-let selChip=null, weekSubj='AUTO', edSubj=null;
+let selChip=null, weekSubj='AUTO', edSubj=null, weekStart=null;
 
 /* ===== date utils ===== */
 const pad=n=>String(n).padStart(2,'0');
@@ -556,6 +566,10 @@ const today=()=>iso(new Date());
 const yest=()=>{const d=new Date();d.setDate(d.getDate()-1);return iso(d);};
 const dow=()=>{const j=new Date().getDay();return j===0?6:j-1;};
 const fmt=s=>{const[,m,d]=s.split('-');return`${+m}/${+d}`;};
+const addDays=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return iso(d);};
+const dateDow=s=>{const j=new Date(s+'T00:00:00').getDay();return j===0?6:j-1;};
+const mondayOf=s=>addDays(s,-dateDow(s));
+const dname=s=>DAYS[dateDow(s)];
 
 /* ===== build pieces from catalog ===== */
 function sumNums(t){const m=t.match(/\((\d+)\)/g);return m?m.reduce((a,b)=>a+ +b.replace(/[()]/g,''),0):0;}
@@ -565,11 +579,11 @@ function buildPieces(){
     const noVid=c.ch.includes('仕上げ')||c.ch.includes('chapterなし');
     if(!noVid){const id=`${s.track}_${si}_${ci}_v`;
       P[id]={id,subject:s.name,track:s.track,type:'video',label:`${c.ch}`,unit:'h',
-        targetValue:CH_HOURS,doneValue:0,hours:CH_HOURS,assignedDay:null};}
+        targetValue:CH_HOURS,doneValue:0,hours:CH_HOURS,assignedDate:null};}
     const n=sumNums(c.qb);
     if(n>0){const id=`${s.track}_${si}_${ci}_q`;
       P[id]={id,subject:s.name,track:s.track,type:'qb',label:`${c.ch} のQB`,unit:'問',
-        targetValue:n,doneValue:0,hours:n/QB_PER_HOUR,assignedDay:null};}
+        targetValue:n,doneValue:0,hours:n/QB_PER_HOUR,assignedDate:null};}
   }));
   return P;
 }
@@ -654,13 +668,13 @@ async function loadAll(){
   if(!rows||!rows.length){
     const fresh=buildPieces();
     const ins=Object.values(fresh).map(p=>({id:p.id,subject:p.subject,track:p.track,type:p.type,
-      label:p.label,unit:p.unit,target_value:p.targetValue,done_value:0,hours:p.hours,assigned_day:null}));
+      label:p.label,unit:p.unit,target_value:p.targetValue,done_value:0,hours:p.hours,assigned_day:null,assigned_date:null}));
     for(let i=0;i<ins.length;i+=200){await withTimeout(sb.from('pieces').insert(ins.slice(i,i+200)),8000,'初期データ投入');}
     state.pieces=fresh;
   }else{
     const P={};rows.forEach(r=>{P[r.id]={id:r.id,subject:r.subject,track:r.track,type:r.type,label:r.label,
       unit:r.unit,targetValue:+r.target_value,doneValue:+r.done_value,hours:+r.hours,
-      assignedDay:r.assigned_day===null?null:+r.assigned_day};});
+      assignedDate:r.assigned_date||null};});
     state.pieces=P;
   }
   let lg=[];
@@ -678,8 +692,8 @@ async function saveSettings(){
 }
 async function savePiece(id){
   const p=state.pieces[id];
-  await sb.from('pieces').update({done_value:p.doneValue,assigned_day:p.assignedDay,
-    target_value:p.targetValue,label:p.label,hours:p.hours,updated_at:new Date().toISOString()}).eq('id',id);
+  await sb.from('pieces').update({done_value:p.doneValue,assigned_date:p.assignedDate,
+    target_value:p.targetValue,label:p.label,hours:p.hours,unit:p.unit,updated_at:new Date().toISOString()}).eq('id',id);
 }
 
 /* ===== log ===== */
@@ -761,7 +775,7 @@ function renderToday(){
 
   // 今日のメイン
   const tm=document.getElementById('todayMain');tm.innerHTML='';
-  const list=Object.values(state.pieces).filter(p=>p.assignedDay===dow()&&p.track==='main');
+  const list=Object.values(state.pieces).filter(p=>p.assignedDate===today()&&p.track==='main');
   if(!list.length)tm.innerHTML='<div class="empty">今日のメイン科目はまだ未設定。「週間計画」タブで⚡️自動わりふりするのが早いで。</div>';
   list.forEach(p=>tm.appendChild(taskRow(p,true)));
 }
@@ -788,10 +802,10 @@ function renderWeek(){
   renderSubjSel();
   const names=weekSubjNames();
   const hint=document.getElementById('selHint');
-  hint.innerHTML=selChip?`<div class="sel-hint">👇 配置したい曜日をタップ</div>`:'';
+  hint.innerHTML=selChip?`<div class="sel-hint">👇 配置したい日をタップ</div>`:'';
 
   const tray=document.getElementById('tray');tray.innerHTML='';
-  const un=Object.values(state.pieces).filter(p=>p.assignedDay===null&&names.includes(p.subject)&&p.doneValue<p.targetValue);
+  const un=Object.values(state.pieces).filter(p=>p.assignedDate===null&&names.includes(p.subject)&&p.doneValue<p.targetValue);
   if(!un.length)tray.innerHTML='<div class="empty">未配置なし（配置済み or 完了済み）</div>';
   un.forEach(p=>{
     const b=document.createElement('button');
@@ -801,19 +815,32 @@ function renderWeek(){
     tray.appendChild(b);
   });
 
+  const wn=document.getElementById('weekNav');
+  const weekEnd=addDays(weekStart,6);
+  wn.innerHTML=`<button class="wk-ghost wk-btn" id="wkPrev">◀ 前週</button>
+    <span class="wk-label">${fmt(weekStart)}〜${fmt(weekEnd)}</span>
+    <button class="wk-ghost wk-btn" id="wkNext">次週 ▶</button>
+    <button class="wk-ghost wk-btn" id="wkToday">今週</button>`;
+  document.getElementById('wkPrev').onclick=()=>{weekStart=addDays(weekStart,-7);renderWeek();};
+  document.getElementById('wkNext').onclick=()=>{weekStart=addDays(weekStart,7);renderWeek();};
+  document.getElementById('wkToday').onclick=()=>{weekStart=mondayOf(today());renderWeek();};
+
   const days=document.getElementById('days');days.innerHTML='';
-  DAYS.forEach((dn,i)=>{
+  for(let i=0;i<7;i++){
+    const date=addDays(weekStart,i);
+    const dn=dname(date);
+    const wi=dateDow(date);
     const row=document.createElement('div');row.className='dayrow';
-    const ps=Object.values(state.pieces).filter(p=>p.assignedDay===i);
-    const load=ps.reduce((a,p)=>a+p.hours,0),cap=state.caps[i],over=cap>0?load/cap>=1:load>0;
+    const ps=Object.values(state.pieces).filter(p=>p.assignedDate===date);
+    const load=ps.reduce((a,p)=>a+p.hours,0),cap=state.caps[wi],over=cap>0?load/cap>=1:load>0;
     const cell=document.createElement('div');
-    cell.className='dcell'+(i===dow()?' today':'');
-    cell.innerHTML=`<div class="dn">${dn}</div>
+    cell.className='dcell'+(date===today()?' today':'');
+    cell.innerHTML=`<div class="dn">${dn} ${fmt(date)}</div>
       <div class="dcap"><input type="number" step="0.5" min="0" value="${cap}">h</div>
       <div class="dload ${over?'over':''}">${load.toFixed(1)}h</div>`;
     const ci=cell.querySelector('input');
-    ci.onchange=()=>{if(!gate()){ci.value=state.caps[i];return;}
-      state.caps[i]=parseFloat(ci.value)||0;saveSettings();renderWeek();};
+    ci.onchange=()=>{if(!gate()){ci.value=state.caps[wi];return;}
+      state.caps[wi]=parseFloat(ci.value)||0;saveSettings();renderWeek();};
     ci.onclick=e=>e.stopPropagation();
     row.appendChild(cell);
 
@@ -821,7 +848,7 @@ function renderWeek(){
     slot.onclick=()=>{
       if(!selChip)return;
       if(!gate())return;
-      state.pieces[selChip].assignedDay=i;
+      state.pieces[selChip].assignedDate=date;
       const id=selChip;selChip=null;
       savePiece(id);safeRender();
     };
@@ -831,12 +858,12 @@ function renderWeek(){
       c.className='ac '+(p.track==='main'?'ac-m':'ac-a');
       c.textContent=short(p.label,13);
       c.onclick=e=>{e.stopPropagation();if(!gate())return;
-        p.assignedDay=null;savePiece(p.id);safeRender();};
+        p.assignedDate=null;savePiece(p.id);safeRender();};
       slot.appendChild(c);
     });
     row.appendChild(slot);
     days.appendChild(row);
-  });
+  }
 }
 
 /* ===== auto distribute ===== */
@@ -844,23 +871,26 @@ async function autoAssign(){
   if(!gate())return;
   const names=weekSubjNames();
   const un=Object.values(state.pieces)
-    .filter(p=>p.assignedDay===null&&names.includes(p.subject)&&p.doneValue<p.targetValue)
+    .filter(p=>p.assignedDate===null&&names.includes(p.subject)&&p.doneValue<p.targetValue)
     .sort((a,b)=>a.id.localeCompare(b.id));
   if(!un.length){toast('配置するタスクがないで');return;}
-  const load=[...Array(7)].map((_,i)=>
-    Object.values(state.pieces).filter(p=>p.assignedDay===i).reduce((a,p)=>a+p.hours,0));
+  const weekDates=[...Array(7)].map((_,i)=>addDays(weekStart,i));
+  const load=weekDates.map(date=>
+    Object.values(state.pieces).filter(p=>p.assignedDate===date).reduce((a,p)=>a+p.hours,0));
   const changed=[];
   un.forEach(p=>{
     let best=-1,bestRoom=-Infinity;
     for(let i=0;i<7;i++){
-      const room=state.caps[i]-load[i];
+      const cap=state.caps[dateDow(weekDates[i])];
+      const room=cap-load[i];
       if(room>=p.hours&&room>bestRoom){best=i;bestRoom=room;}
     }
     if(best<0){ // どこも空きがなければ一番余裕ある日へ
-      let mi=0;for(let i=1;i<7;i++)if(state.caps[i]-load[i]>state.caps[mi]-load[mi])mi=i;
+      let mi=0,mv=state.caps[dateDow(weekDates[0])]-load[0];
+      for(let i=1;i<7;i++){const v=state.caps[dateDow(weekDates[i])]-load[i];if(v>mv){mv=v;mi=i;}}
       best=mi;
     }
-    p.assignedDay=best;load[best]+=p.hours;changed.push(p.id);
+    p.assignedDate=weekDates[best];load[best]+=p.hours;changed.push(p.id);
   });
   for(const id of changed)await savePiece(id);
   toast(`${changed.length}件を自動配置したで⚡️`);
@@ -882,6 +912,7 @@ function renderEdSel(){
   sel.value=edSubj;
 }
 function renderTasks(){
+  renderPlanInto('ownerPlan', true);
   renderEdSel();
   const list=document.getElementById('edList');list.innerHTML='';
   const ps=Object.values(state.pieces).filter(p=>p.subject===edSubj).sort((a,b)=>a.id.localeCompare(b.id));
@@ -909,6 +940,30 @@ function renderTasks(){
     list.appendChild(r);
   });
 }
+/* ===== カタログと同期し直す（過去の不具合で保存された数値を今のcatalogに合わせて上書き） ===== */
+async function resyncCatalog(){
+  if(!gate())return;
+  const fresh=buildPieces();
+  const updates=[];
+  Object.values(fresh).forEach(p=>{
+    const ex=state.pieces[p.id];
+    if(ex){
+      if(ex.targetValue!==p.targetValue||ex.hours!==p.hours||ex.label!==p.label||ex.unit!==p.unit){
+        ex.targetValue=p.targetValue;ex.hours=p.hours;ex.label=p.label;ex.unit=p.unit;
+        updates.push(ex.id);
+      }
+    }else{
+      state.pieces[p.id]=p;
+      updates.push(p.id);
+    }
+  });
+  if(!updates.length){toast('ズレはなかったで、同期済み');return;}
+  for(const id of updates)await savePiece(id);
+  toast(`${updates.length}件をカタログに合わせて修正したで`);
+  safeRender();
+}
+document.getElementById('resyncBtn').onclick=resyncCatalog;
+
 document.getElementById('addBtn').onclick=async()=>{
   if(!gate())return;
   const label=document.getElementById('addLabel').value.trim();
@@ -920,29 +975,51 @@ document.getElementById('addBtn').onclick=async()=>{
   const hours=type==='qb'?target/QB_PER_HOUR:target;
   const unit=type==='qb'?'問':'h';
   const row={id,subject:edSubj,track:meta.track,type,label,unit,
-    target_value:target,done_value:0,hours,assigned_day:null};
+    target_value:target,done_value:0,hours,assigned_day:null,assigned_date:null};
   const {error}=await sb.from('pieces').insert(row);
   if(error){toast('追加エラー: '+error.message);return;}
   state.pieces[id]={id,subject:edSubj,track:meta.track,type,label,unit,
-    targetValue:target,doneValue:0,hours,assignedDay:null};
+    targetValue:target,doneValue:0,hours,assignedDate:null};
   document.getElementById('addLabel').value='';document.getElementById('addTarget').value='';
   toast('タスクを追加したで');safeRender();
 };
 
+function renderPlanInto(elId, detailed){
+  const pp=document.getElementById(elId);pp.innerHTML='';
+  const t=today();
+  [['main','MAIN科目'],['memo','暗記トラック']].forEach(([tr,lab])=>{
+    const l=document.createElement('div');l.className='tlabel2';l.textContent=lab;pp.appendChild(l);
+    catalog.filter(s=>s.track===tr).sort((a,b)=>a.start.localeCompare(b.start)).forEach(s=>{
+      const pct=Math.round(subjProg(s.name)*100),now=s.start<=t&&t<=s.end;
+      const ps=Object.values(state.pieces).filter(p=>p.subject===s.name);
+      const qbDone=ps.filter(p=>p.type==='qb').reduce((a,p)=>a+Math.min(p.doneValue,p.targetValue),0);
+      const qbTot=ps.filter(p=>p.type==='qb').reduce((a,p)=>a+p.targetValue,0);
+      const r=document.createElement('div');r.className='prow'+(now?' now':'');
+      r.innerHTML=`<span class="pdate">${fmt(s.start)}〜${fmt(s.end)}</span>
+        <span class="pname">${s.name}${detailed?` <span style="color:var(--ink-soft);font-weight:400;">(QB ${qbDone}/${qbTot})</span>`:''}</span>
+        <span class="pbar"><span class="pfill" style="width:${pct}%"></span></span>
+        <span class="ppct">${pct}%</span>`;
+      pp.appendChild(r);
+    });
+  });
+}
+
 /* ===== render: public ===== */
 function renderPublic(){
   const pw=document.getElementById('pubWeek');pw.innerHTML='';
-  DAYS.forEach((dn,i)=>{
-    const ps=Object.values(state.pieces).filter(p=>p.assignedDay===i);
-    const memo=memoQuota();
+  const t=today();
+  const memo=memoQuota();
+  for(let i=0;i<7;i++){
+    const date=addDays(t,i);
+    const ps=Object.values(state.pieces).filter(p=>p.assignedDate===date);
     const bits=ps.map(p=>`${p.subject}｜${short(p.label,12)}`);
-    if(memo.length)memo.forEach(q=>bits.push(`${q.subject}（暗記ノルマ）`));
+    if(i===0&&memo.length)memo.forEach(q=>bits.push(`${q.subject}（暗記ノルマ）`));
     const r=document.createElement('div');
     r.style.cssText='display:flex;gap:8px;padding:7px 0;border-bottom:1px solid #eef2f5;font-size:11px;line-height:1.5;'+
-      (i===dow()?'background:var(--teal-soft);border-radius:7px;padding-left:6px;':'');
-    r.innerHTML=`<b style="width:18px;flex-shrink:0;">${dn}</b><span>${bits.length?bits.join('、'):'（休み・未定）'}</span>`;
+      (i===0?'background:var(--teal-soft);border-radius:7px;padding-left:6px;':'');
+    r.innerHTML=`<b style="width:44px;flex-shrink:0;">${dname(date)} ${fmt(date)}</b><span>${bits.length?bits.join('、'):'（休み・未定）'}</span>`;
     pw.appendChild(r);
-  });
+  }
 
   const y=state.logs[yest()];
   const py=document.getElementById('pubYest');
@@ -956,20 +1033,7 @@ function renderPublic(){
 
   document.getElementById('pubStreak').textContent='🔥 '+state.streak+'日';
 
-  const pp=document.getElementById('pubPlan');pp.innerHTML='';
-  const t=today();
-  [['main','MAIN科目'],['memo','暗記トラック']].forEach(([tr,lab])=>{
-    const l=document.createElement('div');l.className='tlabel2';l.textContent=lab;pp.appendChild(l);
-    catalog.filter(s=>s.track===tr).sort((a,b)=>a.start.localeCompare(b.start)).forEach(s=>{
-      const pct=Math.round(subjProg(s.name)*100),now=s.start<=t&&t<=s.end;
-      const r=document.createElement('div');r.className='prow'+(now?' now':'');
-      r.innerHTML=`<span class="pdate">${fmt(s.start)}〜${fmt(s.end)}</span>
-        <span class="pname">${s.name}</span>
-        <span class="pbar"><span class="pfill" style="width:${pct}%"></span></span>
-        <span class="ppct">${pct}%</span>`;
-      pp.appendChild(r);
-    });
-  });
+  renderPlanInto('pubPlan', false);
 
   const all=Object.values(state.pieces);
   const tt=all.reduce((a,p)=>a+p.targetValue,0),dd=all.reduce((a,p)=>a+Math.min(p.doneValue,p.targetValue),0);
@@ -980,6 +1044,9 @@ function renderPublic(){
 }
 
 function renderAll(){
+  if(!weekStart){
+    weekStart = (dateDow(today())===6) ? addDays(mondayOf(today()),7) : mondayOf(today());
+  }
   const d=new Date();
   document.getElementById('dateHead').textContent=`${d.getMonth()+1}/${d.getDate()}（${'日月火水木金土'[d.getDay()]}）`;
   document.getElementById('cdNum').textContent=Math.round((TARGET_DATE-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/86400000);
@@ -999,10 +1066,12 @@ document.getElementById('edSubjSel').onchange=e=>{edSubj=e.target.value;renderTa
 document.getElementById('autoBtn').onclick=autoAssign;
 document.getElementById('clearBtn').onclick=async()=>{
   if(!gate())return;
-  const ids=Object.values(state.pieces).filter(p=>p.assignedDay!==null).map(p=>p.id);
-  Object.values(state.pieces).forEach(p=>p.assignedDay=null);
-  if(ids.length)await sb.from('pieces').update({assigned_day:null}).in('id',ids);
-  toast('配置をクリアしたで');safeRender();
+  const weekDates=[...Array(7)].map((_,i)=>addDays(weekStart,i));
+  const ids=Object.values(state.pieces).filter(p=>weekDates.includes(p.assignedDate)).map(p=>p.id);
+  if(!ids.length){toast('この週には配置済みタスクがないで');return;}
+  Object.values(state.pieces).forEach(p=>{if(weekDates.includes(p.assignedDate))p.assignedDate=null;});
+  await sb.from('pieces').update({assigned_date:null}).in('id',ids);
+  toast('この週の配置をクリアしたで');safeRender();
 };
 function authUI(){
   document.body.classList.toggle('is-owner',owner);
