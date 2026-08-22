@@ -276,14 +276,44 @@
 
 <div class="toast" id="toast"></div>
 
+<script>
+/* ===== これを一番最初に登録：真っ白防止の砦 ===== */
+window.onerror=(m,src,l,c,e)=>{
+  const b=document.getElementById('errbar');
+  if(!b)return;
+  b.innerHTML=`<b>⚠️ 読み込みエラー</b>${(e&&e.message)||m}
+    <button onclick="location.reload()">再読み込み</button>`;
+  b.classList.add('show');
+  console.error('onerror',m,e);
+};
+window.addEventListener('unhandledrejection',ev=>{
+  const b=document.getElementById('errbar');
+  if(!b)return;
+  const msg=(ev.reason&&(ev.reason.message||ev.reason.error_description))||String(ev.reason);
+  b.innerHTML=`<b>⚠️ 通信エラー</b>${msg}<button onclick="location.reload()">再読み込み</button>`;
+  b.classList.add('show');
+  console.error('unhandledrejection',ev.reason);
+});
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ===== Supabase ===== */
+/* ===== Supabase（読み込み失敗しても真っ白にしない） ===== */
 const SUPABASE_URL='https://zowzowjfzwzxomxkwtxc.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpvd3pvd2pmend6eG9teGt3dHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczMjg4MjAsImV4cCI6MjEwMjkwNDgyMH0.cRTTymBqU6ikOVwMU_5yi1CsbTGQKt6UDBJYXay5c9Y';
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
-  auth:{persistSession:true,autoRefreshToken:true,storage:window.localStorage}
-});
+let sb=null;
+let sbBroken=false;
+try{
+  if(typeof supabase === 'undefined') throw new Error('Supabaseライブラリが読み込めませんでした（回線 or ブラウザの制限の可能性）');
+  sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
+    auth:{persistSession:true,autoRefreshToken:true,storage:window.localStorage}
+  });
+}catch(e){
+  sbBroken=true;
+  const b=document.getElementById('errbar');
+  b.innerHTML=`<b>⚠️ Supabase接続エラー</b>${e.message}<button onclick="location.reload()">再読み込み</button>`;
+  b.classList.add('show');
+  console.error('supabase init failed',e);
+}
 let owner=false;
 
 const catalog = [
@@ -601,6 +631,7 @@ function pace(){
 
 /* ===== supabase io ===== */
 async function loadAll(){
+  if(sbBroken || !sb){ state.pieces=buildPieces(); return; }
   try{
     const {data:st}=await sb.from('settings').select('*').eq('id',1).single();
     if(st){state.caps=Array.isArray(st.capacities)?st.capacities:DEFAULT_CAP;
@@ -968,6 +999,7 @@ function authUI(){
   b.classList.toggle('on',owner);
 }
 document.getElementById('authBtn').onclick=async()=>{
+  if(sbBroken||!sb){ toast('Supabaseに接続できてません。再読み込みしてみて'); return; }
   if(owner){
     if(!confirm('ログアウトする？（次回また入力が必要になります）'))return;
     await sb.auth.signOut();owner=false;authUI();tab('public');toast('ログアウトしたで');
@@ -975,6 +1007,7 @@ document.getElementById('authBtn').onclick=async()=>{
 };
 document.getElementById('loClose').onclick=()=>document.getElementById('lo').classList.remove('show');
 document.getElementById('loSub').onclick=async()=>{
+  if(sbBroken||!sb){ document.getElementById('loMsg').textContent='Supabaseに接続できてません'; return; }
   const msg=document.getElementById('loMsg');msg.textContent='確認中...';
   const {error}=await sb.auth.signInWithPassword({
     email:document.getElementById('loEmail').value,
@@ -1005,6 +1038,12 @@ function safeRender(){
 
 /* ===== init ===== */
 (async function(){
+  if(sbBroken || !sb){
+    state.pieces=buildPieces();
+    safeRender();
+    tab('public');
+    return;
+  }
   try{
     const {data}=await sb.auth.getSession();
     owner=!!(data&&data.session);
