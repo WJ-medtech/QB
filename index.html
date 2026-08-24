@@ -72,11 +72,12 @@
     font-family:"SF Mono",Menlo,monospace;margin:4px 0 2px;}
   .tbar{height:5px;background:var(--line);border-radius:3px;overflow:hidden;}
   .tfill{height:100%;background:linear-gradient(90deg,var(--teal),var(--done));}
-  .quick{display:flex;gap:4px;flex-shrink:0;align-items:center;}
+  .quick{display:flex;gap:3px;flex-shrink:0;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
   .qbtn{background:var(--done-soft);color:var(--done);border:1px solid var(--done);border-radius:8px;
-    padding:7px 9px;font-size:11px;font-weight:800;white-space:nowrap;}
+    padding:7px 8px;font-size:11px;font-weight:800;white-space:nowrap;}
   .qbtn.alt{background:var(--teal-soft);color:var(--teal);border-color:var(--teal);}
-  .qnum{width:42px;padding:6px 2px;border:1px solid var(--line);border-radius:7px;font-size:12px;
+  .qbtn.minus{background:var(--coral-soft);color:var(--coral);border-color:var(--coral);padding:7px 7px;}
+  .qnum{width:38px;padding:6px 2px;border:1px solid var(--line);border-radius:7px;font-size:12px;
     text-align:center;font-family:"SF Mono",Menlo,monospace;}
 
   /* quota card */
@@ -144,8 +145,13 @@
   .tlabel2{font-size:10px;font-weight:700;color:var(--ink-soft);margin:9px 0 3px;}
 
   /* editor */
+  .ed-item{border-bottom:1px solid #eef2f5;padding:8px 0;}
+  .ed-item:last-child{border-bottom:none;}
+  .ed-item .trow{border-bottom:none;padding:0 0 7px;}
   .ed-row{display:flex;align-items:center;gap:7px;padding:8px 0;border-bottom:1px solid #eef2f5;}
   .ed-row:last-child{border-bottom:none;}
+  .ed-edit{display:flex;align-items:center;gap:7px;}
+  .ed-edit .lbl{flex:1;font-size:10px;color:var(--ink-soft);}
   .ed-label{flex:1;font-size:11px;min-width:0;line-height:1.35;}
   .ed-target{width:56px;padding:5px;border:1px solid var(--line);border-radius:6px;font-size:11px;
     text-align:center;font-family:"SF Mono",Menlo,monospace;}
@@ -183,7 +189,7 @@
     <div>
       <div class="htitle">国試対策アプリ</div>
       <div class="hsub" id="dateHead"></div>
-      <div class="hsub" style="opacity:.6;">build 2026-08-24-v8</div>
+      <div class="hsub" style="opacity:.6;">build 2026-08-24-v10</div>
     </div>
     <button class="auth-btn" id="authBtn">🔑</button>
   </div>
@@ -246,6 +252,7 @@
   </div>
   <div class="card">
     <h2>タスク一覧・編集</h2>
+    <div class="empty" style="padding:0 0 9px;">科目を選べば、まだ予定日じゃない先の分でもここから直接記録できるで（先取りでやった時用）</div>
     <select id="edSubjSel"></select>
     <div id="edList"></div>
     <div class="add-box">
@@ -675,20 +682,27 @@ async function savePiece(id){
 }
 
 /* ===== log ===== */
+/* val は負の値でもOK（-10などで押しすぎた分の取り消し・修正ができる）。
+   doneValueは0未満にはならないようクランプする。 */
 async function logIt(id,val){
   if(!gate())return;
-  const p=state.pieces[id];if(!p||!val||val<=0)return;
-  p.doneValue=Math.round((p.doneValue+val)*10)/10;
+  const p=state.pieces[id];if(!p||!val)return;
+  const prev=p.doneValue;
+  p.doneValue=Math.max(0,Math.round((p.doneValue+val)*10)/10);
+  const delta=Math.round((p.doneValue-prev)*10)/10;
+  if(!delta)return; // 0からさらに引こうとした場合など、実質変化なし
   const t=today();
   if(!state.logs[t])state.logs[t]={total:0,entries:[]};
-  state.logs[t].entries.push({pieceId:id,value:val,unit:p.unit});
-  state.logs[t].total=Math.round((state.logs[t].total+val)*10)/10;
+  state.logs[t].entries.push({pieceId:id,value:delta,unit:p.unit});
+  state.logs[t].total=Math.round((state.logs[t].total+delta)*10)/10;
   let up=false;
   if(state.lastLog!==t){state.streak=(state.lastLog===yest())?state.streak+1:1;state.lastLog=t;up=true;}
   await savePiece(id);
-  await sb.from('daily_logs').insert({log_date:t,piece_id:id,value:val,unit:p.unit});
+  await sb.from('daily_logs').insert({log_date:t,piece_id:id,value:delta,unit:p.unit});
   await saveSettings();
-  toast(up&&state.streak%7===0?`🎉 ${state.streak}日連続達成！`:`記録した：${p.label} +${val}${p.unit}`);
+  const sign=delta>0?'+':'';
+  toast(up&&state.streak%7===0?`🎉 ${state.streak}日連続達成！`:
+    delta>0?`記録した：${p.label} ${sign}${delta}${p.unit}`:`取り消した：${p.label} ${delta}${p.unit}`);
   safeRender();
 }
 
@@ -711,12 +725,17 @@ function taskRow(p,showSubj){
     </div>
     <div class="quick">
       <input class="qnum" type="number" inputmode="decimal" placeholder="${p.unit}">
+      <button class="qbtn minus" title="${step}${p.unit}取り消し">-${step}</button>
       <button class="qbtn alt">+${step}</button>
-      <button class="qbtn">記録</button>
+      <button class="qbtn record">記録</button>
     </div>`;
   const inp=row.querySelector('.qnum');
-  row.querySelectorAll('.qbtn')[0].onclick=()=>logIt(p.id,step);
-  row.querySelectorAll('.qbtn')[1].onclick=()=>{const v=parseFloat(inp.value);if(v>0){logIt(p.id,v);inp.value='';}};
+  row.querySelector('.qbtn.minus').onclick=()=>logIt(p.id,-step);
+  row.querySelector('.qbtn.alt').onclick=()=>logIt(p.id,step);
+  row.querySelector('.qbtn.record').onclick=()=>{
+    const v=parseFloat(inp.value);
+    if(v){logIt(p.id,v);inp.value='';}
+  };
   return row;
 }
 
@@ -891,9 +910,12 @@ function renderTasks(){
   const ps=Object.values(state.pieces).filter(p=>p.subject===edSubj).sort((a,b)=>a.id.localeCompare(b.id));
   if(!ps.length){list.innerHTML='<div class="empty">この科目のタスクがありません</div>';return;}
   ps.forEach(p=>{
-    const r=document.createElement('div');r.className='ed-row';
-    r.innerHTML=`<span class="tag ${p.type==='qb'?'tg-a':'tg-m'}">${p.type==='qb'?'QB':'映像'}</span>
-      <span class="ed-label">${p.label}</span>
+    // 予定日に関係なくここから直接記録できる（先の科目を先取りでやった時など）
+    const item=document.createElement('div');item.className='ed-item';
+    item.appendChild(taskRow(p,false));
+
+    const r=document.createElement('div');r.className='ed-edit';
+    r.innerHTML=`<span class="lbl">目標を修正</span>
       <input class="ed-target" type="number" value="${p.targetValue}">
       <span style="font-size:10px;color:var(--ink-soft);">${p.unit}</span>
       <button class="ed-del">削除</button>`;
@@ -910,7 +932,8 @@ function renderTasks(){
       await sb.from('pieces').delete().eq('id',p.id);
       delete state.pieces[p.id];toast('削除したで');safeRender();
     };
-    list.appendChild(r);
+    item.appendChild(r);
+    list.appendChild(item);
   });
 }
 /* ===== カタログと同期し直す（過去の不具合で保存された数値を今のcatalogに合わせて上書き） ===== */
