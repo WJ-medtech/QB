@@ -54,12 +54,6 @@
   .card h2{font-size:12.5px;margin:0 0 9px;color:var(--ink-soft);display:flex;justify-content:space-between;align-items:center;gap:6px;}
   .empty{font-size:11.5px;color:var(--ink-soft);padding:8px 2px;}
 
-  .pace{border-radius:12px;padding:10px 13px;margin-bottom:11px;font-size:12px;font-weight:700;line-height:1.5;}
-  .pace .s{display:block;font-weight:400;font-size:10.5px;margin-top:3px;opacity:.85;}
-  .p-ahead{background:var(--done-soft);color:var(--done);}
-  .p-on{background:var(--teal-soft);color:var(--teal);}
-  .p-behind{background:var(--amber-soft);color:var(--amber);}
-
   .stats{display:flex;gap:8px;margin-bottom:11px;}
   .stat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 11px;}
   .stat .k{font-size:9.5px;color:var(--ink-soft);}
@@ -189,7 +183,7 @@
     <div>
       <div class="htitle">国試対策アプリ</div>
       <div class="hsub" id="dateHead"></div>
-      <div class="hsub" style="opacity:.6;">build 2026-08-23-v7</div>
+      <div class="hsub" style="opacity:.6;">build 2026-08-24-v8</div>
     </div>
     <button class="auth-btn" id="authBtn">🔑</button>
   </div>
@@ -212,7 +206,6 @@
 
 <!-- ========== TODAY ========== -->
 <div class="view" id="view-today">
-  <div class="pace" id="pace"></div>
   <div class="stats">
     <div class="stat s1"><div class="k">連続日数</div><div class="v" id="stStreak">🔥0</div></div>
     <div class="stat s2"><div class="k">昨日やった量</div><div class="v" id="stYest">-</div></div>
@@ -560,11 +553,14 @@ let state={pieces:{},caps:[...DEFAULT_CAP],logs:{},streak:0,lastLog:null};
 let selChip=null, weekSubj='AUTO', edSubj=null, weekStart=null;
 
 /* ===== date utils ===== */
+/* 1日の区切りは深夜3時。3時になるまでは「前日」扱いにする */
+const DAY_CUTOFF_HOURS=3;
 const pad=n=>String(n).padStart(2,'0');
 const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
-const today=()=>iso(new Date());
-const yest=()=>{const d=new Date();d.setDate(d.getDate()-1);return iso(d);};
-const dow=()=>{const j=new Date().getDay();return j===0?6:j-1;};
+const appNow=()=>{const d=new Date();d.setHours(d.getHours()-DAY_CUTOFF_HOURS);return d;};
+const today=()=>iso(appNow());
+const yest=()=>{const d=appNow();d.setDate(d.getDate()-1);return iso(d);};
+const dow=()=>{const j=appNow().getDay();return j===0?6:j-1;};
 const fmt=s=>{const[,m,d]=s.split('-');return`${+m}/${+d}`;};
 const addDays=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return iso(d);};
 const dateDow=s=>{const j=new Date(s+'T00:00:00').getDay();return j===0?6:j-1;};
@@ -628,24 +624,6 @@ function memoQuota(){
     res.push({subject:s.name,daysLeft,qbPerDay,vidPerDay,nextQb,nextVid,endStr:fmt(s.end)});
   });
   return res;
-}
-
-/* ===== pace ===== */
-function pace(){
-  const t=today();let exp=0,act=0,tot=0;
-  catalog.forEach(s=>{
-    const ps=Object.values(state.pieces).filter(p=>p.subject===s.name);
-    const h=ps.reduce((a,p)=>a+p.hours,0);tot+=h;
-    act+=ps.reduce((a,p)=>a+p.hours*Math.min(1,p.targetValue>0?p.doneValue/p.targetValue:0),0);
-    if(s.end<t)exp+=h;
-    else if(s.start<=t&&t<=s.end){
-      const st=new Date(s.start),en=new Date(s.end),nw=new Date(t);
-      const span=(en-st)/86400000+1,el=(nw-st)/86400000+1;
-      exp+=h*Math.max(0,Math.min(1,el/span));
-    }
-  });
-  const avg=state.caps.reduce((a,b)=>a+b,0)/7;
-  return{exp,act,tot,days:avg>0?(act-exp)/avg:0};
 }
 
 /* ===== supabase io ===== */
@@ -727,7 +705,7 @@ function taskRow(p,showSubj){
   const step=p.type==='qb'?10:0.5;
   row.innerHTML=`<span class="tag ${p.track==='main'?'tg-m':'tg-a'}">${p.track==='main'?'主':'暗'}</span>
     <div class="tbody">
-      <div class="tlabel">${showSubj?p.subject+'｜':''}${p.label}</div>
+      <div class="tlabel">${showSubj?p.subject+'｜':''}${p.label}${p.assignedDate&&p.assignedDate!==today()?` <span style="color:var(--amber);font-weight:400;">（${fmt(p.assignedDate)}分・未消化）</span>`:''}</div>
       <div class="tmeta"><span>${p.doneValue}/${p.targetValue}${p.unit}</span><span>${pct}%</span></div>
       <div class="tbar"><div class="tfill" style="width:${pct}%"></div></div>
     </div>
@@ -744,14 +722,6 @@ function taskRow(p,showSubj){
 
 /* ===== render: today ===== */
 function renderToday(){
-  const pc=pace(),d=pc.days,el=document.getElementById('pace');
-  let cls,msg,sub;
-  if(d>=0.5){cls='p-ahead';msg=`⚡️ 予定より約${d.toFixed(1)}日 先行中`;sub='この調子で先の科目も進められるで';}
-  else if(d<=-0.5){cls='p-behind';msg=`📌 予定より約${Math.abs(d).toFixed(1)}日 遅れ`;sub='焦らんでOK、今日の分から拾っていこ';}
-  else{cls='p-on';msg='✅ ほぼ予定どおり';sub='このペースを維持しよう';}
-  el.className='pace '+cls;
-  el.innerHTML=`${msg}<span class="s">${sub}（消化 ${pc.act.toFixed(0)}h / 予定 ${pc.exp.toFixed(0)}h・全体 ${pc.tot.toFixed(0)}h）</span>`;
-
   document.getElementById('stStreak').textContent='🔥'+state.streak;
   const y=state.logs[yest()];
   document.getElementById('stYest').textContent=y?y.entries.length+'件':'0件';
@@ -773,9 +743,12 @@ function renderToday(){
     if(q.nextQb)qa.appendChild(taskRow(q.nextQb,false));
   });
 
-  // 今日のメイン
+  // 今日のメイン（今日の分＋やり残した過去分もそのまま出す。後から記録できるように）
   const tm=document.getElementById('todayMain');tm.innerHTML='';
-  const list=Object.values(state.pieces).filter(p=>p.assignedDate===today()&&p.track==='main');
+  const t=today();
+  const list=Object.values(state.pieces).filter(p=>p.track==='main'&&p.assignedDate&&
+    (p.assignedDate===t||(p.assignedDate<t&&p.doneValue<p.targetValue)))
+    .sort((a,b)=>a.assignedDate.localeCompare(b.assignedDate));
   if(!list.length)tm.innerHTML='<div class="empty">今日のメイン科目はまだ未設定。「週間計画」タブで⚡️自動わりふりするのが早いで。</div>';
   list.forEach(p=>tm.appendChild(taskRow(p,true)));
 }
@@ -1047,7 +1020,7 @@ function renderAll(){
   if(!weekStart){
     weekStart = (dateDow(today())===6) ? addDays(mondayOf(today()),7) : mondayOf(today());
   }
-  const d=new Date();
+  const d=appNow();
   document.getElementById('dateHead').textContent=`${d.getMonth()+1}/${d.getDate()}（${'日月火水木金土'[d.getDay()]}）`;
   document.getElementById('cdNum').textContent=Math.round((TARGET_DATE-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/86400000);
   renderToday();renderWeek();renderTasks();renderPublic();
