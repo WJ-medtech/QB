@@ -180,6 +180,24 @@
     padding:10px 18px;border-radius:20px;font-size:12.5px;font-weight:700;z-index:70;opacity:0;
     transition:opacity .3s,top .3s;pointer-events:none;max-width:88%;text-align:center;}
   .toast.show{opacity:1;top:24px;}
+
+  /* growth / 頑張りの積み重ね */
+  .gstats{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;}
+  .gstat{flex:1 1 74px;min-width:74px;background:var(--teal-soft);border-radius:10px;padding:8px 9px;text-align:center;}
+  .gstat .gk{font-size:9px;color:var(--ink-soft);}
+  .gstat .gv{font-size:15.5px;font-weight:800;font-family:"SF Mono",Menlo,monospace;color:var(--teal);margin-top:2px;}
+  .glabel{font-size:10px;font-weight:700;color:var(--ink-soft);margin:10px 0 6px;}
+  .gchart-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .gchart-wrap svg{display:block;}
+  .gcaption{font-size:9.5px;color:var(--ink-soft);margin-top:4px;}
+  .heatmap-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
+  .heatmap{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,11px);gap:3px;width:max-content;}
+  .hcell{width:11px;height:11px;border-radius:3px;background:#e9eef1;}
+  .hcell.future{background:transparent;}
+  .hcell.l1{background:#cfeee9;} .hcell.l2{background:#8fd6c8;}
+  .hcell.l3{background:#3fb39d;} .hcell.l4{background:#0f8b8d;}
+  .hlegend{display:flex;align-items:center;gap:4px;margin-top:6px;font-size:9px;color:var(--ink-soft);}
+  .hlegend .hcell{width:9px;height:9px;}
 </style>
 </head>
 <body>
@@ -189,7 +207,7 @@
     <div>
       <div class="htitle">国試対策アプリ</div>
       <div class="hsub" id="dateHead"></div>
-      <div class="hsub" style="opacity:.6;">build 2026-08-24-v10</div>
+      <div class="hsub" style="opacity:.6;">build 2026-08-25-v11</div>
     </div>
     <button class="auth-btn" id="authBtn">🔑</button>
   </div>
@@ -277,6 +295,13 @@
   <div class="card"><h2>🗺 全体の計画</h2><div id="pubPlan"></div></div>
   <div class="card" id="pubProgCard" style="display:none;"><h2>全体進捗</h2>
     <div style="font-size:22px;font-weight:800;font-family:'SF Mono',Menlo,monospace;color:var(--teal);" id="pubProg"></div>
+  </div>
+  <div class="card"><h2>🌱 これまでの頑張り</h2>
+    <div id="growthStats" class="gstats"></div>
+    <div class="glabel">積み上がってきた学習量（推定時間・累計）</div>
+    <div id="growthChart"></div>
+    <div class="glabel">継続カレンダー</div>
+    <div id="growthHeatmap"></div>
   </div>
 </div>
 
@@ -556,7 +581,7 @@ const DEFAULT_CAP=[3,1.5,3,3,1.5,3,6];
 const TARGET_DATE=new Date('2027-01-18T00:00:00');
 const QB_PER_HOUR=20, CH_HOURS=1.5;
 
-let state={pieces:{},caps:[...DEFAULT_CAP],logs:{},streak:0,lastLog:null};
+let state={pieces:{},caps:[...DEFAULT_CAP],logs:{},streak:0,lastLog:null,history:{}};
 let selChip=null, weekSubj='AUTO', edSubj=null, weekStart=null;
 
 /* ===== date utils ===== */
@@ -670,6 +695,26 @@ async function loadAll(){
     if(!state.logs[d])state.logs[d]={total:0,entries:[]};
     state.logs[d].entries.push({pieceId:r.piece_id,value:+r.value,unit:r.unit});
     state.logs[d].total=Math.round((state.logs[d].total+ +r.value)*10)/10;});
+  await loadHistory();
+}
+/* 「これまでの頑張り」可視化用：全期間のログを日付ごとに集計（QBは時間換算して合算） */
+async function loadHistory(){
+  state.history={};
+  if(sbBroken||!sb)return;
+  try{
+    const {data,error}=await withTimeout(
+      sb.from('daily_logs').select('log_date,value,unit').order('log_date',{ascending:true}).limit(20000),
+      8000,'頑張り履歴の読み込み');
+    if(error)throw error;
+    const H={};
+    (data||[]).forEach(r=>{
+      const d=r.log_date;const v=+r.value;if(!v||v<=0)return; // 取り消し分（マイナス）は積み上げには数えない
+      const hrs=r.unit==='問'?v/QB_PER_HOUR:v;
+      if(!H[d])H[d]={hours:0};
+      H[d].hours=Math.round((H[d].hours+hrs)*100)/100;
+    });
+    state.history=H;
+  }catch(e){ console.warn('history load skipped',e); }
 }
 async function saveSettings(){
   await sb.from('settings').update({capacities:state.caps,streak:state.streak,
@@ -1037,6 +1082,83 @@ function renderPublic(){
   const c=document.getElementById('pubProgCard');
   if(pct>=75){c.style.display='block';document.getElementById('pubProg').textContent=pct+'%';}
   else c.style.display='none';
+
+  renderGrowth();
+}
+
+/* ===== render: これまでの頑張り（積み重ね可視化） ===== */
+function renderGrowth(){
+  const hist=state.history||{};
+  const dates=Object.keys(hist).sort();
+
+  // 開始日：カタログ最古の開始日 〜 今日 まで毎日のシリーズを作る（記録なしの日は0として埋める）
+  const catStart=catalog.reduce((m,s)=>s.start<m?s.start:m,catalog[0].start);
+  const firstActive=dates.length?dates[0]:null;
+  const start=(firstActive&&firstActive<catStart)?firstActive:catStart;
+  const end=today();
+  const series=[];
+  for(let d=start; d<=end; d=addDays(d,1)) series.push({date:d,hours:hist[d]?hist[d].hours:0});
+
+  // --- stats ---
+  const totalDays=dates.length;
+  const totalHours=dates.reduce((a,d)=>a+hist[d].hours,0);
+  let longest=0,cur=0,prev=null;
+  dates.forEach(d=>{cur=(prev&&addDays(prev,1)===d)?cur+1:1;longest=Math.max(longest,cur);prev=d;});
+  const totalQb=Object.values(state.pieces).filter(p=>p.type==='qb').reduce((a,p)=>a+Math.min(p.doneValue,p.targetValue),0);
+  const gs=document.getElementById('growthStats');
+  if(gs)gs.innerHTML=`
+    <div class="gstat"><div class="gk">総学習日数</div><div class="gv">${totalDays}日</div></div>
+    <div class="gstat"><div class="gk">最長連続</div><div class="gv">🔥${longest}</div></div>
+    <div class="gstat"><div class="gk">現在の連続</div><div class="gv">🔥${state.streak}</div></div>
+    <div class="gstat"><div class="gk">累計QB</div><div class="gv">${totalQb}問</div></div>`;
+
+  // --- cumulative growth chart（積み上げ面グラフ） ---
+  const chartEl=document.getElementById('growthChart');
+  if(chartEl){
+    if(series.length<2||totalHours<=0){
+      chartEl.innerHTML='<div class="empty" style="padding:6px 2px;">記録が増えてくるとここにグラフが出るで</div>';
+    }else{
+      let cum=0;
+      const pts=series.map(s=>{cum=Math.round((cum+s.hours)*100)/100;return cum;});
+      const max=Math.max(1,pts[pts.length-1]);
+      const h=88,padT=6,padB=4;
+      const stepX=Math.max(4,Math.min(10, 640/series.length));
+      const w=Math.max(280, Math.round(stepX*(series.length-1)));
+      const xAt=i=>Math.round(i*stepX*100)/100;
+      const yAt=v=>Math.round((h-padB-(v/max)*(h-padT-padB))*100)/100;
+      const coords=pts.map((v,i)=>`${xAt(i)},${yAt(v)}`);
+      const line='M'+coords.join(' L');
+      const area=`M${xAt(0)},${h} L${coords.join(' L')} L${xAt(series.length-1)},${h} Z`;
+      chartEl.innerHTML=`<div class="gchart-wrap"><svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+        <defs><linearGradient id="gfade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0f8b8d" stop-opacity="0.38"/>
+          <stop offset="100%" stop-color="#0f8b8d" stop-opacity="0.02"/>
+        </linearGradient></defs>
+        <path d="${area}" fill="url(#gfade)"/>
+        <path d="${line}" fill="none" stroke="#0f8b8d" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg></div>
+      <div class="gcaption">${fmt(series[0].date)} 〜 ${fmt(end)}・累計約 ${totalHours.toFixed(1)}h相当が積み上がってきた</div>`;
+    }
+  }
+
+  // --- heatmap（継続カレンダー） ---
+  const hm=document.getElementById('growthHeatmap');
+  if(hm){
+    const startDow=dateDow(series[0]?.date||end);
+    const padCells=Array.from({length:startDow},()=>null);
+    const cells=padCells.concat(series);
+    const lvl=hrs=>hrs<=0?'':hrs<1?'l1':hrs<2.5?'l2':hrs<4.5?'l3':'l4';
+    const html=cells.map(s=>{
+      if(!s)return '<div class="hcell future"></div>';
+      const l=lvl(s.hours);
+      const label=s.hours>0?`${fmt(s.date)}：約${s.hours.toFixed(1)}h相当`:`${fmt(s.date)}：記録なし`;
+      return `<div class="hcell ${l}" title="${label}"></div>`;
+    }).join('');
+    hm.innerHTML=`<div class="heatmap-wrap"><div class="heatmap">${html}</div></div>
+      <div class="hlegend"><span>少</span>
+        <div class="hcell"></div><div class="hcell l1"></div><div class="hcell l2"></div><div class="hcell l3"></div><div class="hcell l4"></div>
+        <span>多</span></div>`;
+  }
 }
 
 function renderAll(){
