@@ -391,7 +391,7 @@
     <div>
       <div class="htitle">国試アプリ</div>
       <div class="hsub" id="dateHead"></div>
-      <div class="hsub" style="opacity:.6;">build 2026-09-17-v3 / 整理・複数選択・ルール改訂</div>
+      <div class="hsub" style="opacity:.6;">build 2026-09-17-v4 / カードDBログイン導線を修正</div>
     </div>
     <button class="auth-btn" id="authBtn">🔑</button>
   </div>
@@ -407,10 +407,12 @@
 <div class="lo" id="lo">
   <div class="locard">
     <div class="lohead"><span>ログイン</span><button class="loclose" id="loClose">×</button></div>
+    <div class="lomsg" id="loStatus" style="margin:0 0 10px;"></div>
     <input type="email" id="loEmail" placeholder="メールアドレス" autocomplete="username">
     <input type="password" id="loPass" placeholder="パスワード" autocomplete="current-password">
     <button class="losub" id="loSub">ログイン</button>
-    <div class="lomsg" id="loMsg">計画DBとカードDBの両方にまとめてログインします。一度ログインすれば、この端末では次回から自動でログイン状態になります。</div>
+    <button class="wk-btn wk-ghost" id="loLogout" style="width:100%;margin-top:8px;display:none;">両方からログアウトする</button>
+    <div class="lomsg" id="loMsg">まだ入っていない方のDBにだけログインします。一度ログインすれば、この端末では次回から自動でログイン状態になります。</div>
   </div>
 </div>
 
@@ -1717,42 +1719,56 @@ function authUI(){
   document.body.classList.toggle('is-owner',owner);
   const b=document.getElementById('authBtn');
   const cardIn=window.CardApp&&window.CardApp.isIn();
-  b.textContent=owner?'🔓 編集中':(cardIn?'🔑 計画にログイン':'🔑 ログイン');
-  b.classList.toggle('on',owner);
+  b.textContent=(owner&&cardIn)?'🔓 編集中'
+    :owner?'🔑 カードにログイン'
+    :cardIn?'🔑 計画にログイン'
+    :'🔑 ログイン';
+  b.classList.toggle('on',owner&&cardIn);
 }
 window.refreshAuthUI=()=>{try{authUI();}catch(e){}};
-document.getElementById('authBtn').onclick=async()=>{
+function openLoginModal(){
   const cardIn=window.CardApp&&window.CardApp.isIn();
-  if(owner||cardIn){
-    if(!confirm('ログアウトする？（計画DB・カードDBの両方からログアウトします）'))return;
-    try{ if(sb&&!sbBroken)await sb.auth.signOut(); }catch(e){}
-    try{ if(window.CardApp)await window.CardApp.logout(); }catch(e){}
-    location.reload();
-  }else document.getElementById('lo').classList.add('show');
+  document.getElementById('loStatus').innerHTML=
+    `いまの状態：計画DB ${owner?'✅':'❌ 未ログイン'}／カードDB ${cardIn?'✅':'❌ 未ログイン'}`;
+  document.getElementById('loLogout').style.display=(owner||cardIn)?'block':'none';
+  document.getElementById('lo').classList.add('show');
+}
+async function logoutBoth(){
+  if(!confirm('ログアウトする？（計画DB・カードDBの両方からログアウトします）'))return;
+  try{ if(sb&&!sbBroken)await sb.auth.signOut(); }catch(e){}
+  try{ if(window.CardApp)await window.CardApp.logout(); }catch(e){}
+  location.reload();
+}
+document.getElementById('authBtn').onclick=()=>{
+  const cardIn=window.CardApp&&window.CardApp.isIn();
+  if(owner&&cardIn)logoutBoth();
+  else openLoginModal();
 };
+document.getElementById('loLogout').onclick=logoutBoth;
 document.getElementById('loClose').onclick=()=>document.getElementById('lo').classList.remove('show');
 document.getElementById('loSub').onclick=async()=>{
   const msg=document.getElementById('loMsg');
   const email=document.getElementById('loEmail').value;
   const pw=document.getElementById('loPass').value;
-  msg.textContent='確認中...（2つのDBに順番にログインします）';
-  let qOK=false,qErr='計画DBに接続できてません';
-  if(!(sbBroken||!sb)){
+  msg.textContent='確認中...';
+  let qOK=owner,qErr='計画DBに接続できてません',qWasIn=owner;
+  if(!owner&&!(sbBroken||!sb)){
     const {error}=await sb.auth.signInWithPassword({email,password:pw});
     if(error)qErr=error.message;else qOK=true;
   }
-  let cOK=false,cErr='カードDBに接続できてません';
-  if(window.CardApp){
+  let cOK=window.CardApp&&window.CardApp.isIn(),cErr='カードDBに接続できてません';
+  if(!cOK&&window.CardApp){
     const r=await window.CardApp.login(email,pw);
     cOK=r.ok;if(!cOK)cErr=r.error||'不明なエラー';
   }
-  if(qOK){
+  if(qOK&&!qWasIn){
     owner=true;authUI();
     try{ await loadAll(); }catch(e){ showErr('データ再読み込み',e); }
   }
+  authUI();
   if(qOK&&cOK){
     document.getElementById('lo').classList.remove('show');
-    msg.textContent='';toast('両方ログインしたで、編集モードON');
+    msg.textContent='';toast('両方のDBにログインできたで');
     tab('today');safeRender();
   }else if(qOK){
     msg.textContent='計画DB ✅ ／ カードDB ❌：'+cErr;
@@ -2642,8 +2658,9 @@ window.CardApp = {
   isIn: ()=> !!currentUser,
   login: async (email,password)=>{
     try{
-      const { error } = await sb.auth.signInWithPassword({ email, password });
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
       if(error) return { ok:false, error:error.message };
+      if(data && data.user && !currentUser) await onLoggedIn(data.user);
       return { ok:true };
     }catch(e){ return { ok:false, error:String(e&&e.message||e) }; }
   },
