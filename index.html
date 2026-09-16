@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>国試対策アプリ</title>
+<title>国試神アプリ</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 
-<meta property="og:title" content="国試対策アプリ">
-<meta property="og:description" content="medu4 × QBの進捗管理">
+<meta property="og:title" content="国試神アプリ">
+<meta property="og:description" content="medu4 × QB × 口頭試問カード 統合アプリ">
 <meta property="og:type" content="website">
 <meta property="og:image" content="icon-512.png">
 <meta name="twitter:card" content="summary">
@@ -214,6 +214,174 @@
   .rule-goal{margin-top:7px;background:var(--teal-soft);border-radius:8px;padding:6px 9px;
     font-size:11px;font-weight:700;color:var(--teal);line-height:1.6;}
   .rule-div{height:1px;background:var(--line);margin:11px 0 0;}
+
+  /* ===== 統合版: ヘッダー3連カウントダウン ===== */
+  .cdrow{display:flex;gap:7px;margin-top:11px;}
+  .cdbox{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);
+    border-radius:10px;padding:7px 9px;display:flex;align-items:baseline;gap:6px;}
+  .cdbox .n{font-size:21px;font-weight:800;font-family:"SF Mono",Menlo,monospace;line-height:1;}
+  .cdbox .l{font-size:8.5px;color:#a9bcc6;line-height:1.4;}
+
+  /* ===== 統合版: ダッシュボード ===== */
+  .dash-nums{display:flex;gap:7px;margin:8px 0 9px;flex-wrap:wrap;}
+  .dash-num{flex:1 1 88px;min-width:88px;background:var(--bg);border-radius:10px;padding:8px 10px;}
+  .dash-num .k{font-size:9px;color:var(--ink-soft);}
+  .dash-num .v{font-size:15px;font-weight:800;font-family:"SF Mono",Menlo,monospace;margin-top:2px;}
+  .dash-num .v small{font-size:9.5px;font-weight:700;color:var(--ink-soft);}
+  .dash-num.hot .v{color:var(--coral);}
+  .dash-num.ok .v{color:var(--done);}
+  .dash-num.teal .v{color:var(--teal);}
+  .dash-note{font-size:10.5px;color:var(--ink-soft);line-height:1.6;margin-top:6px;}
+  .dash-cardbtn{width:100%;margin-top:9px;background:var(--primaryC,#4FAE85);color:#fff;border:none;
+    border-radius:10px;padding:11px;font-size:12.5px;font-weight:800;}
+  .dash-login-hint{font-size:11.5px;color:var(--ink-soft);line-height:1.7;padding:4px 2px;}
+
+
+  /* ===== 統合版: データ一覧テーブル ===== */
+  .reftable{width:100%;border-collapse:collapse;font-size:10.5px;margin-top:2px;}
+  .reftable th{text-align:left;font-size:9.5px;color:var(--ink-soft);font-weight:700;
+    padding:4px 6px;border-bottom:1.5px solid var(--line);}
+  .reftable th:nth-child(n+2),.reftable td:nth-child(n+2){text-align:right;
+    font-family:"SF Mono",Menlo,monospace;}
+  .reftable td{padding:4px 6px;border-bottom:1px solid #eef2f5;}
+  .reftable .reftotal td{border-bottom:none;border-top:1.5px solid var(--line);
+    font-weight:800;color:var(--teal);}
+  /* ===== 統合版: 国試カード(旧medu5)のスコープ付きスタイル ===== */
+  #view-cards{--bg-top:#eef9f3;--bg-bottom:#d7f0e3;--primary:#4FAE85;--primary-dark:#2f8c68;
+    --primary-light:#e3f5ec;--text:#1f2d27;--text-soft:#5c6e66;--surface:#ffffff;--border:#d8ece2;
+    --danger:#e0735c;--warn:#e0a64c;}
+  #view-cards .chead{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:linear-gradient(180deg,var(--bg-top),var(--bg-bottom));border-radius:14px;padding:13px 15px;margin-bottom:11px;}
+  #view-cards .chead h1{font-size:16px;margin:0;color:var(--primary-dark);font-weight:700;letter-spacing:.5px;}
+  #view-cards .chead .sub{font-size:11px;color:var(--text-soft);margin-top:1px;}
+  #view-cards .ctabs{display:flex;margin:0 0 12px;background:var(--surface);border-radius:14px;padding:4px;
+    box-shadow:0 2px 8px rgba(0,0,0,.05);border:1px solid var(--border);}
+  #view-cards .ctab{flex:1;text-align:center;padding:10px 4px;font-size:13px;font-weight:600;color:var(--text-soft);
+    border-radius:11px;cursor:pointer;user-select:none;}
+  #view-cards .ctab.active{background:var(--primary);color:#fff;}
+  #view-cards .cpage{display:none;}
+  #view-cards .cpage.active{display:block;}
+  #view-cards .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;
+    margin-bottom:14px;box-shadow:0 2px 6px rgba(0,0,0,.04);}
+  #view-cards .card h3{margin:0 0 6px;font-size:14px;color:var(--primary-dark);}
+  #view-cards .card p.hint{font-size:12px;color:var(--text-soft);line-height:1.6;margin:0 0 4px;}
+  #view-cards label{font-size:12px;color:var(--text-soft);display:block;margin-bottom:6px;margin-top:12px;font-weight:600;}
+  #view-cards textarea,#view-cards input[type=text],#view-cards select{width:100%;border:1px solid var(--border);
+    border-radius:10px;padding:10px;font-size:16px;font-family:inherit;background:#fafffd;resize:vertical;color:var(--text);margin-bottom:0;}
+  #view-cards textarea{min-height:110px;}
+  #view-cards select{appearance:none;}
+  #view-cards .row2{display:flex;gap:8px;} #view-cards .row2>div{flex:1;}
+  #view-cards button.primary{width:100%;margin-top:14px;background:var(--primary);color:#fff;border:none;padding:13px;
+    border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 10px rgba(79,174,133,.3);}
+  #view-cards button.primary.small{padding:9px;font-size:13px;margin-top:8px;}
+  #view-cards button.primary:disabled{opacity:.4;box-shadow:none;cursor:default;}
+  #view-cards button.ghost{background:none;border:1px solid var(--border);color:var(--text-soft);padding:9px 14px;
+    border-radius:10px;font-size:13px;cursor:pointer;font-weight:600;width:100%;margin-top:8px;}
+  #view-cards .copybox{background:#f3fbf7;border:1px dashed var(--primary);border-radius:10px;padding:10px;padding-top:30px;
+    font-size:12px;color:var(--text);white-space:pre-wrap;line-height:1.55;position:relative;}
+  #view-cards .copybox .copybtn{position:absolute;top:6px;right:6px;background:var(--primary);color:#fff;border:none;
+    border-radius:7px;font-size:11px;padding:4px 8px;cursor:pointer;}
+  #view-cards .msg{font-size:12.5px;color:var(--primary-dark);margin-top:8px;display:none;line-height:1.6;}
+  #view-cards .msg.show{display:block;}
+  #view-cards .msg.err{color:var(--danger);}
+  #view-cards .cempty{text-align:center;color:var(--text-soft);font-size:13px;padding:40px 10px;line-height:1.7;}
+  #view-cards .phase-hero{background:var(--surface);border-radius:18px;padding:20px 18px;box-shadow:0 4px 14px rgba(0,0,0,.06);
+    margin-bottom:14px;border:1px solid var(--border);}
+  #view-cards .phase-name{font-size:13px;color:var(--text-soft);font-weight:600;}
+  #view-cards .phase-big{font-size:26px;font-weight:800;color:var(--primary-dark);margin:2px 0 12px;letter-spacing:.5px;}
+  #view-cards .ring-wrap{display:flex;align-items:center;gap:16px;}
+  #view-cards .ring{position:relative;width:96px;height:96px;flex-shrink:0;}
+  #view-cards .ring svg{transform:rotate(-90deg);}
+  #view-cards .ring .pct{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  #view-cards .ring .pct b{font-size:20px;color:var(--primary-dark);}
+  #view-cards .ring .pct span{font-size:10px;color:var(--text-soft);}
+  #view-cards .phase-desc{font-size:12.5px;color:var(--text-soft);line-height:1.7;}
+  #view-cards .pace{margin-top:14px;border-top:1px solid var(--border);padding-top:11px;font-size:12.5px;color:var(--text-soft);line-height:1.8;}
+  #view-cards .pace b{color:var(--text);font-weight:700;}
+  #view-cards .pace .pace-none{color:var(--text-soft);}
+  #view-cards .pace-set{display:flex;align-items:center;gap:8px;margin-top:10px;}
+  #view-cards .pace-set label{margin:0;flex-shrink:0;font-size:11.5px;}
+  #view-cards .pace-set input[type=date],#view-cards .pace-set input[type=number]{flex:1;border:1px solid var(--border);
+    border-radius:9px;padding:7px 9px;font-size:14px;background:#fafffd;font-family:inherit;color:var(--text);min-width:0;margin-bottom:0;}
+  #view-cards .queue-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;
+    border-bottom:1px solid var(--border);font-size:13.5px;}
+  #view-cards .queue-row:last-child{border-bottom:none;}
+  #view-cards .queue-row .qn{font-weight:700;color:var(--primary-dark);}
+  #view-cards .queue-row .ql{color:var(--text-soft);font-size:12.5px;}
+  #view-cards .modeswitch{display:flex;gap:6px;margin-top:10px;}
+  #view-cards .modeswitch button{flex:1;padding:7px 2px;font-size:11.5px;border-radius:9px;border:1px solid var(--border);
+    background:#fafffd;color:var(--text-soft);font-weight:600;cursor:pointer;}
+  #view-cards .modeswitch button.active{background:var(--primary-light);border-color:var(--primary);color:var(--primary-dark);}
+  #view-cards .streak{display:flex;gap:10px;}
+  #view-cards .streak .box{flex:1;background:var(--surface);border-radius:14px;padding:12px;text-align:center;
+    box-shadow:0 2px 6px rgba(0,0,0,.04);border:1px solid var(--border);}
+  #view-cards .streak .box b{display:block;font-size:22px;font-weight:800;color:var(--primary-dark);}
+  #view-cards .streak .box span{font-size:11px;color:var(--text-soft);}
+  #view-cards .sess-head{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text-soft);margin-bottom:8px;}
+  #view-cards .sess-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:14px;}
+  #view-cards .sess-bar i{display:block;height:100%;background:var(--primary);width:0;transition:width .25s;}
+  #view-cards .qcard{background:var(--surface);border-radius:18px;padding:26px 20px;box-shadow:0 6px 18px rgba(0,0,0,.08);
+    min-height:260px;display:flex;flex-direction:column;justify-content:center;border:1px solid var(--border);}
+  #view-cards .qcard .qtext{font-size:18px;font-weight:700;line-height:1.65;text-align:center;white-space:pre-wrap;}
+  #view-cards .qcard .atext{font-size:16px;color:var(--primary-dark);line-height:1.7;text-align:center;margin-top:18px;
+    padding-top:18px;border-top:1px dashed var(--border);white-space:pre-wrap;display:none;}
+  #view-cards .qcard .atext.show{display:block;}
+  #view-cards .princ-btn{background:none;border:1px solid #d5d3f5;color:#5b4fd1;font-size:12px;font-weight:600;
+    padding:6px 12px;border-radius:9px;cursor:pointer;margin:12px auto 0;display:none;}
+  #view-cards .princ-btn.show{display:block;}
+  #view-cards .grade-row{display:none;gap:8px;margin-top:16px;}
+  #view-cards .grade-row.show{display:flex;}
+  #view-cards .grade-btn{flex:1;padding:15px 4px;border-radius:13px;border:none;font-size:14px;font-weight:700;color:#fff;cursor:pointer;}
+  #view-cards .g-no{background:var(--danger);} #view-cards .g-ok{background:var(--primary);}
+  #view-cards .retry-note{font-size:11.5px;color:var(--warn);text-align:center;margin-top:10px;font-weight:600;}
+  #view-cards .sess-quit{margin-top:14px;}
+  #view-cards .grp-sub{font-size:14px;font-weight:800;color:var(--primary-dark);margin:18px 2px 8px;padding-bottom:4px;
+    border-bottom:2px solid var(--primary-light);}
+  #view-cards .grp-sub:first-child{margin-top:0;}
+  #view-cards .ch-item{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:12px 14px;margin-bottom:8px;}
+  #view-cards .ch-item .ch-top{display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer;}
+  #view-cards .ch-item .ch-name{font-size:13.5px;font-weight:700;}
+  #view-cards .ch-item .ch-meta{font-size:11px;color:var(--text-soft);margin-top:3px;}
+  #view-cards .badge{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:8px;margin-left:4px;font-weight:700;}
+  #view-cards .b-done{background:var(--primary-light);color:var(--primary-dark);}
+  #view-cards .b-part{background:#fff3d6;color:#a8780a;}
+  #view-cards .b-none{background:#f0f0f0;color:#999;}
+  #view-cards .b-x{background:#fdeee7;color:#b8552f;}
+  #view-cards .ch-cards{display:none;margin-top:10px;border-top:1px solid var(--border);padding-top:10px;}
+  #view-cards .ch-cards.show{display:block;}
+  #view-cards .mini{border-bottom:1px solid #f0f7f3;padding:9px 0;}
+  #view-cards .mini:last-child{border-bottom:none;}
+  #view-cards .mini .mq{font-size:13px;font-weight:600;line-height:1.5;}
+  #view-cards .mini .ma{font-size:12.5px;color:var(--text-soft);margin-top:3px;line-height:1.5;}
+  #view-cards .mini .mp{font-size:12px;color:#5b4fd1;margin-top:5px;background:#f4f3ff;padding:7px 9px;border-radius:8px;line-height:1.55;}
+  #view-cards .mini .mrow{display:flex;gap:6px;margin-top:6px;}
+  #view-cards .mini .mrow button{font-size:11px;padding:5px 10px;border-radius:8px;border:1px solid var(--border);
+    background:#fafffd;color:var(--primary-dark);font-weight:600;cursor:pointer;}
+  #view-cards .mini .mrow button.del{color:var(--danger);}
+  #view-cards .prin-edit{display:none;margin-top:7px;}
+  #view-cards .prin-edit.show{display:block;}
+  #view-cards .prin-edit textarea{min-height:70px;font-size:14px;}
+  #view-cards .prin-edit input[type=file]{font-size:12px;margin-top:8px;width:100%;}
+  #view-cards .mp img, #view-cards .princ-box img{max-width:100%;border-radius:9px;margin-top:8px;display:block;}
+  #view-cards .prin-thumb{margin-top:8px;}
+  #view-cards .prin-thumb img{max-width:120px;border-radius:8px;border:1px solid var(--border);display:block;}
+  #view-cards .prin-thumb button{font-size:11px;margin-top:5px;padding:4px 9px;border-radius:8px;border:1px solid var(--border);
+    background:#fafffd;color:var(--danger);font-weight:600;cursor:pointer;}
+  #view-cards .princ-box{margin-top:12px;font-size:13px;color:#5b4fd1;background:#f4f3ff;padding:10px;border-radius:9px;
+    line-height:1.6;white-space:pre-wrap;}
+  #view-cards .ord{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f0f7f3;}
+  #view-cards .ord:last-of-type{border-bottom:none;}
+  #view-cards .ord .ord-n{width:22px;font-size:11px;color:var(--text-soft);font-weight:700;}
+  #view-cards .ord .ord-s{flex:1;font-size:13.5px;font-weight:600;}
+  #view-cards .ord .ord-c{font-size:11px;color:var(--text-soft);}
+  #view-cards .ord button{width:34px;padding:6px 0;border-radius:8px;border:1px solid var(--border);background:#fafffd;
+    color:var(--primary-dark);font-size:12px;cursor:pointer;}
+  #view-cards .ord button:disabled{opacity:.25;cursor:default;}
+  #view-cards .pv{border:1px solid var(--border);border-radius:12px;padding:11px 12px;margin-top:8px;background:#fafffd;}
+  #view-cards .pv .pvq{font-size:13.5px;font-weight:700;line-height:1.5;}
+  #view-cards .pv .pva{font-size:13px;color:var(--text-soft);margin-top:4px;line-height:1.5;}
+  #view-cards .pv .pvx{float:right;color:var(--danger);font-size:12px;font-weight:700;cursor:pointer;margin-left:8px;}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
 </style>
 </head>
 <body>
@@ -221,13 +389,17 @@
 <header>
   <div class="hrow">
     <div>
-      <div class="htitle">国試対策アプリ</div>
+      <div class="htitle">国試神アプリ</div>
       <div class="hsub" id="dateHead"></div>
-      <div class="hsub" style="opacity:.6;">build 2026-09-08-v13 / 年内1周プラン</div>
+      <div class="hsub" style="opacity:.6;">build 2026-09-17-v2 / データ一覧・カード設定・時間表示オフ</div>
     </div>
     <button class="auth-btn" id="authBtn">🔑</button>
   </div>
-  <div class="cd"><span class="n" id="cdNum">--</span><span class="l">日 · 国試模試(1/18)まで</span></div>
+  <div class="cdrow">
+    <div class="cdbox"><span class="n" id="cdMoshi1">--</span><span class="l">日<br>模試① 11/3</span></div>
+    <div class="cdbox"><span class="n" id="cdQB">--</span><span class="l">日<br>QB1周 12/31</span></div>
+    <div class="cdbox"><span class="n" id="cdMoshi2">--</span><span class="l">日<br>模試② 1/18</span></div>
+  </div>
 </header>
 
 <div class="errbar" id="errbar"></div>
@@ -238,7 +410,7 @@
     <input type="email" id="loEmail" placeholder="メールアドレス" autocomplete="username">
     <input type="password" id="loPass" placeholder="パスワード" autocomplete="current-password">
     <button class="losub" id="loSub">ログイン</button>
-    <div class="lomsg" id="loMsg">一度ログインすれば、この端末では次回から自動でログイン状態になります。</div>
+    <div class="lomsg" id="loMsg">計画DBとカードDBの両方にまとめてログインします。一度ログインすれば、この端末では次回から自動でログイン状態になります。</div>
   </div>
 </div>
 
@@ -250,6 +422,56 @@
   <div class="stats">
     <div class="stat s1"><div class="k">連続日数</div><div class="v" id="stStreak">🔥0</div></div>
     <div class="stat s2"><div class="k">昨日やった量</div><div class="v" id="stYest">-</div></div>
+  </div>
+  <div class="card">
+    <h2>🎯 QB 年内1周ペース</h2>
+    <div id="dashPaceBody"><div class="empty">読み込み中…</div></div>
+  </div>
+  <div class="card">
+    <h2>🃏 口頭試問カード（きょうの分）</h2>
+    <div id="dashCardBody"><div class="dash-login-hint">読み込み中…</div></div>
+  </div>
+  <div class="card">
+    <h2>🗺 作戦マップ
+      <button class="wk-btn wk-ghost" id="mapToggle" style="flex:0 0 auto;padding:5px 9px;font-size:10px;">ひらく</button>
+    </h2>
+    <div id="mapBody" style="display:none;">
+      <ul class="rule-l">
+        <li><b>基本ループ</b>：medu4視聴 → 口頭試問（カード）→ QB</li>
+        <li><b>〜11/3 模試①</b>：メジャー10科目＋小児＋産婦人科（メジャー→小児→産婦の順）</li>
+        <li><b>〜12/31（最優先）</b>：QB 6,979問を1周（必修1,418問こみ）</li>
+        <li><b>必修</b>：12/17〜12/31に集中消化（計画に組みこみ済み）</li>
+        <li><b>〜1/18 模試②</b>：全科目やりこみ</li>
+        <li><b>運営に確認</b>：特別講座・118回update、購入できるか（無理なら諦める）</li>
+        <li><b>おまけ</b>：究極MAP（各科目の短いまとめ）</li>
+      </ul>
+      <div class="tlabel2">1/18が終わったら</div>
+      <ul class="rule-l">
+        <li>medu4 特講／118回update 購入確認</li>
+        <li>Q assist plus 購入</li>
+        <li>QBを全部◎にする</li>
+        <li>直近5年分を徹底する（1周目問題も）</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card">
+    <h2>📚 データ一覧（medu4・QB）
+      <button class="wk-btn wk-ghost" id="refToggle" style="flex:0 0 auto;padding:5px 9px;font-size:10px;">ひらく</button>
+    </h2>
+    <div id="refBody" style="display:none;">
+      <div class="tlabel2">medu4（chapter数／コマ数）</div>
+      <table class="reftable">
+        <tr><th>科目</th><th>chapter</th><th>コマ</th></tr>
+        <tr><td>腎</td><td>5</td><td>7</td></tr><tr><td>内分泌</td><td>8</td><td>12</td></tr><tr><td>血液</td><td>9</td><td>10</td></tr><tr><td>免疫</td><td>5</td><td>7</td></tr><tr><td>感染症</td><td>7</td><td>9</td></tr><tr><td>呼吸器</td><td>9</td><td>12</td></tr><tr><td>循環器</td><td>8</td><td>14</td></tr><tr><td>消化管</td><td>6</td><td>9</td></tr><tr><td>肝胆膵</td><td>5</td><td>8</td></tr><tr><td>神経</td><td>12</td><td>15</td></tr><tr><td>産婦人科</td><td>12</td><td>15</td></tr><tr><td>小児</td><td>13</td><td>16</td></tr><tr><td>小児外科</td><td>4</td><td>4</td></tr><tr><td>整形</td><td>5</td><td>7</td></tr><tr><td>眼</td><td>6</td><td>7</td></tr><tr><td>耳鼻</td><td>6</td><td>7</td></tr><tr><td>泌尿器</td><td>6</td><td>6</td></tr><tr><td>精神</td><td>9</td><td>6</td></tr><tr><td>皮膚</td><td>9</td><td>6</td></tr><tr><td>放射線</td><td>3</td><td>3</td></tr><tr><td>救急</td><td>5</td><td>7</td></tr><tr><td>中毒麻酔</td><td>5</td><td>4</td></tr><tr><td>公衆衛生</td><td>16</td><td>17</td></tr>
+        <tr class="reftotal"><td>合計</td><td>173</td><td>208</td></tr>
+      </table>
+      <div class="tlabel2">QB（問題数／1周目問題数）</div>
+      <table class="reftable">
+        <tr><th>単元</th><th>問題数</th><th>1周目問題</th></tr>
+        <tr><td>消化管</td><td>291</td><td>112</td></tr><tr><td>肝胆膵</td><td>195</td><td>68</td></tr><tr><td>循環器</td><td>378</td><td>131</td></tr><tr><td>内分泌</td><td>298</td><td>116</td></tr><tr><td>腎</td><td>186</td><td>87</td></tr><tr><td>免疫</td><td>157</td><td>77</td></tr><tr><td>血液</td><td>202</td><td>81</td></tr><tr><td>感染症</td><td>239</td><td>123</td></tr><tr><td>呼吸器</td><td>295</td><td>131</td></tr><tr><td>神経</td><td>361</td><td>158</td></tr><tr><td>中毒</td><td>63</td><td>30</td></tr><tr><td>救急</td><td>136</td><td>85</td></tr><tr><td>麻酔</td><td>32</td><td>10</td></tr><tr><td>総論</td><td>147</td><td>75</td></tr><tr><td>小児</td><td>423</td><td>184</td></tr><tr><td>婦人</td><td>204</td><td>79</td></tr><tr><td>産</td><td>337</td><td>107</td></tr><tr><td>眼</td><td>151</td><td>73</td></tr><tr><td>耳鼻</td><td>151</td><td>74</td></tr><tr><td>整形</td><td>152</td><td>78</td></tr><tr><td>精神</td><td>205</td><td>85</td></tr><tr><td>皮膚</td><td>150</td><td>86</td></tr><tr><td>泌尿器</td><td>150</td><td>65</td></tr><tr><td>放射線</td><td>53</td><td>26</td></tr><tr><td>公衆衛生</td><td>605</td><td>322</td></tr><tr><td>必修</td><td>1418</td><td>754</td></tr>
+        <tr class="reftotal"><td>合計</td><td>6979</td><td>3217</td></tr>
+      </table>
+    </div>
   </div>
   <div class="card" id="logDateCard">
     <h2>🗓 記録する日 <span id="logDateBadge" style="font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:20px;"></span></h2>
@@ -298,7 +520,7 @@
       <div style="font-size:11px;font-weight:700;margin-bottom:7px;">➕ 抜けてたタスクを追加</div>
       <input class="txtin" id="addLabel" placeholder="タスク名（例：Ch10 ○○）">
       <div class="r">
-        <select id="addType"><option value="qb">QB（問）</option><option value="video">映像（時間）</option></select>
+        <select id="addType"><option value="qb">QB（問）</option><option value="video">映像（見た/見てない）</option></select>
         <input class="txtin" id="addTarget" type="number" placeholder="目標数" style="margin-bottom:0;">
       </div>
       <button class="wk-btn wk-primary" id="addBtn" style="width:100%;margin-top:8px;">追加する</button>
@@ -327,12 +549,161 @@
   </div>
 </div>
 
+
+<!-- ========== CARDS (旧medu5 統合) ========== -->
+<div class="view" id="view-cards">
+  <div id="cardLoginHint" class="card" style="display:none;">
+    <h2>🃏 口頭試問カード</h2>
+    <div class="dash-login-hint">カードのデータベースにまだログインしていません。<br>
+    右上の🔑ボタンから、いつものメールアドレスとパスワードでログインすると使えるようになるで。</div>
+  </div>
+  <div id="cardRoot" style="display:none;">
+    <div class="chead">
+      <div>
+        <h1>口頭試問カード</h1>
+        <div class="sub" id="cHeadSub">173 chapter</div>
+      </div>
+    </div>
+    <div class="ctabs">
+      <div class="ctab active" data-ctab="home">ホーム</div>
+      <div class="ctab" data-ctab="study">学習</div>
+      <div class="ctab" data-ctab="list">一覧</div>
+      <div class="ctab" data-ctab="input">入力</div>
+    </div>
+
+    <!-- ---- カード:ホーム ---- -->
+    <div class="cpage active" id="cpage-home">
+      <div class="phase-hero">
+        <div class="phase-name" id="phaseName">現在</div>
+        <div class="phase-big" id="phaseBig">一周目</div>
+        <div class="ring-wrap">
+          <div class="ring">
+            <svg width="96" height="96">
+              <circle cx="48" cy="48" r="41" fill="none" stroke="#e3f5ec" stroke-width="10"/>
+              <circle id="ringArc" cx="48" cy="48" r="41" fill="none" stroke="#4FAE85" stroke-width="10"
+                      stroke-linecap="round" stroke-dasharray="257.6" stroke-dashoffset="257.6"/>
+              <circle id="ringMark" cx="48" cy="48" r="41" fill="none" stroke="#8fa99c" stroke-width="10"
+                      stroke-dasharray="2 255.6" stroke-dashoffset="0" style="visibility:hidden;"/>
+            </svg>
+            <div class="pct"><b id="ringPct">0%</b><span id="ringCap">0 / 173</span></div>
+          </div>
+          <div class="phase-desc" id="phaseDesc"></div>
+        </div>
+        <div class="pace" id="paceBox"></div>
+        <div class="pace-set">
+          <label for="targetDate">目標日</label>
+          <input type="date" id="targetDate">
+        </div>
+        <div class="pace-set">
+          <label for="perR1In">一周目：1日の新規</label>
+          <input type="number" id="perR1In" min="1" inputmode="numeric" value="2"> <span style="font-size:11.5px;color:var(--text-soft);flex-shrink:0;">chapter</span>
+        </div>
+        <div class="pace-set">
+          <label for="perR2In">二周目：1日</label>
+          <input type="number" id="perR2In" min="1" inputmode="numeric" value="5"> <span style="font-size:11.5px;color:var(--text-soft);flex-shrink:0;">chapter</span>
+        </div>
+        <div class="modeswitch" id="modeSwitch">
+          <button data-mode="auto" class="active">自動</button>
+          <button data-mode="r1">一周目</button>
+          <button data-mode="r2">二周目</button>
+          <button data-mode="r3">三周目</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>今日やること</h3>
+        <div id="queueBox"></div>
+        <button class="primary" id="btnStart">はじめる</button>
+      </div>
+
+      <div class="streak">
+        <div class="box"><b id="cStStreak">0</b><span>日連続</span></div>
+        <div class="box"><b id="cStToday">0</b><span>今日解いた問題</span></div>
+        <div class="box"><b id="cStCards">0</b><span>総問題数</span></div>
+      </div>
+    </div>
+
+    <!-- ---- カード:学習 ---- -->
+    <div class="cpage" id="cpage-study">
+      <div class="sess-head"><span id="sessTitle">—</span><span id="sessCount"></span></div>
+      <div class="sess-bar"><i id="sessBar"></i></div>
+      <div id="sessBody"><div class="cempty">ホームの「はじめる」から開始してください</div></div>
+    </div>
+
+    <!-- ---- カード:一覧 ---- -->
+    <div class="cpage" id="cpage-list">
+      <div class="card" style="padding:12px 14px;">
+        <select id="filterSubject"><option value="">すべての科目</option></select>
+      </div>
+      <div id="listWrap"></div>
+      <div class="card">
+        <h3>進む順番</h3>
+        <p class="hint">上から順に出題されます。▲▼で入れ替えると、まだ手をつけていないchapterの順番がすぐ変わります。</p>
+        <div id="orderList"></div>
+        <button class="ghost" id="resetOrder">最初の順番に戻す（9/17改訂の順番）</button>
+        <div class="msg" id="orderMsg"></div>
+      </div>
+    </div>
+
+    <!-- ---- カード:入力 ---- -->
+    <div class="cpage" id="cpage-input">
+      <div class="card">
+        <h3>どのchapterに入れるか</h3>
+        <div class="row2">
+          <div><label>科目</label><select id="inSubject"></select></div>
+          <div><label>Chapter</label><select id="inChapter"></select></div>
+        </div>
+        <label>Chapterタイトル</label>
+        <input type="text" id="inTitle" placeholder="例: 糸球体疾患">
+        <div class="msg" id="titleMsg"></div>
+      </div>
+
+      <div class="card">
+        <h3>手順1 — 口頭試問の写真をAIに投げる</h3>
+        <p class="hint">下のプロンプトをコピーして、口頭試問の写真と一緒にAIに送ってください。返ってきたテキストをそのまま手順2に貼ります。</p>
+        <div class="copybox" id="promptBox"><button class="copybtn" data-target="promptBox">コピー</button>添付した画像は医学の口頭試問（一問一答）です。画像内の文字をすべて読み取り、下のフォーマットに変換してください。
+
+Q: 問題文
+A: 答え
+---
+Q: 問題文
+A: 答え
+
+ルール:
+- 1問ごとに --- で区切る
+- 表形式なら左列をQ、右列をAにする
+- 解説や原理は書かない。画像にある内容だけを書く
+- 前置きや後書きは一切書かない
+- 読み取れない文字は [?] と書く</div>
+      </div>
+
+      <div class="card">
+        <h3>手順2 — テキストを貼って読み込む</h3>
+        <textarea id="pasteBox" placeholder="Q: ... / A: ... 形式のテキストを貼る"></textarea>
+        <button class="primary small" id="parseBtn">読み込む</button>
+        <div class="msg" id="parseMsg"></div>
+        <div id="pvWrap"></div>
+        <button class="primary" id="cSaveBtn" style="display:none;">このchapterに保存する</button>
+      </div>
+
+      <div class="card">
+        <h3>1問だけ手で足す</h3>
+        <input type="text" id="manQ" placeholder="問題">
+        <input type="text" id="manA" placeholder="答え" style="margin-top:8px;">
+        <button class="primary small" id="manBtn">追加する</button>
+        <div class="msg" id="manMsg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </main>
 
 <div class="tabs">
   <button class="tb owner active" data-v="today"><span class="ic">🏠</span>今日</button>
   <button class="tb owner" data-v="week"><span class="ic">🧩</span>週間計画</button>
   <button class="tb owner" data-v="tasks"><span class="ic">📋</span>タスク</button>
+  <button class="tb" data-v="cards"><span class="ic">🃏</span>カード</button>
   <button class="tb" data-v="public"><span class="ic">👀</span>公開</button>
 </div>
 
@@ -379,7 +750,7 @@ try{
 let owner=false;
 
 const catalog = [
-  { name:"内分泌・代謝", track:"main", start:"2026-09-19", end:"2026-09-22", chapters:[
+  { name:"内分泌・代謝", track:"main", start:"2026-09-18", end:"2026-09-18", chapters:[
     {ch:"Ch1 内分泌代謝の総論", qb:"（基礎・ホルモン概説）"},
     {ch:"Ch2 下垂体", qb:"視床下部・下垂体疾患(43)"},
     {ch:"Ch3 甲状腺", qb:"甲状腺疾患(42)"},
@@ -390,7 +761,7 @@ const catalog = [
     {ch:"Ch8 その他の代謝", qb:"尿酸代謝異常(8)・骨代謝異常(2)・その他代謝異常(10)・膵内分泌腫瘍(3)"},
     {ch:"仕上げ", qb:"総合問題(20)・120回問題(13)"}
   ]},
-  { name:"腎・泌尿器（内科）", track:"main", start:"2026-09-12", end:"2026-09-13", chapters:[
+  { name:"腎・泌尿器（内科）", track:"main", start:"2026-09-17", end:"2026-09-17", chapters:[
     {ch:"Ch1 腎の総論", qb:"腎・泌尿器総論(32)・水/電解質代謝異常(21)"},
     {ch:"Ch2 腎不全", qb:"腎不全(30)"},
     {ch:"Ch3 腎血管", qb:"腎血管性疾患(11)"},
@@ -398,7 +769,7 @@ const catalog = [
     {ch:"Ch5 尿細管・間質", qb:"尿細管機能障害・間質性疾患(12)・遺伝性腎疾患(4)"},
     {ch:"仕上げ", qb:"総合問題(2)・120回問題(10)"}
   ]},
-  { name:"消化管", track:"main", start:"2026-10-17", end:"2026-10-20", chapters:[
+  { name:"消化管", track:"main", start:"2026-09-22", end:"2026-09-22", chapters:[
     {ch:"Ch1 総論", qb:"消化管総論(24)"},
     {ch:"Ch2 食道", qb:"食道疾患(37)"},
     {ch:"Ch3 胃", qb:"胃・十二指腸疾患(55)"},
@@ -407,7 +778,7 @@ const catalog = [
     {ch:"Ch6 肛門・横隔膜・腹膜・腹壁", qb:"肛門疾患(10)・腹壁腹膜疾患(17)"},
     {ch:"仕上げ", qb:"総合問題(26)・120回問題(22)"}
   ]},
-  { name:"肝・胆・膵", track:"main", start:"2026-10-21", end:"2026-10-23", chapters:[
+  { name:"肝・胆・膵", track:"main", start:"2026-09-23", end:"2026-09-23", chapters:[
     {ch:"Ch1 総論", qb:"肝臓総論(15)・胆道総論(11)・膵臓総論(4)"},
     {ch:"Ch2 肝の炎症", qb:"肝臓疾患(40)の一部"},
     {ch:"Ch3 肝の腫瘍", qb:"肝臓疾患(38)の残り"},
@@ -415,7 +786,7 @@ const catalog = [
     {ch:"Ch5 膵", qb:"膵臓疾患(31)"},
     {ch:"仕上げ", qb:"総合問題(12)・120回問題(7)"}
   ]},
-  { name:"血液", track:"main", start:"2026-10-12", end:"2026-10-16", chapters:[
+  { name:"血液", track:"main", start:"2026-09-19", end:"2026-09-19", chapters:[
     {ch:"Ch1 総論", qb:"血液総論(8)・輸血療法(5)・造血幹細胞移植(4)"},
     {ch:"Ch2 材料不足による貧血", qb:"赤血球の異常(15)の一部"},
     {ch:"Ch3 崩壊による貧血", qb:"赤血球の異常(14)の一部"},
@@ -427,7 +798,7 @@ const catalog = [
     {ch:"Ch9 2次止血の障害", qb:"止血機構の異常(22)の残り"},
     {ch:"仕上げ", qb:"総合問題(7)・120回問題(11)"}
   ]},
-  { name:"免疫・膠原病", track:"main", start:"2026-10-01", end:"2026-10-03", chapters:[
+  { name:"免疫・膠原病", track:"main", start:"2026-09-20", end:"2026-09-20", chapters:[
     {ch:"Ch1 総論", qb:"免疫学総論(15)"},
     {ch:"Ch2 アレルギー", qb:"アレルギー(17)"},
     {ch:"Ch3 関節疾患", qb:"膠原病(35)の一部"},
@@ -435,7 +806,7 @@ const catalog = [
     {ch:"Ch5 血管炎", qb:"膠原病(33)の残り"},
     {ch:"仕上げ", qb:"免疫不全症(11)・120回問題(11)"}
   ]},
-  { name:"循環器", track:"main", start:"2026-09-09", end:"2026-09-15", chapters:[
+  { name:"循環器", track:"main", start:"2026-10-12", end:"2026-10-18", chapters:[
     {ch:"Ch1 総論", qb:"循環器総論(36)"},
     {ch:"Ch2 心不全", qb:"心不全(29)"},
     {ch:"Ch3 不整脈", qb:"不整脈(49)"},
@@ -446,7 +817,7 @@ const catalog = [
     {ch:"Ch8 血管疾患", qb:"血管疾患(68)・血圧異常(20)"},
     {ch:"仕上げ", qb:"総合問題(12)・120回問題(19)"}
   ]},
-  { name:"神経", track:"main", start:"2026-09-16", end:"2026-09-25", chapters:[
+  { name:"神経", track:"main", start:"2026-10-05", end:"2026-10-11", chapters:[
     {ch:"Ch1 総論", qb:"神経系の構造と機能(11)・脳神経とその障害(18)・運動感覚自律神経(10)"},
     {ch:"Ch2 脳血管障害", qb:"脳血管障害(73)"},
     {ch:"Ch3 認知症", qb:"認知症(34)"},
@@ -461,7 +832,7 @@ const catalog = [
     {ch:"Ch12 神経腫瘍", qb:"占拠性病変(21)・頭蓋内圧亢進脳ヘルニア(4)"},
     {ch:"仕上げ", qb:"神経その他の疾患(6)・総合問題(14)・120回問題(22)"}
   ]},
-  { name:"呼吸器", track:"main", start:"2026-09-26", end:"2026-09-30", chapters:[
+  { name:"呼吸器", track:"main", start:"2026-09-21", end:"2026-09-21", chapters:[
     {ch:"Ch1 総論", qb:"呼吸器総論(33)・換気異常その他(9)"},
     {ch:"Ch2 機能性呼吸器疾患", qb:"（基礎）"},
     {ch:"Ch3 アレルギー性呼吸器疾患", qb:"免疫・アレルギー性肺疾患(22)"},
@@ -473,7 +844,7 @@ const catalog = [
     {ch:"Ch9 乳腺疾患", qb:"（婦人科の乳腺疾患と連動）"},
     {ch:"仕上げ", qb:"総合問題(41)・120回問題(18)"}
   ]},
-  { name:"小児科", track:"main", start:"2026-10-04", end:"2026-10-11", chapters:[
+  { name:"小児科", track:"main", start:"2026-10-19", end:"2026-11-02", chapters:[
     {ch:"Ch1 成長と発達", qb:"成長・発達(57)"},
     {ch:"Ch2 新生児・乳幼児", qb:"新生児・乳幼児(55)"},
     {ch:"Ch3 先天異常", qb:"先天異常(36)"},
@@ -489,7 +860,7 @@ const catalog = [
     {ch:"Ch13 小児の神経", qb:"神経(30)・腹部の腫瘍(3)"},
     {ch:"仕上げ", qb:"120回問題(19)"}
   ]},
-  { name:"産科・婦人科", track:"main", start:"2026-11-09", end:"2026-11-20", chapters:[
+  { name:"産科・婦人科", track:"main", start:"2026-09-28", end:"2026-10-04", chapters:[
     {ch:"Ch1 総論", qb:"女性器の構造と性機能(10)"},
     {ch:"Ch2 妊娠の成立と進行", qb:"正常妊娠(51)の一部"},
     {ch:"Ch3 無月経と不妊・不育・避妊", qb:"内分泌の異常(27)・不妊症/避妊(13)・性分化と性器形態異常(12)"},
@@ -504,30 +875,30 @@ const catalog = [
     {ch:"Ch12 卵巣・卵管・腟・外陰の腫瘍", qb:"類腫瘍性病変・前癌病変・腫瘍(35)の残り"},
     {ch:"仕上げ", qb:"女性のライフサイクル(17)・乳腺疾患(25)・産科120回(17)・婦人科120回(9)"}
   ]},
-  { name:"皮膚科", track:"main", start:"2026-10-28", end:"2026-11-01", chapters:[
+  { name:"皮膚科", track:"main", start:"2026-11-09", end:"2026-11-15", chapters:[
     {ch:"Ch1 総論", qb:"総論(17)"}, {ch:"Ch2 薬疹", qb:"薬疹(9)"},
     {ch:"Ch3 湿疹", qb:"じんま疹・湿疹・紅斑症(15)"}, {ch:"Ch4 水疱・膿疱", qb:"水疱症・膿疱症(10)"},
     {ch:"Ch5 良性増殖性変化", qb:"角化症(13)"}, {ch:"Ch6 悪性腫瘍", qb:"腫瘍(20)"},
     {ch:"Ch7 感染症", qb:"感染症(25)"}, {ch:"Ch8 母斑と母斑症", qb:"母斑・母斑症(12)"},
     {ch:"Ch9 その他の皮膚科疾患", qb:"その他の疾患(21)"}, {ch:"仕上げ", qb:"120回問題(8)"}
   ]},
-  { name:"放射線科", track:"main", start:"2026-11-05", end:"2026-11-06", chapters:[
+  { name:"放射線科", track:"main", start:"2026-11-09", end:"2026-11-15", chapters:[
     {ch:"Ch1 総論", qb:"医療被曝(20)"}, {ch:"Ch2 放射線診断学", qb:"放射線診断学(13)・核医学(1)"},
     {ch:"Ch3 放射線治療学", qb:"放射線治療学(17)"}, {ch:"仕上げ", qb:"120回問題(2)"}
   ]},
-  { name:"整形外科", track:"main", start:"2026-11-02", end:"2026-11-04", chapters:[
+  { name:"整形外科", track:"main", start:"2026-11-16", end:"2026-11-22", chapters:[
     {ch:"Ch1 総論", qb:"解剖(5)"}, {ch:"Ch2 上肢", qb:"上肢の疾患(26)"},
     {ch:"Ch3 脊椎", qb:"脊髄・脊椎疾患(19)・感染性疾患(5)"}, {ch:"Ch4 下肢", qb:"下肢の疾患(37)"},
     {ch:"Ch5 骨腫瘍", qb:"腫瘍(15)"}, {ch:"仕上げ", qb:"内分泌系疾患(9)・その他の疾患(27)・120回問題(9)"}
   ]},
-  { name:"眼科", track:"main", start:"2026-11-23", end:"2026-11-25", chapters:[
+  { name:"眼科", track:"main", start:"2026-11-16", end:"2026-11-22", chapters:[
     {ch:"Ch1 総論", qb:"解剖(10)・視野異常/対光反射(5)・検査(12)・症候(20)"},
     {ch:"Ch2 前眼部", qb:"前眼部疾患(30)・緑内障(8)"},
     {ch:"Ch3 水晶体・硝子体", qb:"（前眼部の一部として整理）"},
     {ch:"Ch4 ぶどう膜", qb:"ぶどう膜疾患(6)"}, {ch:"Ch5 網膜", qb:"網膜疾患(40)"},
     {ch:"Ch6 眼科的外傷", qb:"眼外傷(14)"}, {ch:"仕上げ", qb:"120回問題(6)"}
   ]},
-  { name:"精神科", track:"main", start:"2026-11-07", end:"2026-11-08", chapters:[
+  { name:"精神科", track:"main", start:"2026-11-30", end:"2026-12-06", chapters:[
     {ch:"Ch1 総論", qb:"精神総論(26)・検査(16)・治療(8)"},
     {ch:"Ch2 精神作用物質による障害", qb:"精神作用物質関連障害(15)・身体因性精神障害(2)"},
     {ch:"Ch3 統合失調症スペクトラム障害", qb:"統合失調症とその近縁の疾患(20)"},
@@ -539,13 +910,13 @@ const catalog = [
     {ch:"Ch9 その他の精神科疾患", qb:"摂食障害(11)・パーソナリティ障害(3)"},
     {ch:"仕上げ", qb:"認知症(6)・精神医療と社会(13)・120回問題(8)"}
   ]},
-  { name:"耳鼻咽喉科", track:"main", start:"2026-11-26", end:"2026-11-28", chapters:[
+  { name:"耳鼻咽喉科", track:"main", start:"2026-11-23", end:"2026-11-29", chapters:[
     {ch:"Ch1 総論", qb:"（基礎・検査）"}, {ch:"Ch2 外耳〜中耳", qb:"耳疾患(35)の一部"},
     {ch:"Ch3 内耳", qb:"耳疾患(28)の残り"}, {ch:"Ch4 鼻", qb:"鼻腔・副鼻腔疾患(18)"},
     {ch:"Ch5 咽頭・喉頭", qb:"咽頭・喉頭疾患(51)"}, {ch:"Ch6 口腔・唾液腺・頸部", qb:"その他の耳鼻咽喉疾患(14)"},
     {ch:"仕上げ", qb:"120回問題(5)"}
   ]},
-  { name:"泌尿器科", track:"main", start:"2026-11-29", end:"2026-12-01", chapters:[
+  { name:"泌尿器科", track:"main", start:"2026-11-23", end:"2026-11-29", chapters:[
     {ch:"Ch1 総論", qb:"解剖・機能(12)・症候検査(5)・治療(3)"},
     {ch:"Ch2 腎・尿管", qb:"通過障害(22)・結石症(15)・腫瘍(15)・感染症(7)"},
     {ch:"Ch3 膀胱", qb:"腫瘍(15)・感染症(6)"},
@@ -554,19 +925,19 @@ const catalog = [
     {ch:"Ch6 陰嚢・精巣", qb:"男性器疾患(6)・腫瘍(8)"},
     {ch:"仕上げ", qb:"120回問題(6)"}
   ]},
-  { name:"救急", track:"main", start:"2026-12-02", end:"2026-12-04", chapters:[
+  { name:"救急", track:"main", start:"2026-11-30", end:"2026-12-06", chapters:[
     {ch:"Ch1 総論", qb:"心肺蘇生(21)"}, {ch:"Ch2 ショック", qb:"ショック(18)"},
     {ch:"Ch3 救急外傷", qb:"損傷・外傷(56)"}, {ch:"Ch4 災害救急", qb:"圧挫症候群(6)・災害医学(3)"},
     {ch:"Ch5 救急疾患", qb:"異物誤飲(8)・熱傷(10)"}, {ch:"仕上げ", qb:"救急総合(2)・120回問題(12)"}
   ]},
-  { name:"感染症", track:"memo", start:"2026-10-24", end:"2026-10-27", chapters:[
+  { name:"感染症", track:"memo", start:"2026-09-24", end:"2026-09-27", chapters:[
     {ch:"Ch1 総論", qb:"（基礎）"}, {ch:"Ch2 一般細菌", qb:"肺炎(37)・腸管感染症(20)"},
     {ch:"Ch3 抗酸菌", qb:"抗酸菌感染症(19)"}, {ch:"Ch4 特殊細菌", qb:"その他の感染症(16)の一部"},
     {ch:"Ch5 HIVと日和見感染", qb:"肺真菌症(8)・易感染性状態(28)"}, {ch:"Ch6 ウイルス", qb:"その他の感染症(16)の残り"},
     {ch:"Ch7 寄生虫", qb:"輸入感染症(15)"},
     {ch:"仕上げ", qb:"皮膚感染症(12)・筋腱骨関節感染症(10)・総合問題(47)・120回問題(11)"}
   ]},
-  { name:"中毒・麻酔", track:"memo", start:"2026-12-05", end:"2026-12-06", chapters:[
+  { name:"中毒・麻酔", track:"memo", start:"2026-11-30", end:"2026-12-06", chapters:[
     {ch:"Ch1 農薬中毒", qb:"農薬中毒(9)"}, {ch:"Ch2 ガス中毒", qb:"ガス中毒(7)"},
     {ch:"Ch3 有機溶剤・金属中毒", qb:"有機溶剤中毒(6)・金属中毒(5)"},
     {ch:"Ch4 麻酔の分類", qb:"全身麻酔(12)・局所麻酔(3)・周術期管理(9)"}, {ch:"Ch5 麻酔薬", qb:"緩和ケア(7)"},
@@ -585,7 +956,7 @@ const catalog = [
     {ch:"Ch16 終末期医療と死", qb:"終末期医療と死(34)・診療情報等(13)・医の倫理(16)"},
     {ch:"仕上げ", qb:"120回問題(38)"}
   ]},
-  { name:"医学総論", track:"memo", start:"2026-11-21", end:"2026-11-22", chapters:[
+  { name:"医学総論", track:"memo", start:"2026-11-30", end:"2026-12-06", chapters:[
     {ch:"加齢老年学 Ch1 総論", qb:"高齢化社会(30)の一部"},
     {ch:"加齢老年学 Ch2 高齢者特有の病態", qb:"高齢化社会(36)の残り・廃用症候群(11)"},
     {ch:"加齢老年学 Ch3 リハビリテーション医学", qb:"基本的な診療知識(37)"},
@@ -601,13 +972,20 @@ const catalog = [
 const RULES_HTML=`
   <h2>📌 やり方のルール</h2>
   <div class="rule-sec">
+    <div class="rule-t"><span class="pin">🔁</span>基本ループ</div>
+    <ul class="rule-l">
+      <li><b>medu4視聴 → 口頭試問（カード）→ QB</b> の順で、1チャプターずつ回す</li>
+    </ul>
+  </div>
+  <div class="rule-div"></div>
+  <div class="rule-sec">
     <div class="rule-t"><span class="pin">📗</span>QBの記録ルール</div>
     <ul class="rule-l">
       <li><span class="rule-mk">⭕️</span> 正解した</li>
       <li><span class="rule-mk">❌</span> 間違えた</li>
       <li><span class="rule-mk">❌</span> <b>たまたま当たった問題も×</b></li>
     </ul>
-    <div class="rule-goal">目標：2026年内に QB 6,979問を1周</div>
+    <div class="rule-goal">目標：2026年内に QB 6,979問を1周（必修1,418問こみ）</div>
   </div>
   <div class="rule-div"></div>
   <div class="rule-sec">
@@ -798,10 +1176,26 @@ function short(s,n=15){return s.length>n?s.slice(0,n-1)+'…':s;}
 function taskRow(p,showSubj){
   const row=document.createElement('div');row.className='trow';
   const pct=Math.min(100,Math.round(p.doneValue/p.targetValue*100));
-  const step=p.type==='qb'?10:0.5;
-  row.innerHTML=`<span class="tag ${p.type==='video'?'tg-m':'tg-a'}">${p.type==='video'?'映':'Q'}</span>
+  const late=p.assignedDate&&p.assignedDate!==today()?` <span style="color:var(--amber);font-weight:400;">（${fmt(p.assignedDate)}分・未消化）</span>`:'';
+  if(p.type==='video'){
+    // 映像は時間の目安を出さず、見終わったかどうかだけ記録する
+    const fin=p.doneValue>=p.targetValue;
+    row.innerHTML=`<span class="tag tg-m">映</span>
+      <div class="tbody">
+        <div class="tlabel">${showSubj?p.subject+'｜':''}${p.label}${late}</div>
+        <div class="tmeta"><span>${fin?'✅ 視聴ずみ':(p.doneValue>0?'とちゅうまで視聴':'未視聴')}</span><span>${pct}%</span></div>
+        <div class="tbar"><div class="tfill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="quick">
+        <button class="qbtn ${fin?'minus':''} vtoggle">${fin?'未視聴に戻す':'✅ 見終わった'}</button>
+      </div>`;
+    row.querySelector('.vtoggle').onclick=()=>logIt(p.id, fin? -p.doneValue : Math.round((p.targetValue-p.doneValue)*10)/10);
+    return row;
+  }
+  const step=10;
+  row.innerHTML=`<span class="tag tg-a">Q</span>
     <div class="tbody">
-      <div class="tlabel">${showSubj?p.subject+'｜':''}${p.label}${p.assignedDate&&p.assignedDate!==today()?` <span style="color:var(--amber);font-weight:400;">（${fmt(p.assignedDate)}分・未消化）</span>`:''}</div>
+      <div class="tlabel">${showSubj?p.subject+'｜':''}${p.label}${late}</div>
       <div class="tmeta"><span>${p.doneValue}/${p.targetValue}${p.unit}</span><span>${pct}%</span></div>
       <div class="tbar"><div class="tfill" style="width:${pct}%"></div></div>
     </div>
@@ -849,6 +1243,7 @@ document.getElementById('logDateResetBtn').onclick=()=>{
 /* ===== render: today ===== */
 function renderToday(){
   renderLogDateUI();
+  renderDashCards();
   document.getElementById('stStreak').textContent='🔥'+state.streak;
   const y=state.logs[yest()];
   document.getElementById('stYest').textContent=y?y.entries.length+'件':'0件';
@@ -893,7 +1288,7 @@ function renderWeek(){
   un.forEach(p=>{
     const b=document.createElement('button');
     b.className='chip '+(p.type==='video'?'ch-m':'ch-a')+(selChip===p.id?' sel':'');
-    b.textContent=`${p.label}（${p.hours.toFixed(1)}h）`;
+    b.textContent=p.label;
     b.onclick=()=>{selChip=selChip===p.id?null:p.id;renderWeek();};
     tray.appendChild(b);
   });
@@ -915,19 +1310,13 @@ function renderWeek(){
     const wi=dateDow(date);
     const row=document.createElement('div');row.className='dayrow';
     const ps=Object.values(state.pieces).filter(p=>p.assignedDate===date);
-    const load=ps.reduce((a,p)=>a+p.hours,0),cap=state.caps[wi],over=cap>0?load/cap>=1:load>0;
     const cell=document.createElement('div');
     cell.className='dcell'+(date===today()?' today':'');
     cell.innerHTML=`<div class="dn">${dn} ${fmt(date)}</div>
-      <div class="dcap"><input type="number" step="0.5" min="0" value="${cap}">h</div>
-      <div class="dload ${over?'over':''}">${load.toFixed(1)}h</div>`;
-    const ci=cell.querySelector('input');
-    ci.onchange=()=>{if(!gate()){ci.value=state.caps[wi];return;}
-      state.caps[wi]=parseFloat(ci.value)||0;saveSettings();renderWeek();};
-    ci.onclick=e=>e.stopPropagation();
+      <div class="dcap">${ps.length?ps.length+'件':'—'}</div>`;
     row.appendChild(cell);
 
-    const slot=document.createElement('div');slot.className='dslot'+(over?' over':'');
+    const slot=document.createElement('div');slot.className='dslot';
     slot.onclick=()=>{
       if(!selChip)return;
       if(!gate())return;
@@ -1075,7 +1464,7 @@ function renderPlanInto(elId, detailed){
   const pp=document.getElementById(elId);pp.innerHTML='';
   const t=today();
   {
-    const l=document.createElement('div');l.className='tlabel2';l.textContent='2026年内 1周プラン（1日2コマ基準）';pp.appendChild(l);
+    const l=document.createElement('div');l.className='tlabel2';l.textContent='2026年内 1周プラン（9/17改訂版）';pp.appendChild(l);
     catalog.slice().sort((a,b)=>a.start.localeCompare(b.start)||a.end.localeCompare(b.end)).forEach(s=>{
       const pct=Math.round(subjProg(s.name)*100),now=s.start<=t&&t<=s.end;
       const ps=Object.values(state.pieces).filter(p=>p.subject===s.name);
@@ -1205,13 +1594,80 @@ function renderGrowth(){
   }
 }
 
+/* ===== 統合ダッシュボード（QBペース＋カード連携） ===== */
+const QB_DEADLINE='2026-12-31';
+function daysBetweenISO(a,b){return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000);}
+function renderDashCards(){
+  // --- QB 年内1周ペース ---
+  const el=document.getElementById('dashPaceBody');
+  if(el){
+    const qbs=Object.values(state.pieces).filter(p=>p.type==='qb');
+    const tot=qbs.reduce((a,p)=>a+p.targetValue,0);
+    const done=qbs.reduce((a,p)=>a+Math.min(p.doneValue,p.targetValue),0);
+    const remain=Math.max(0,tot-done);
+    const t=today();
+    const daysLeft=Math.max(1,daysBetweenISO(t,QB_DEADLINE)+1); // 今日をふくむ
+    const pace=Math.ceil(remain/daysLeft);
+    const todayQ=((state.logs[t]||{}).entries||[]).filter(e=>e.unit==='問').reduce((a,e)=>a+e.value,0);
+    const pct=tot>0?Math.round(done/tot*100):0;
+    const hit=todayQ>=pace;
+    el.innerHTML=`
+      <div class="tmeta"><span>QB進捗 ${done} / ${tot}問</span><span>${pct}%</span></div>
+      <div class="tbar"><div class="tfill" style="width:${pct}%"></div></div>
+      <div class="dash-nums">
+        <div class="dash-num"><div class="k">12/31まで</div><div class="v">${daysLeft}<small>日</small></div></div>
+        <div class="dash-num teal"><div class="k">必要ペース</div><div class="v">${pace}<small>問/日</small></div></div>
+        <div class="dash-num ${hit?'ok':'hot'}"><div class="k">今日解いた数</div><div class="v">${Math.round(todayQ*10)/10}<small>問</small></div></div>
+      </div>
+      <div class="dash-note">残り${remain}問。麻酔・放射線みたいな軽い日に貯金して、神経・公衆衛生みたいな重い日にまわす方式でOK。</div>`;
+  }
+  // --- 口頭試問カード連携 ---
+  const cb=document.getElementById('dashCardBody');
+  if(cb){
+    const CA=window.CardApp;
+    if(!CA||!CA.isIn()){
+      cb.innerHTML='<div class="dash-login-hint">口頭試問カードは未ログイン。右上の🔑からログインすると、ここに今日のキューが出るで。</div>';
+    }else{
+      const su=CA.summary();
+      cb.innerHTML=`
+        <div class="dash-nums">
+          <div class="dash-num teal"><div class="k">今日のキュー</div><div class="v">${su.queue}<small>問</small></div></div>
+          <div class="dash-num"><div class="k">今日解いた数</div><div class="v">${su.todayCount}<small>問</small></div></div>
+          <div class="dash-num ok"><div class="k">連続</div><div class="v">🔥${su.streak}<small>日</small></div></div>
+        </div>
+        <button class="dash-cardbtn" id="dashCardGo">${su.queue>0?'カード学習をはじめる':'カードを見にいく'}</button>`;
+      document.getElementById('dashCardGo').onclick=()=>{
+        tab('cards');
+        if(su.queue>0)CA.startToday();
+      };
+    }
+  }
+}
+window.refreshDash=()=>{try{renderDashCards();}catch(e){console.warn('dash',e);}};
+document.getElementById('mapToggle').onclick=()=>{
+  const b=document.getElementById('mapBody');
+  const open=b.style.display!=='none';
+  b.style.display=open?'none':'block';
+  document.getElementById('mapToggle').textContent=open?'ひらく':'とじる';
+};
+document.getElementById('refToggle').onclick=()=>{
+  const b=document.getElementById('refBody');
+  const open=b.style.display!=='none';
+  b.style.display=open?'none':'block';
+  document.getElementById('refToggle').textContent=open?'ひらく':'とじる';
+};
+
 function renderAll(){
   if(!weekStart){
     weekStart = (dateDow(today())===6) ? addDays(mondayOf(today()),7) : mondayOf(today());
   }
   const d=appNow();
   document.getElementById('dateHead').textContent=`${d.getMonth()+1}/${d.getDate()}（${'日月火水木金土'[d.getDay()]}）`;
-  document.getElementById('cdNum').textContent=Math.round((TARGET_DATE-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/86400000);
+  const cdBase=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  const dTo=t=>Math.round((new Date(t+'T00:00:00')-cdBase)/86400000);
+  document.getElementById('cdMoshi1').textContent=dTo('2026-11-03');
+  document.getElementById('cdQB').textContent=dTo('2026-12-31');
+  document.getElementById('cdMoshi2').textContent=dTo('2027-01-18');
   renderToday();renderWeek();renderTasks();renderPublic();
 }
 
@@ -1238,29 +1694,53 @@ document.getElementById('clearBtn').onclick=async()=>{
 function authUI(){
   document.body.classList.toggle('is-owner',owner);
   const b=document.getElementById('authBtn');
-  b.textContent=owner?'🔓 編集中':'🔑 ログイン';
+  const cardIn=window.CardApp&&window.CardApp.isIn();
+  b.textContent=owner?'🔓 編集中':(cardIn?'🔑 計画にログイン':'🔑 ログイン');
   b.classList.toggle('on',owner);
 }
+window.refreshAuthUI=()=>{try{authUI();}catch(e){}};
 document.getElementById('authBtn').onclick=async()=>{
-  if(sbBroken||!sb){ toast('Supabaseに接続できてません。再読み込みしてみて'); return; }
-  if(owner){
-    if(!confirm('ログアウトする？（次回また入力が必要になります）'))return;
-    await sb.auth.signOut();owner=false;authUI();tab('public');toast('ログアウトしたで');
+  const cardIn=window.CardApp&&window.CardApp.isIn();
+  if(owner||cardIn){
+    if(!confirm('ログアウトする？（計画DB・カードDBの両方からログアウトします）'))return;
+    try{ if(sb&&!sbBroken)await sb.auth.signOut(); }catch(e){}
+    try{ if(window.CardApp)await window.CardApp.logout(); }catch(e){}
+    location.reload();
   }else document.getElementById('lo').classList.add('show');
 };
 document.getElementById('loClose').onclick=()=>document.getElementById('lo').classList.remove('show');
 document.getElementById('loSub').onclick=async()=>{
-  if(sbBroken||!sb){ document.getElementById('loMsg').textContent='Supabaseに接続できてません'; return; }
-  const msg=document.getElementById('loMsg');msg.textContent='確認中...';
-  const {error}=await sb.auth.signInWithPassword({
-    email:document.getElementById('loEmail').value,
-    password:document.getElementById('loPass').value});
-  if(error){msg.textContent='失敗：'+error.message;return;}
-  owner=true;authUI();tab('today');
-  document.getElementById('lo').classList.remove('show');
-  msg.textContent='';toast('ログインしたで、編集モードON');
-  try{ await loadAll(); }catch(e){ showErr('データ再読み込み',e); }
-  safeRender();
+  const msg=document.getElementById('loMsg');
+  const email=document.getElementById('loEmail').value;
+  const pw=document.getElementById('loPass').value;
+  msg.textContent='確認中...（2つのDBに順番にログインします）';
+  let qOK=false,qErr='計画DBに接続できてません';
+  if(!(sbBroken||!sb)){
+    const {error}=await sb.auth.signInWithPassword({email,password:pw});
+    if(error)qErr=error.message;else qOK=true;
+  }
+  let cOK=false,cErr='カードDBに接続できてません';
+  if(window.CardApp){
+    const r=await window.CardApp.login(email,pw);
+    cOK=r.ok;if(!cOK)cErr=r.error||'不明なエラー';
+  }
+  if(qOK){
+    owner=true;authUI();
+    try{ await loadAll(); }catch(e){ showErr('データ再読み込み',e); }
+  }
+  if(qOK&&cOK){
+    document.getElementById('lo').classList.remove('show');
+    msg.textContent='';toast('両方ログインしたで、編集モードON');
+    tab('today');safeRender();
+  }else if(qOK){
+    msg.textContent='計画DB ✅ ／ カードDB ❌：'+cErr;
+    tab('today');safeRender();
+  }else if(cOK){
+    msg.textContent='カードDB ✅ ／ 計画DB ❌：'+qErr;
+    safeRender();
+  }else{
+    msg.textContent='両方失敗：'+qErr;
+  }
 };
 
 /* ===== error reporting ===== */
@@ -1316,6 +1796,830 @@ function safeRender(){
     tab(owner?'today':'public');
     rendered=true;
   }
+})();
+</script>
+
+<script>
+/* ============================================================
+   口頭試問カード（旧medu5）— IIFEで隔離。DBはカード専用Supabase。
+   ============================================================ */
+(function(){
+const SUPABASE_URL = 'https://fxcfzrtcagkkhtqgzubg.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4Y2Z6cnRjYWdra2h0cWd6dWJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMTU1MDMsImV4cCI6MjA5Nzc5MTUwM30.qbztqyNqIWaKSzfIArij_RQewHo9B28xsIr5meGRd7o';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let perDayR1 = 2;   // 一周目 1日あたりの新規chapter数(ホームで変更でき、保存される)
+let perDayR2 = 5;   // 二周目 1日あたりのchapter数(同上)
+const CHECK_DAYS     = [1, 7]; // 一周目の確認タイミング(翌日・1週間後)
+
+const STRUCTURE = {
+  "腎":{"1":7,"2":5,"3":4,"4":12,"5":5},
+  "内分泌":{"1":8,"2":6,"3":8,"4":4,"5":5,"6":8,"7":4,"8":14},
+  "血液":{"1":8,"2":6,"3":7,"4":5,"5":7,"6":3,"7":3,"8":5,"9":4},
+  "免疫":{"1":6,"2":8,"3":8,"4":6,"5":9},
+  "感染症":{"1":10,"2":13,"3":4,"4":12,"5":7,"6":9,"7":8},
+  "呼吸器":{"1":15,"2":3,"3":5,"4":6,"5":3,"6":6,"7":8,"8":7,"9":7},
+  "循環器":{"1":15,"2":3,"3":11,"4":6,"5":5,"6":5,"7":5,"8":8},
+  "消化器":{"1":13,"2":7,"3":11,"4":8,"5":8,"6":13},
+  "肝胆膵":{"1":10,"2":12,"3":6,"4":12,"5":6},
+  "神経":{"1":14,"2":9,"3":5,"4":8,"5":4,"6":7,"7":6,"8":5,"9":5,"10":9,"11":5,"12":13},
+  "小児":{"1":7,"2":9,"3":9,"4":6,"5":11,"6":3,"7":8,"8":7,"9":11,"10":17,"11":9,"12":6,"13":9},
+  "産婦人":{"1":11,"2":8,"3":10,"4":5,"5":8,"6":8,"7":6,"8":9,"9":9,"10":6,"11":8,"12":7},
+  "加齢老年":{"1":6,"2":12,"3":4,"4":4},
+  "整形":{"1":10,"2":12,"3":8,"4":12,"5":6},
+  "眼":{"1":19,"2":13,"3":4,"4":4,"5":10,"6":5},
+  "耳鼻咽喉":{"1":18,"2":7,"3":10,"4":7,"5":5,"6":8},
+  "泌尿":{"1":10,"2":6,"3":4,"4":3,"5":7,"6":6},
+  "精神":{"1":5,"2":3,"3":6,"4":4,"5":7,"6":3,"7":8,"8":4,"9":7},
+  "皮膚":{"1":9,"2":6,"3":4,"4":4,"5":11,"6":7,"7":7,"8":4,"9":10},
+  "放射線":{"1":7,"2":6,"3":6},
+  "救急":{"1":9,"2":7,"3":10,"4":6,"5":10},
+  "中毒麻酔":{"1":2,"2":5,"3":3,"4":7,"5":7},
+  "公衆衛生":{"1":16,"2":8,"3":5,"4":7,"5":7,"6":8,"7":4,"8":10,"9":5,"10":9,"11":4,"12":3,"13":7,"14":6,"15":4,"16":8}
+};
+// 初期の進む順番 = 9/17改訂スケジュールの順番。
+// 「一覧」タブで並べ替えるとSupabaseに保存され、そちらが優先される。
+const DEFAULT_ORDER = ["腎","内分泌","血液","免疫","呼吸器","消化器","肝胆膵","感染症","産婦人","神経",
+  "循環器","小児","皮膚","放射線","整形","眼","耳鼻咽喉","泌尿","精神","加齢老年","救急","中毒麻酔","公衆衛生"];
+let SUBJECTS = DEFAULT_ORDER.slice();
+let CHAPTERS = [];
+function rebuildChapters(){
+  CHAPTERS = [];
+  SUBJECTS.forEach(s => Object.keys(STRUCTURE[s]||{}).forEach(c => CHAPTERS.push({subject:s, chapter:c})));
+}
+rebuildChapters();
+const TOTAL_CH = CHAPTERS.length; // = 173
+
+let currentUser = null;
+let cards = [];
+let cardsByCh = {};
+let chProg = {};
+let cardProg = {};
+let titles = {};
+let studyDays = {};
+let targets = {};
+let forcedMode = 'auto';
+let session = null;
+let savedSession = null;
+
+const $ = id => document.getElementById(id);
+const key = (s,c) => s + '||' + c;
+const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function dstr(d){ const x=new Date(d); return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0'); }
+function today(){ return dstr(new Date()); }
+function daysBetween(a,b){ return Math.round((new Date(b)-new Date(a))/86400000); }
+function chLabel(s,c){ const t=titles[key(s,c)]; return 'Ch.'+c+(t?' '+t:''); }
+function showMsg(el, text, isErr){ el.textContent=text; el.classList.toggle('err',!!isErr); el.classList.add('show'); }
+
+// ---------- ログイン(統合版: 右上🔑のモーダルから呼ばれる) ----------
+async function initAuth(){
+  const { data:{ session:s } } = await sb.auth.getSession();
+  if(s && s.user){ await onLoggedIn(s.user); }
+  else { $('cardLoginHint').style.display='block'; $('cardRoot').style.display='none'; }
+}
+sb.auth.onAuthStateChange((e, s)=>{ if(s && s.user && !currentUser) onLoggedIn(s.user); });
+
+async function onLoggedIn(user){
+  currentUser = user;
+  $('cardLoginHint').style.display = 'none';
+  $('cardRoot').style.display = 'block';
+  await loadAll();
+  window.refreshDash && window.refreshDash();
+  window.refreshAuthUI && window.refreshAuthUI();
+}
+
+// ---------- 画像 ----------
+async function uploadImage(file, path){
+  const { error } = await sb.storage.from('private-media').upload(path, file, { upsert:true, contentType:file.type });
+  return !error;
+}
+async function signedUrl(path){
+  if(!path) return null;
+  const { data, error } = await sb.storage.from('private-media').createSignedUrl(path, 3600);
+  return error ? null : data.signedUrl;
+}
+async function hydrateImages(root){
+  const els = (root || document).querySelectorAll('img[data-path]');
+  for(const el of els){
+    const u = await signedUrl(el.dataset.path);
+    if(u){ el.src = u; el.removeAttribute('data-path'); }
+    else { el.replaceWith(Object.assign(document.createElement('div'),
+      { className:'ch-meta', textContent:'画像を読み込めませんでした' })); }
+  }
+}
+
+// ============================================================
+// 読み込み
+// ============================================================
+async function loadAll(){
+  const [t, c, cp, chp, sd] = await Promise.all([
+    sb.from('chapter_titles').select('*'),
+    sb.from('cards').select('*').order('subject').order('chapter').order('idx'),
+    sb.from('card_progress').select('*').eq('user_id', currentUser.id),
+    sb.from('chapter_progress').select('*').eq('user_id', currentUser.id),
+    sb.from('study_days').select('*').eq('user_id', currentUser.id)
+  ]);
+  titles = {}; (t.data||[]).forEach(r=> titles[key(r.subject,r.chapter)] = r.title);
+  cards = c.data || [];
+  cardsByCh = {}; cards.forEach(x=>{ (cardsByCh[key(x.subject,x.chapter)] ||= []).push(x); });
+  cardProg = {}; (cp.data||[]).forEach(r=> cardProg[r.card_id] = r);
+  chProg = {}; (chp.data||[]).forEach(r=> chProg[key(r.subject,r.chapter)] = r);
+  studyDays = {}; (sd.data||[]).forEach(r=> studyDays[r.day] = r.cards);
+
+  const { data: st } = await sb.from('app_settings').select('*').eq('user_id', currentUser.id).maybeSingle();
+  if(st && Array.isArray(st.subject_order) && st.subject_order.length){
+    const saved = st.subject_order.filter(x => STRUCTURE[x]);
+    DEFAULT_ORDER.forEach(x => { if(!saved.includes(x)) saved.push(x); });
+    SUBJECTS = saved;
+  }
+  targets = (st && st.targets && typeof st.targets === 'object') ? st.targets : {};
+  perDayR1 = Math.max(1, parseInt(targets.per_r1) || 2);
+  perDayR2 = Math.max(1, parseInt(targets.per_r2) || 5);
+  rebuildChapters();
+
+  const { data: ss } = await sb.from('session_progress').select('*').eq('user_id', currentUser.id).maybeSingle();
+  if(ss && ss.day === today() && Array.isArray(ss.queue) && ss.idx < ss.queue.length){
+    savedSession = ss;
+  }else{
+    savedSession = null;
+    if(ss) await sb.from('session_progress').delete().eq('user_id', currentUser.id);
+  }
+
+  fillSubjects($('inSubject'), false);
+  fillSubjects($('filterSubject'), true);
+  renderOrder(); renderHome(); renderList(); refreshChapterSelect();
+}
+
+async function ensureChProg(s, c){
+  const k = key(s,c);
+  if(chProg[k]) return chProg[k];
+  const { data, error } = await sb.from('chapter_progress')
+    .insert({ user_id: currentUser.id, subject:s, chapter:c }).select().single();
+  if(error) return null;
+  chProg[k] = data; return data;
+}
+async function ensureCardProg(cardId){
+  if(cardProg[cardId]) return cardProg[cardId];
+  const { data, error } = await sb.from('card_progress')
+    .insert({ user_id: currentUser.id, card_id: cardId }).select().single();
+  if(error) return null;
+  cardProg[cardId] = data; return data;
+}
+async function bumpStudyDay(n){
+  const d = today();
+  studyDays[d] = (studyDays[d]||0) + n;
+  await sb.from('study_days').upsert({ user_id: currentUser.id, day:d, cards: studyDays[d] }, { onConflict:'user_id,day' });
+  window.refreshDash && window.refreshDash();
+}
+
+// ============================================================
+// フェーズ判定
+// ============================================================
+function hasCards(s,c){ return (cardsByCh[key(s,c)]||[]).length > 0; }
+function r1NewCount(){ return CHAPTERS.filter(ch => (chProg[key(ch.subject,ch.chapter)]||{}).r1_first_at).length; }
+function r1CheckCount(){ return CHAPTERS.filter(ch => (chProg[key(ch.subject,ch.chapter)]||{}).r1_d7_at).length; }
+function r2DoneCount(){ return CHAPTERS.filter(ch => (chProg[key(ch.subject,ch.chapter)]||{}).r2_at).length; }
+function xCards(){ return cards.filter(c=>{ const p=cardProg[c.id]; return p && p.r2_result==='x' && !p.r3_cleared; }); }
+
+function autoPhase(){
+  if(r1NewCount() < TOTAL_CH) return 'r1';
+  if(r2DoneCount() < TOTAL_CH) return 'r2';
+  return 'r3';
+}
+function phase(){ return forcedMode==='auto' ? autoPhase() : forcedMode; }
+
+// ------------------------------------------------------------
+// 今日のキューを作る
+// ------------------------------------------------------------
+function pendingChecks(){
+  const t = today(), d1 = [], d7 = [];
+  CHAPTERS.forEach(ch=>{
+    const pr = chProg[key(ch.subject,ch.chapter)];
+    if(!pr || !pr.r1_first_at || !hasCards(ch.subject,ch.chapter)) return;
+    if(!pr.r1_d1_at && daysBetween(pr.r1_first_at, t) >= CHECK_DAYS[0]){ d1.push(ch); return; }
+    if(pr.r1_d1_at && !pr.r1_d7_at && daysBetween(pr.r1_first_at, t) >= CHECK_DAYS[1]){ d7.push(ch); }
+  });
+  return { d1, d7 };
+}
+
+function buildQueue(){
+  const p = phase(), t = today();
+  if(p === 'r3'){
+    const list = xCards();
+    return { phase:'r3', groups:[{ label:'×だった問題', cards:list }], total:list.length };
+  }
+  const { d1, d7 } = pendingChecks();
+  const groups = [];
+  if(d1.length) groups.push({ label:'翌日の確認', chapters:d1, stage:'d1' });
+  if(d7.length) groups.push({ label:'1週間後の確認', chapters:d7, stage:'d7' });
+
+  if(p === 'r1'){
+    const newToday = CHAPTERS.filter(ch => (chProg[key(ch.subject,ch.chapter)]||{}).r1_first_at === t).length;
+    const fresh = CHAPTERS.filter(ch => !(chProg[key(ch.subject,ch.chapter)]||{}).r1_first_at && hasCards(ch.subject,ch.chapter));
+    const newList = fresh.slice(0, Math.max(0, perDayR1 - newToday));
+    if(newList.length) groups.push({ label:'新しいchapter', chapters:newList, stage:'new' });
+  }else{
+    const doneToday = CHAPTERS.filter(ch => (chProg[key(ch.subject,ch.chapter)]||{}).r2_at === t).length;
+    const left = Math.max(0, perDayR2 - doneToday);
+    const list = CHAPTERS.filter(ch => !(chProg[key(ch.subject,ch.chapter)]||{}).r2_at && hasCards(ch.subject,ch.chapter)).slice(0, left);
+    if(list.length) groups.push({ label:'二周目', chapters:list, stage:'r2' });
+  }
+
+  const total = groups.reduce((n,g)=> n + g.chapters.reduce((m,ch)=> m+(cardsByCh[key(ch.subject,ch.chapter)]||[]).length, 0), 0);
+  return { phase:p, groups, total };
+}
+
+// ============================================================
+// 今日あるべき位置(目標日からの逆算)
+// ============================================================
+function phaseStart(p){
+  let ds = [];
+  if(p==='r1') ds = CHAPTERS.map(ch => (chProg[key(ch.subject,ch.chapter)]||{}).r1_first_at);
+  else if(p==='r2') ds = CHAPTERS.map(ch => (chProg[key(ch.subject,ch.chapter)]||{}).r2_at);
+  ds = ds.filter(Boolean).sort();
+  return ds[0] || today();
+}
+function setRingMark(pct){
+  const el = $('ringMark');
+  if(pct === null || pct === undefined){ el.style.visibility = 'hidden'; return; }
+  el.style.visibility = 'visible';
+  el.style.strokeDashoffset = String(-(257.6 * Math.min(100, Math.max(0, pct)) / 100 - 1));
+}
+function renderPace(p, done, total, unit){
+  const box = $('paceBox'), inp = $('targetDate');
+  const tg = targets[p] || '';
+  if(document.activeElement !== inp) inp.value = tg;
+
+  if(!tg){
+    box.innerHTML = '<div class="pace-none">目標日を入れると、今日あるべき位置が出ます</div>';
+    setRingMark(null);
+    return;
+  }
+  const t = today();
+  const start = phaseStart(p);
+  const span = daysBetween(start, tg);
+  const elapsed = daysBetween(start, t);
+  const ratio = span > 0 ? Math.min(1, Math.max(0, elapsed / span)) : 1;
+  const ideal = Math.round(total * ratio);
+  const diff = done - ideal;
+  const leftDays = daysBetween(t, tg);
+  const remain = Math.max(0, total - done);
+  const gap = diff === 0 ? 'ちょうど'
+            : diff < 0 ? (-diff) + ' ' + unit + ' 遅れ'
+            : diff + ' ' + unit + ' 前倒し';
+
+  let line2;
+  if(remain === 0) line2 = 'この周は終わっています';
+  else if(leftDays > 0) line2 = '目標日まで <b>' + leftDays + '</b> 日 ・ 残り <b>' + remain + '</b> ' + unit +
+                                ' ・ 1日 <b>' + (remain/leftDays).toFixed(1) + '</b> ' + unit;
+  else if(leftDays === 0) line2 = '目標日は今日 ・ 残り <b>' + remain + '</b> ' + unit;
+  else line2 = '目標日を <b>' + (-leftDays) + '</b> 日 過ぎています ・ 残り <b>' + remain + '</b> ' + unit;
+
+  box.innerHTML = '今日の予定 <b>' + ideal + '</b> ' + unit + ' / 実際 <b>' + done + '</b> ' + unit +
+                  '（' + gap + '）<br>' + line2;
+  setRingMark(total ? ideal/total*100 : 0);
+}
+$('targetDate').addEventListener('change', async ()=>{
+  const p = phase(), v = $('targetDate').value;
+  if(v) targets[p] = v; else delete targets[p];
+  renderHome();
+  await sb.from('app_settings').upsert({ user_id: currentUser.id, targets }, { onConflict:'user_id' });
+});
+async function savePerDay(){
+  targets.per_r1 = perDayR1; targets.per_r2 = perDayR2;
+  await sb.from('app_settings').upsert({ user_id: currentUser.id, targets }, { onConflict:'user_id' });
+}
+$('perR1In').addEventListener('change', async ()=>{
+  perDayR1 = Math.max(1, parseInt($('perR1In').value) || 1);
+  $('perR1In').value = perDayR1;
+  renderHome(); window.refreshDash && window.refreshDash();
+  await savePerDay();
+});
+$('perR2In').addEventListener('change', async ()=>{
+  perDayR2 = Math.max(1, parseInt($('perR2In').value) || 1);
+  $('perR2In').value = perDayR2;
+  renderHome(); window.refreshDash && window.refreshDash();
+  await savePerDay();
+});
+
+// ============================================================
+// ホーム
+// ============================================================
+function renderHome(){
+  const p = phase();
+  const names = { r1:'一周目', r2:'二周目', r3:'三周目' };
+  $('phaseBig').textContent = names[p];
+
+  let done, total, desc;
+  if(p==='r1'){
+    done = r1NewCount(); total = TOTAL_CH;
+    desc = '1日'+perDayR1+'chapterずつ進めます。全問言えたらクリア。翌日と1週間後にもう一度確認します。〇×は記録しません。';
+  }else if(p==='r2'){
+    done = r2DoneCount(); total = TOTAL_CH;
+    const left = TOTAL_CH - r1CheckCount();
+    desc = '1日'+perDayR2+'chapter。ここで〇と×をつけます。少しでも自信がなければ×にしてください。'
+         + (left>0 ? ' 一周目の確認が'+left+'chapter残っているので、それを先に出します。' : '');
+  }else{
+    const x = xCards().length;
+    const allX = cards.filter(c => (cardProg[c.id]||{}).r2_result==='x').length;
+    done = allX - x; total = allX || 1;
+    desc = '二周目で×だった問題だけを出します。全部〇になったら終わりです。';
+  }
+  if(document.activeElement !== $('perR1In')) $('perR1In').value = perDayR1;
+  if(document.activeElement !== $('perR2In')) $('perR2In').value = perDayR2;
+  const pct = total ? Math.round(done/total*100) : 0;
+  $('ringArc').style.strokeDashoffset = String(257.6 * (1 - pct/100));
+  $('ringPct').textContent = pct + '%';
+  $('ringCap').textContent = done + ' / ' + total;
+  $('phaseDesc').textContent = desc;
+  $('cHeadSub').textContent = TOTAL_CH + ' chapter / ' + cards.length + ' 問';
+  renderPace(p, done, total, p==='r3' ? '問' : 'chapter');
+
+  const box = $('queueBox');
+  const resumable = savedSession && savedSession.day === today() && Array.isArray(savedSession.queue) && savedSession.idx < savedSession.queue.length;
+  if(resumable){
+    const remain = savedSession.queue.length - savedSession.idx;
+    box.innerHTML = '<div class="queue-row"><div><div class="qn">前回の続き</div>'+
+      '<div class="ql">途中で終わっていた分です</div></div><div class="qn">'+remain+' 問</div></div>';
+    $('btnStart').disabled = false;
+    $('btnStart').textContent = '続きから始める';
+  }else{
+    const q = buildQueue();
+    if(q.total === 0){
+      box.innerHTML = '<div class="cempty" style="padding:22px 6px;">' +
+        (cards.length === 0 ? 'まだカードがありません。<br>「入力」タブから口頭試問を追加してください。' : '今日の分は終わりです 🎉') + '</div>';
+      $('btnStart').disabled = true;
+    }else{
+      box.innerHTML = q.groups.map(g=>{
+        const n = g.cards ? g.cards.length : g.chapters.reduce((m,ch)=>m+(cardsByCh[key(ch.subject,ch.chapter)]||[]).length,0);
+        const sub = g.chapters ? g.chapters.map(ch=> ch.subject+' '+chLabel(ch.subject,ch.chapter)).join(' / ') : '';
+        return '<div class="queue-row"><div><div class="qn">'+esc(g.label)+'</div>'+
+               (sub?'<div class="ql">'+esc(sub)+'</div>':'')+'</div><div class="qn">'+n+' 問</div></div>';
+      }).join('');
+      $('btnStart').disabled = false;
+    }
+    $('btnStart').textContent = 'はじめる';
+  }
+
+  let streak = 0, d = new Date();
+  if(!studyDays[dstr(d)]) d.setDate(d.getDate()-1);
+  while(studyDays[dstr(d)]){ streak++; d.setDate(d.getDate()-1); }
+  $('cStStreak').textContent = streak;
+  $('cStToday').textContent = studyDays[today()] || 0;
+  $('cStCards').textContent = cards.length;
+}
+
+$('modeSwitch').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  forcedMode = b.dataset.mode;
+  [...$('modeSwitch').children].forEach(x=> x.classList.toggle('active', x===b));
+  renderHome();
+});
+
+// ============================================================
+// 学習セッション
+// ============================================================
+$('btnStart').addEventListener('click', async ()=>{
+  if(resumeSession()){ switchCTab('study'); return; }
+  const q = buildQueue();
+  if(q.total === 0) return;
+  startSession(q);
+  await persistSession();
+  switchCTab('study');
+});
+
+function startSession(q){
+  const items = [];
+  q.groups.forEach(g=>{
+    if(g.cards){
+      g.cards.forEach(c => items.push({ card:c, stage:'r3', chKey:key(c.subject,c.chapter) }));
+    }else{
+      g.chapters.forEach(ch=>{
+        (cardsByCh[key(ch.subject,ch.chapter)]||[]).forEach(c =>
+          items.push({ card:c, stage:g.stage, chKey:key(ch.subject,ch.chapter), subject:ch.subject, chapter:ch.chapter }));
+      });
+    }
+  });
+  session = {
+    phase: q.phase,
+    queue: items,
+    idx: 0,
+    solved: 0,
+    answered: 0,
+    totalUnique: items.length,
+    doneChapters: new Set(),
+    retried: false
+  };
+}
+
+function resumeSession(){
+  if(!savedSession || savedSession.day !== today()) return false;
+  const q = savedSession.queue;
+  if(!Array.isArray(q) || savedSession.idx >= q.length) return false;
+  const items = q.map(r=>{
+    const c = cards.find(x=>x.id===r.id);
+    return c ? { card:c, stage:r.stage, chKey:r.chKey, subject:r.subject, chapter:r.chapter, retry:r.retry } : null;
+  }).filter(Boolean);
+  if(!items.length) return false;
+  session = {
+    phase: savedSession.phase,
+    queue: items,
+    idx: Math.min(savedSession.idx, items.length),
+    solved: savedSession.solved || 0,
+    answered: 0,
+    totalUnique: savedSession.total_unique || items.length,
+    doneChapters: new Set(),
+    retried: false
+  };
+  return true;
+}
+
+async function persistSession(){
+  if(!session) return;
+  const rows = session.queue.map(it => ({
+    id: it.card.id, stage: it.stage, chKey: it.chKey,
+    subject: it.subject, chapter: it.chapter, retry: !!it.retry
+  }));
+  await sb.from('session_progress').upsert({
+    user_id: currentUser.id, day: today(), phase: session.phase,
+    queue: rows, idx: session.idx, solved: session.solved, total_unique: session.totalUnique
+  }, { onConflict:'user_id' });
+  savedSession = { day: today(), phase: session.phase, queue: rows, idx: session.idx, solved: session.solved, total_unique: session.totalUnique };
+}
+async function clearPersistedSession(){
+  savedSession = null;
+  await sb.from('session_progress').delete().eq('user_id', currentUser.id);
+}
+
+function renderSession(){
+  const body = $('sessBody');
+  if(!session){ body.innerHTML = '<div class="cempty">ホームの「はじめる」から開始してください</div>'; return; }
+
+  if(session.idx >= session.queue.length){
+    $('sessTitle').textContent = '完了';
+    $('sessCount').textContent = '';
+    $('sessBar').style.width = '100%';
+    body.innerHTML = '<div class="cempty">今日の分はここまでです 🎉<br>' + session.solved + ' 問クリアしました</div>' +
+      '<button class="primary" id="backHome">ホームに戻る</button>';
+    clearPersistedSession();
+    $('backHome').addEventListener('click', ()=>{ session=null; switchCTab('home'); renderHome(); });
+    return;
+  }
+
+  const it = session.queue[session.idx];
+  const c = it.card;
+  const names = { r1:'一周目', r2:'二周目', r3:'三周目' };
+  const stageName = { new:'新しいchapter', d1:'翌日の確認', d7:'1週間後の確認', r2:'二周目', r3:'×の問題' };
+  $('sessTitle').textContent = c.subject + ' ' + chLabel(c.subject, c.chapter) + ' — ' + (stageName[it.stage]||names[session.phase]);
+  $('sessCount').textContent = (session.idx+1) + ' / ' + session.queue.length;
+  $('sessBar').style.width = Math.round(session.solved / Math.max(1,session.totalUnique) * 100) + '%';
+
+  const isR1 = (session.phase === 'r1');
+  body.innerHTML =
+    '<div class="qcard">' +
+      '<div class="qtext">' + esc(c.question) + '</div>' +
+      '<div class="atext" id="aText">' + esc(c.answer) + '</div>' +
+      ((c.principle || c.principle_image_path) ? '<button class="princ-btn" id="princBtn">原理を見る</button>' : '') +
+      '<button class="primary" id="revealBtn">答えを見る</button>' +
+      '<div class="grade-row" id="gradeRow">' +
+        (isR1
+          ? '<button class="grade-btn g-no" data-r="x">言えなかった</button><button class="grade-btn g-ok" data-r="o">言えた</button>'
+          : '<button class="grade-btn g-no" data-r="x">×</button><button class="grade-btn g-ok" data-r="o">〇</button>') +
+      '</div>' +
+      (it.retry ? '<div class="retry-note">もう一度</div>' : '') +
+    '</div>' +
+    '<button class="ghost sess-quit" id="quitBtn">中断してホームに戻る</button>';
+
+  $('revealBtn').addEventListener('click', ()=>{
+    $('aText').classList.add('show');
+    $('revealBtn').style.display = 'none';
+    $('gradeRow').classList.add('show');
+    if(c.principle || c.principle_image_path) $('princBtn').classList.add('show');
+  });
+  if(c.principle || c.principle_image_path) $('princBtn').addEventListener('click', ()=>{
+    const box = document.createElement('div');
+    box.className = 'princ-box';
+    box.innerHTML = esc(c.principle||'') +
+      (c.principle_image_path ? '<img data-path="'+esc(c.principle_image_path)+'" alt="原理の図">' : '');
+    $('princBtn').replaceWith(box);
+    hydrateImages(box);
+  });
+  body.querySelectorAll('.grade-btn').forEach(b=>
+    b.addEventListener('click', ()=> answer(b.dataset.r)));
+  $('quitBtn').addEventListener('click', ()=>{ session=null; switchCTab('home'); renderHome(); });
+}
+
+async function answer(res){
+  const it = session.queue[session.idx];
+  const c = it.card;
+  session.answered++;
+
+  if(session.phase === 'r1'){
+    if(res === 'o'){ session.solved++; }
+    else { session.queue.push({ ...it, retry:true }); }
+  }else if(session.phase === 'r2'){
+    await ensureCardProg(c.id);
+    await sb.from('card_progress').update({ r2_result: res }).eq('user_id', currentUser.id).eq('card_id', c.id);
+    cardProg[c.id] = Object.assign(cardProg[c.id] || { card_id:c.id }, { r2_result: res });
+    session.solved++;
+  }else{
+    if(res === 'o'){
+      await sb.from('card_progress').update({ r3_cleared: true }).eq('user_id', currentUser.id).eq('card_id', c.id);
+      cardProg[c.id] = Object.assign(cardProg[c.id] || { card_id:c.id }, { r3_cleared:true });
+      session.solved++;
+    }else{
+      session.queue.push({ ...it, retry:true });
+    }
+  }
+
+  session.idx++;
+  await maybeFinishChapter(it);
+  await bumpStudyDay(1);
+  await persistSession();
+  renderSession();
+}
+
+async function maybeFinishChapter(it){
+  if(!it.subject || session.phase === 'r3') return;
+  const k = it.chKey;
+  if(session.doneChapters.has(k)) return;
+  const remain = session.queue.slice(session.idx).some(x => x.chKey === k);
+  if(remain) return;
+  session.doneChapters.add(k);
+
+  await ensureChProg(it.subject, it.chapter);
+  const field = { new:'r1_first_at', d1:'r1_d1_at', d7:'r1_d7_at', r2:'r2_at' }[it.stage];
+  if(!field) return;
+  const patch = {}; patch[field] = today();
+  await sb.from('chapter_progress').update(patch).eq('user_id', currentUser.id).eq('subject', it.subject).eq('chapter', it.chapter);
+  chProg[k] = Object.assign(chProg[k] || { subject:it.subject, chapter:it.chapter }, patch);
+}
+
+// ============================================================
+// 一覧
+// ============================================================
+function chStatus(s,c){
+  const p = chProg[key(s,c)] || {};
+  if(p.r2_at) return { cls:'b-done', txt:'二周目済' };
+  if(p.r1_d7_at) return { cls:'b-done', txt:'一周目クリア' };
+  if(p.r1_d1_at) return { cls:'b-part', txt:'1週間後待ち' };
+  if(p.r1_first_at) return { cls:'b-part', txt:'翌日確認待ち' };
+  return { cls:'b-none', txt:'未着手' };
+}
+function renderList(){
+  const f = $('filterSubject').value;
+  const wrap = $('listWrap');
+  const subs = f ? [f] : SUBJECTS;
+  let html = '';
+  subs.forEach(s=>{
+    html += '<div class="grp-sub">' + esc(s) + '</div>';
+    Object.keys(STRUCTURE[s]).forEach(c=>{
+      const list = cardsByCh[key(s,c)] || [];
+      const st = chStatus(s,c);
+      const nx = list.filter(x => (cardProg[x.id]||{}).r2_result==='x' && !(cardProg[x.id]||{}).r3_cleared).length;
+      html += '<div class="ch-item" data-k="'+esc(key(s,c))+'">' +
+        '<div class="ch-top"><div><div class="ch-name">'+esc(chLabel(s,c))+
+          '<span class="badge '+st.cls+'">'+st.txt+'</span>'+
+          (nx ? '<span class="badge b-x">×'+nx+'</span>' : '')+'</div>'+
+        '<div class="ch-meta">'+list.length+' 問</div></div><div style="color:#9ab;font-size:18px;">›</div></div>'+
+        '<div class="ch-cards"></div></div>';
+    });
+  });
+  wrap.innerHTML = html || '<div class="cempty">chapterがありません</div>';
+
+  wrap.querySelectorAll('.ch-item').forEach(el=>{
+    el.querySelector('.ch-top').addEventListener('click', ()=>{
+      const box = el.querySelector('.ch-cards');
+      if(box.classList.contains('show')){ box.classList.remove('show'); return; }
+      renderChapterCards(box, el.dataset.k);
+      box.classList.add('show');
+    });
+  });
+}
+function renderChapterCards(box, k){
+  const list = cardsByCh[k] || [];
+  if(!list.length){ box.innerHTML = '<div style="font-size:12.5px;color:var(--text-soft);padding:6px 0;">まだ問題がありません</div>'; return; }
+  box.innerHTML = list.map(c=>{
+    const p = cardProg[c.id] || {};
+    const mark = p.r2_result==='o' ? '<span class="badge b-done">〇</span>'
+               : p.r2_result==='x' ? '<span class="badge '+(p.r3_cleared?'b-done':'b-x')+'">'+(p.r3_cleared?'× → 〇':'×')+'</span>' : '';
+    return '<div class="mini" data-id="'+c.id+'">'+
+      '<div class="mq">'+esc(c.question)+mark+'</div>'+
+      '<div class="ma">'+esc(c.answer)+'</div>'+
+      ((c.principle || c.principle_image_path) ? '<div class="mp">'+esc(c.principle||'')+
+        (c.principle_image_path ? '<img data-path="'+esc(c.principle_image_path)+'" alt="原理の図">' : '')+'</div>' : '')+
+      '<div class="mrow"><button data-act="prin">'+((c.principle||c.principle_image_path)?'原理を直す':'原理を足す')+'</button>'+
+      '<button data-act="del" class="del">削除</button></div>'+
+      '<div class="prin-edit"><textarea placeholder="この問題の原理・理屈(任意)">'+esc(c.principle||'')+'</textarea>'+
+      '<label style="margin-top:8px;">写真(任意)</label>'+
+      '<input type="file" accept="image/*" data-act="prin-file">'+
+      (c.principle_image_path ? '<div class="prin-thumb"><img data-path="'+esc(c.principle_image_path)+'" alt="今の写真">'+
+        '<button data-act="prin-img-del">今の写真を外す</button></div>' : '')+
+      '<button class="primary small" data-act="save-prin">保存する</button>'+
+      '<div class="msg" data-act="prin-msg"></div></div></div>';
+  }).join('');
+
+  box.querySelectorAll('.mini').forEach(el=>{
+    const id = el.dataset.id;
+    el.querySelector('[data-act=prin]').addEventListener('click', ()=> el.querySelector('.prin-edit').classList.toggle('show'));
+    let dropImage = false;
+    const delBtn = el.querySelector('[data-act=prin-img-del]');
+    if(delBtn) delBtn.addEventListener('click', ()=>{
+      dropImage = true;
+      delBtn.closest('.prin-thumb').style.opacity = '.3';
+      delBtn.textContent = '保存すると外れます';
+      delBtn.disabled = true;
+    });
+    el.querySelector('[data-act=save-prin]').addEventListener('click', async (ev)=>{
+      const btn = ev.currentTarget, msg = el.querySelector('[data-act=prin-msg]');
+      const v = el.querySelector('textarea').value.trim();
+      const file = el.querySelector('[data-act=prin-file]').files[0];
+      const c = cards.find(x=>x.id===id);
+      let path = c.principle_image_path || null;
+
+      btn.disabled = true; btn.textContent = '保存中…';
+      if(dropImage) path = null;
+      if(file){
+        if(file.size > 8*1024*1024){
+          showMsg(msg, '写真が大きすぎます(8MBまで)。撮り直すか縮小してください。', true);
+          btn.disabled = false; btn.textContent = '保存する'; return;
+        }
+        const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
+        const p = 'principles/' + id + '-' + Date.now() + '.' + ext;
+        if(!await uploadImage(file, p)){
+          showMsg(msg, '写真を上げられませんでした。通信を確認してもう一度試してください。', true);
+          btn.disabled = false; btn.textContent = '保存する'; return;
+        }
+        path = p;
+      }
+      const { error } = await sb.from('cards').update({ principle: v || null, principle_image_path: path }).eq('id', id);
+      btn.disabled = false; btn.textContent = '保存する';
+      if(error){ showMsg(msg, '保存できませんでした: '+error.message, true); return; }
+      c.principle = v || null; c.principle_image_path = path;
+      renderChapterCards(el.closest('.ch-cards'), el.closest('.ch-item').dataset.k);
+    });
+    el.querySelector('[data-act=del]').addEventListener('click', async ()=>{
+      if(!confirm('この問題を消しますか？')) return;
+      const { error } = await sb.from('cards').delete().eq('id', id);
+      if(error){ alert('消せませんでした: '+error.message); return; }
+      await loadAll();
+    });
+  });
+  hydrateImages(box);
+}
+$('filterSubject').addEventListener('change', renderList);
+
+// ---------- 進む順番の編集 ----------
+async function saveOrder(){
+  const { error } = await sb.from('app_settings')
+    .upsert({ user_id: currentUser.id, subject_order: SUBJECTS }, { onConflict:'user_id' });
+  showMsg($('orderMsg'), error ? ('保存できませんでした: '+error.message) : '順番を保存しました', !!error);
+}
+function renderOrder(){
+  $('orderList').innerHTML = SUBJECTS.map((sub,i)=>{
+    const chs = Object.keys(STRUCTURE[sub]||{});
+    const done = chs.filter(c => (chProg[key(sub,c)]||{}).r1_first_at).length;
+    return '<div class="ord"><span class="ord-n">'+(i+1)+'</span>'+
+      '<span class="ord-s">'+esc(sub)+'</span>'+
+      '<span class="ord-c">'+done+'/'+chs.length+'</span>'+
+      '<button data-i="'+i+'" data-d="-1"'+(i===0?' disabled':'')+'>▲</button>'+
+      '<button data-i="'+i+'" data-d="1"'+(i===SUBJECTS.length-1?' disabled':'')+'>▼</button></div>';
+  }).join('');
+  $('orderList').querySelectorAll('button').forEach(b=> b.addEventListener('click', async ()=>{
+    const i = parseInt(b.dataset.i), j = i + parseInt(b.dataset.d);
+    [SUBJECTS[i], SUBJECTS[j]] = [SUBJECTS[j], SUBJECTS[i]];
+    rebuildChapters();
+    renderOrder(); renderList(); renderHome();
+    fillSubjects($('filterSubject'), true);
+    await saveOrder();
+  }));
+}
+$('resetOrder').addEventListener('click', async ()=>{
+  SUBJECTS = DEFAULT_ORDER.slice();
+  rebuildChapters();
+  renderOrder(); renderList(); renderHome();
+  fillSubjects($('filterSubject'), true);
+  await saveOrder();
+});
+
+// ============================================================
+// 入力
+// ============================================================
+function fillSubjects(sel, all){
+  sel.innerHTML = (all?'<option value="">すべての科目</option>':'') + SUBJECTS.map(s=>'<option>'+s+'</option>').join('');
+}
+fillSubjects($('inSubject'), false);
+fillSubjects($('filterSubject'), true);
+function refreshChapterSelect(){
+  const s = $('inSubject').value, sel = $('inChapter'), cur = sel.value;
+  sel.innerHTML = Object.keys(STRUCTURE[s]||{}).map(c=>'<option value="'+c+'">'+esc(chLabel(s,c))+'</option>').join('');
+  if(cur && STRUCTURE[s] && STRUCTURE[s][cur]!==undefined) sel.value = cur;
+  $('inTitle').value = titles[key(s, sel.value)] || '';
+}
+$('inSubject').addEventListener('change', refreshChapterSelect);
+$('inChapter').addEventListener('change', ()=>{ $('inTitle').value = titles[key($('inSubject').value, $('inChapter').value)] || ''; });
+$('inTitle').addEventListener('blur', async ()=>{
+  const s=$('inSubject').value, c=$('inChapter').value, t=$('inTitle').value.trim();
+  if(!t || titles[key(s,c)] === t) return;
+  const { error } = await sb.from('chapter_titles').upsert({ subject:s, chapter:c, title:t }, { onConflict:'subject,chapter' });
+  if(!error){ titles[key(s,c)] = t; refreshChapterSelect(); renderList(); showMsg($('titleMsg'),'タイトルを保存しました'); }
+});
+
+document.querySelectorAll('#view-cards .copybtn').forEach(b=> b.addEventListener('click', async ()=>{
+  const txt = $(b.dataset.target).innerText.replace(/^コピー\s*/,'');
+  try{ await navigator.clipboard.writeText(txt); b.textContent='コピー済'; setTimeout(()=>b.textContent='コピー',1200); }
+  catch(e){ alert('コピーできませんでした。長押しで選択してください。'); }
+}));
+
+let pending = [];
+function parseText(text){
+  const norm = text.replace(/\r\n/g,'\n');
+  const re = /Q[:：]\s*([\s\S]*?)\n?\s*A[:：]\s*([\s\S]*?)(?=\n\s*(?:-{3,}\s*\n\s*)?Q[:：]|$)/gi;
+  const out = []; let m;
+  while((m = re.exec(norm)) !== null){
+    const q = m[1].trim(), a = m[2].replace(/\n-{3,}\s*$/,'').trim();
+    if(q) out.push({ question:q, answer:a });
+  }
+  return out;
+}
+function renderPreview(){
+  $('pvWrap').innerHTML = pending.map((p,i)=>
+    '<div class="pv"><span class="pvx" data-i="'+i+'">消す</span>'+
+    '<div class="pvq">'+esc(p.question)+'</div><div class="pva">'+esc(p.answer)+'</div></div>').join('');
+  $('pvWrap').querySelectorAll('.pvx').forEach(x=> x.addEventListener('click', ()=>{
+    pending.splice(parseInt(x.dataset.i),1); renderPreview();
+  }));
+  $('cSaveBtn').style.display = pending.length ? 'block' : 'none';
+  $('cSaveBtn').textContent = pending.length + ' 問をこのchapterに保存する';
+}
+$('parseBtn').addEventListener('click', ()=>{
+  pending = parseText($('pasteBox').value);
+  showMsg($('parseMsg'), pending.length ? pending.length+' 問を読み取りました。確認して保存してください。' : 'Q: / A: の形が見つかりませんでした。', !pending.length);
+  renderPreview();
+});
+$('cSaveBtn').addEventListener('click', async ()=>{
+  const s = $('inSubject').value, c = $('inChapter').value;
+  const base = (cardsByCh[key(s,c)]||[]).length;
+  const rows = pending.map((p,i)=> ({ subject:s, chapter:c, idx: base+i, question:p.question, answer:p.answer }));
+  const { error } = await sb.from('cards').insert(rows);
+  if(error){ showMsg($('parseMsg'), '保存できませんでした: '+error.message, true); return; }
+  pending = []; $('pasteBox').value = ''; renderPreview();
+  showMsg($('parseMsg'), rows.length + ' 問を保存しました');
+  await loadAll();
+});
+$('manBtn').addEventListener('click', async ()=>{
+  const q = $('manQ').value.trim(), a = $('manA').value.trim();
+  if(!q){ showMsg($('manMsg'),'問題を入れてください',true); return; }
+  const s = $('inSubject').value, c = $('inChapter').value;
+  const base = (cardsByCh[key(s,c)]||[]).length;
+  const { error } = await sb.from('cards').insert({ subject:s, chapter:c, idx:base, question:q, answer:a });
+  if(error){ showMsg($('manMsg'), '保存できませんでした: '+error.message, true); return; }
+  $('manQ').value=''; $('manA').value='';
+  showMsg($('manMsg'), '追加しました');
+  await loadAll();
+});
+
+// ============================================================
+// カード内タブ
+// ============================================================
+function switchCTab(name){
+  document.querySelectorAll('#view-cards .ctab').forEach(t=> t.classList.toggle('active', t.dataset.ctab===name));
+  document.querySelectorAll('#view-cards .cpage').forEach(p=> p.classList.remove('active'));
+  $('cpage-'+name).classList.add('active');
+  window.scrollTo(0,0);
+  if(name==='home') renderHome();
+  if(name==='list'){ renderOrder(); renderList(); }
+  if(name==='study') renderSession();
+}
+document.querySelectorAll('#view-cards .ctab').forEach(t=> t.addEventListener('click', ()=> switchCTab(t.dataset.ctab)));
+
+// ============================================================
+// 統合アプリ向けの公開API(ホームのダッシュボードが使う)
+// ============================================================
+window.CardApp = {
+  isIn: ()=> !!currentUser,
+  login: async (email,password)=>{
+    try{
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if(error) return { ok:false, error:error.message };
+      return { ok:true };
+    }catch(e){ return { ok:false, error:String(e&&e.message||e) }; }
+  },
+  logout: async ()=>{ try{ await sb.auth.signOut(); }catch(e){} },
+  summary: ()=>{
+    if(!currentUser) return null;
+    const resumable = savedSession && savedSession.day===today() && Array.isArray(savedSession.queue) && savedSession.idx<savedSession.queue.length;
+    const q = buildQueue();
+    const queue = resumable ? (savedSession.queue.length - savedSession.idx) : q.total;
+    let streak = 0, d = new Date();
+    if(!studyDays[dstr(d)]) d.setDate(d.getDate()-1);
+    while(studyDays[dstr(d)]){ streak++; d.setDate(d.getDate()-1); }
+    return { queue, phase:q.phase, streak, todayCount: studyDays[today()]||0, total: cards.length };
+  },
+  startToday: ()=>{ const b=$('btnStart'); if(b && !b.disabled) b.click(); }
+};
+
+initAuth();
 })();
 </script>
 </body>
