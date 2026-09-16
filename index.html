@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>国試神アプリ</title>
+<title>国試アプリ</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 
-<meta property="og:title" content="国試神アプリ">
+<meta property="og:title" content="国試アプリ">
 <meta property="og:description" content="medu4 × QB × 口頭試問カード 統合アプリ">
 <meta property="og:type" content="website">
 <meta property="og:image" content="icon-512.png">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="国試対策アプリ">
+<meta name="twitter:title" content="国試アプリ">
 <meta name="twitter:image" content="icon-512.png">
 
 <link rel="manifest" href="manifest.json">
@@ -22,7 +22,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="国試対策">
+<meta name="apple-mobile-web-app-title" content="国試アプリ">
 <meta name="theme-color" content="#16232e">
 
 <style>
@@ -389,9 +389,9 @@
 <header>
   <div class="hrow">
     <div>
-      <div class="htitle">国試神アプリ</div>
+      <div class="htitle">国試アプリ</div>
       <div class="hsub" id="dateHead"></div>
-      <div class="hsub" style="opacity:.6;">build 2026-09-17-v2 / データ一覧・カード設定・時間表示オフ</div>
+      <div class="hsub" style="opacity:.6;">build 2026-09-17-v3 / 整理・複数選択・ルール改訂</div>
     </div>
     <button class="auth-btn" id="authBtn">🔑</button>
   </div>
@@ -418,7 +418,6 @@
 
 <!-- ========== TODAY ========== -->
 <div class="view" id="view-today">
-  <div class="card rulecard" id="rulesToday"></div>
   <div class="stats">
     <div class="stat s1"><div class="k">連続日数</div><div class="v" id="stStreak">🔥0</div></div>
     <div class="stat s2"><div class="k">昨日やった量</div><div class="v" id="stYest">-</div></div>
@@ -428,8 +427,26 @@
     <div id="dashPaceBody"><div class="empty">読み込み中…</div></div>
   </div>
   <div class="card">
+    <h2>🧩 今日のメイン科目</h2>
+    <div id="todayMain"></div>
+  </div>
+  <div class="card">
     <h2>🃏 口頭試問カード（きょうの分）</h2>
     <div id="dashCardBody"><div class="dash-login-hint">読み込み中…</div></div>
+  </div>
+  <div class="card" id="logDateCard">
+    <h2>🗓 記録する日 <span id="logDateBadge" style="font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:20px;"></span></h2>
+    <div style="display:flex;gap:6px;">
+      <input type="date" id="logDateInput" class="txtin" style="margin-bottom:0;flex:1;">
+      <button class="wk-btn wk-ghost" id="logDateResetBtn" style="flex:0 0 auto;padding:0 14px;display:none;">今日に戻す</button>
+    </div>
+    <div class="empty" style="padding:6px 2px 0;">入力し忘れた日の分は、ここを過去の日付にしてから下の記録ボタンを押すと、その日の記録として残せるで。記録し終わったら「今日に戻す」を忘れずに。</div>
+  </div>
+  <div class="card rulecard">
+    <h2>📌 やり方のルール
+      <button class="wk-btn wk-ghost" id="ruleToggle" style="flex:0 0 auto;padding:5px 9px;font-size:10px;">ひらく</button>
+    </h2>
+    <div id="rulesToday" style="display:none;"></div>
   </div>
   <div class="card">
     <h2>🗺 作戦マップ
@@ -450,6 +467,7 @@
         <li>medu4 特講／118回update 購入確認</li>
         <li>Q assist plus 購入</li>
         <li>QBを全部◎にする</li>
+        <li>medu4の臨床像・練習問題（約3,500問）を全部◎にする</li>
         <li>直近5年分を徹底する（1周目問題も）</li>
       </ul>
     </div>
@@ -473,18 +491,8 @@
       </table>
     </div>
   </div>
-  <div class="card" id="logDateCard">
-    <h2>🗓 記録する日 <span id="logDateBadge" style="font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:20px;"></span></h2>
-    <div style="display:flex;gap:6px;">
-      <input type="date" id="logDateInput" class="txtin" style="margin-bottom:0;flex:1;">
-      <button class="wk-btn wk-ghost" id="logDateResetBtn" style="flex:0 0 auto;padding:0 14px;display:none;">今日に戻す</button>
-    </div>
-    <div class="empty" style="padding:6px 2px 0;">入力し忘れた日の分は、ここを過去の日付にしてから下の記録ボタンを押すと、その日の記録として残せるで。記録し終わったら「今日に戻す」を忘れずに。</div>
-  </div>
-  <div class="card">
-    <h2>🧩 今日のメイン科目</h2>
-    <div id="todayMain"></div>
-  </div>
+
+
 </div>
 
 <!-- ========== WEEK ========== -->
@@ -494,6 +502,7 @@
     <select id="subjSel"></select>
     <div class="wk-actions">
       <button class="wk-btn wk-primary" id="autoBtn">⚡️ 自動でわりふる</button>
+      <button class="wk-btn wk-ghost" id="selAllBtn">☑️ ぜんぶ選ぶ</button>
       <button class="wk-btn wk-ghost" id="clearBtn">クリア</button>
     </div>
     <div id="selHint"></div>
@@ -530,7 +539,6 @@
 
 <!-- ========== PUBLIC ========== -->
 <div class="view active" id="view-public">
-  <div class="card rulecard" id="rulesPublic"></div>
   <div class="card"><h2>📅 今週の予定</h2><div id="pubWeek"></div></div>
   <div class="card"><h2>✅ 昨日やったこと</h2><div id="pubYest" style="font-size:12px;line-height:1.7;"></div></div>
   <div class="card"><h2>🔥 連続記録</h2>
@@ -552,10 +560,9 @@
 
 <!-- ========== CARDS (旧medu5 統合) ========== -->
 <div class="view" id="view-cards">
-  <div id="cardLoginHint" class="card" style="display:none;">
+  <div id="cardLoginHint" class="card">
     <h2>🃏 口頭試問カード</h2>
-    <div class="dash-login-hint">カードのデータベースにまだログインしていません。<br>
-    右上の🔑ボタンから、いつものメールアドレスとパスワードでログインすると使えるようになるで。</div>
+    <div class="dash-login-hint" id="cardHintMsg">確認中…（この表示のまま変わらへん場合は、右上の🔑ボタンからいつものメールアドレスとパスワードでログインしてみて。🔑が「🔓編集中」になってるのにここが変わらんときは、一度ログアウトしてログインし直すと直ることが多いで）</div>
   </div>
   <div id="cardRoot" style="display:none;">
     <div class="chead">
@@ -704,7 +711,7 @@ A: 答え
   <button class="tb owner" data-v="week"><span class="ic">🧩</span>週間計画</button>
   <button class="tb owner" data-v="tasks"><span class="ic">📋</span>タスク</button>
   <button class="tb" data-v="cards"><span class="ic">🃏</span>カード</button>
-  <button class="tb" data-v="public"><span class="ic">👀</span>公開</button>
+  <button class="tb" data-v="public"><span class="ic">🌱</span>あゆみ</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -970,7 +977,6 @@ const catalog = [
 
 /* ===== 📌 常時表示するルール（QB記録／medu4演習） ===== */
 const RULES_HTML=`
-  <h2>📌 やり方のルール</h2>
   <div class="rule-sec">
     <div class="rule-t"><span class="pin">🔁</span>基本ループ</div>
     <ul class="rule-l">
@@ -982,21 +988,19 @@ const RULES_HTML=`
     <div class="rule-t"><span class="pin">📗</span>QBの記録ルール</div>
     <ul class="rule-l">
       <li><span class="rule-mk">⭕️</span> 正解した</li>
+      <li><span class="rule-mk">△</span> <b>たまたま当たった</b></li>
       <li><span class="rule-mk">❌</span> 間違えた</li>
-      <li><span class="rule-mk">❌</span> <b>たまたま当たった問題も×</b></li>
     </ul>
     <div class="rule-goal">目標：2026年内に QB 6,979問を1周（必修1,418問こみ）</div>
   </div>
   <div class="rule-div"></div>
   <div class="rule-sec">
-    <div class="rule-t"><span class="pin">📘</span>medu4の演習ルール</div>
+    <div class="rule-t"><span class="pin">📘</span>medu4のルール</div>
     <ul class="rule-l">
-      <li>1チャプター終えるごとに、medu4アプリ内の<b>臨床像＋練習問題</b>を演習</li>
-      <li>あたらしいシリーズだけで<b>約3,500問</b></li>
-      <li>2026年内に<b>全部◎</b>にする</li>
-      <li>加えて<b>口頭試問</b>で、自分の言葉で説明できるか確認</li>
+      <li>medu4は<b>視聴 → 口頭試問（カード）</b>だけ回す</li>
+      <li><b>臨床像・練習問題はいったん飛ばす</b>（あたらしいシリーズだけで約3,500問）</li>
     </ul>
-    <div class="rule-goal">※ 練習問題は日程には組み込まない（自己管理）</div>
+    <div class="rule-goal">※ 練習問題は 1/19以降 にやる</div>
   </div>`;
 function renderRules(){
   ['rulesToday','rulesPublic'].forEach(id=>{
@@ -1013,7 +1017,7 @@ const TARGET_DATE=new Date('2027-01-18T00:00:00');
 const QB_PER_HOUR=20, CH_HOURS=1.5;
 
 let state={pieces:{},caps:[...DEFAULT_CAP],logs:{},streak:0,lastLog:null,history:{}};
-let selChip=null, weekSubj='AUTO', edSubj=null, weekStart=null;
+let selChips=new Set(), weekSubj='AUTO', edSubj=null, weekStart=null;
 let logDate=null; // null=今日。過去日をセットすると、その日の記録として保存する（入力し忘れ分の後日入力用）
 
 /* ===== date utils ===== */
@@ -1279,19 +1283,22 @@ function weekSubjNames(){
 function renderWeek(){
   renderSubjSel();
   const names=weekSubjNames();
+  const un=Object.values(state.pieces).filter(p=>p.assignedDate===null&&names.includes(p.subject)&&p.doneValue<p.targetValue);
+  [...selChips].forEach(id=>{if(!un.some(p=>p.id===id))selChips.delete(id);});
   const hint=document.getElementById('selHint');
-  hint.innerHTML=selChip?`<div class="sel-hint">👇 配置したい日をタップ</div>`:'';
+  hint.innerHTML=selChips.size?`<div class="sel-hint">👇 ${selChips.size}件えらび中。配置したい日をタップ（まとめて入る）</div>`:'';
 
   const tray=document.getElementById('tray');tray.innerHTML='';
-  const un=Object.values(state.pieces).filter(p=>p.assignedDate===null&&names.includes(p.subject)&&p.doneValue<p.targetValue);
   if(!un.length)tray.innerHTML='<div class="empty">未配置なし（配置済み or 完了済み）</div>';
   un.forEach(p=>{
     const b=document.createElement('button');
-    b.className='chip '+(p.type==='video'?'ch-m':'ch-a')+(selChip===p.id?' sel':'');
+    b.className='chip '+(p.type==='video'?'ch-m':'ch-a')+(selChips.has(p.id)?' sel':'');
     b.textContent=p.label;
-    b.onclick=()=>{selChip=selChip===p.id?null:p.id;renderWeek();};
+    b.onclick=()=>{if(selChips.has(p.id))selChips.delete(p.id);else selChips.add(p.id);renderWeek();};
     tray.appendChild(b);
   });
+  const sab=document.getElementById('selAllBtn');
+  sab.textContent=(un.length&&selChips.size===un.length)?'☑️ 選択かいじょ':'☑️ ぜんぶ選ぶ';
 
   const wn=document.getElementById('weekNav');
   const weekEnd=addDays(weekStart,6);
@@ -1317,12 +1324,14 @@ function renderWeek(){
     row.appendChild(cell);
 
     const slot=document.createElement('div');slot.className='dslot';
-    slot.onclick=()=>{
-      if(!selChip)return;
+    slot.onclick=async()=>{
+      if(!selChips.size)return;
       if(!gate())return;
-      state.pieces[selChip].assignedDate=date;
-      const id=selChip;selChip=null;
-      savePiece(id);safeRender();
+      const ids=[...selChips];selChips.clear();
+      ids.forEach(id=>{state.pieces[id].assignedDate=date;});
+      for(const id of ids)await savePiece(id);
+      toast(`${ids.length}件を ${fmt(date)} に配置したで`);
+      safeRender();
     };
     if(!ps.length)slot.innerHTML='<span class="ph">タップで配置</span>';
     ps.forEach(p=>{
@@ -1650,6 +1659,12 @@ document.getElementById('mapToggle').onclick=()=>{
   b.style.display=open?'none':'block';
   document.getElementById('mapToggle').textContent=open?'ひらく':'とじる';
 };
+document.getElementById('ruleToggle').onclick=()=>{
+  const b=document.getElementById('rulesToday');
+  const open=b.style.display!=='none';
+  b.style.display=open?'none':'block';
+  document.getElementById('ruleToggle').textContent=open?'ひらく':'とじる';
+};
 document.getElementById('refToggle').onclick=()=>{
   const b=document.getElementById('refBody');
   const open=b.style.display!=='none';
@@ -1679,7 +1694,14 @@ function tab(v){
   window.scrollTo(0,0);
 }
 document.querySelectorAll('.tb').forEach(b=>b.onclick=()=>tab(b.dataset.v));
-document.getElementById('subjSel').onchange=e=>{weekSubj=e.target.value;selChip=null;renderWeek();};
+document.getElementById('subjSel').onchange=e=>{weekSubj=e.target.value;selChips.clear();renderWeek();};
+document.getElementById('selAllBtn').onclick=()=>{
+  const names=weekSubjNames();
+  const un=Object.values(state.pieces).filter(p=>p.assignedDate===null&&names.includes(p.subject)&&p.doneValue<p.targetValue);
+  if(un.length&&selChips.size===un.length)selChips.clear();
+  else{selChips.clear();un.forEach(p=>selChips.add(p.id));}
+  renderWeek();
+};
 document.getElementById('edSubjSel').onchange=e=>{edSubj=e.target.value;renderTasks();};
 document.getElementById('autoBtn').onclick=autoAssign;
 document.getElementById('clearBtn').onclick=async()=>{
@@ -1804,6 +1826,18 @@ function safeRender(){
    口頭試問カード（旧medu5）— IIFEで隔離。DBはカード専用Supabase。
    ============================================================ */
 (function(){
+function cardHint(msg){
+  const h=document.getElementById('cardLoginHint');
+  const m=document.getElementById('cardHintMsg');
+  if(h)h.style.display='block';
+  const r=document.getElementById('cardRoot');
+  if(r)r.style.display='none';
+  if(m&&msg)m.innerHTML=msg;
+}
+if(typeof supabase==='undefined'){
+  cardHint('通信ライブラリが読み込めませんでした。電波のいい場所で再読み込みしてみて。<br>（ダウンロードしたファイルを直接開いてる場合は動きません。GitHubに上げたURLから開いてな）');
+  return;
+}
 const SUPABASE_URL = 'https://fxcfzrtcagkkhtqgzubg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4Y2Z6cnRjYWdra2h0cWd6dWJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMTU1MDMsImV4cCI6MjA5Nzc5MTUwM30.qbztqyNqIWaKSzfIArij_RQewHo9B28xsIr5meGRd7o';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1873,17 +1907,25 @@ function showMsg(el, text, isErr){ el.textContent=text; el.classList.toggle('err
 
 // ---------- ログイン(統合版: 右上🔑のモーダルから呼ばれる) ----------
 async function initAuth(){
-  const { data:{ session:s } } = await sb.auth.getSession();
-  if(s && s.user){ await onLoggedIn(s.user); }
-  else { $('cardLoginHint').style.display='block'; $('cardRoot').style.display='none'; }
+  try{
+    const { data:{ session:s } } = await sb.auth.getSession();
+    if(s && s.user){ await onLoggedIn(s.user); }
+    else { cardHint('カードのデータベースにまだログインしていません。<br>右上の🔑ボタンから、いつものメールアドレスとパスワードでログインすると使えるようになるで。'); }
+  }catch(e){
+    cardHint('カードDBへの接続でエラー：'+(e&&e.message||e)+'<br>再読み込みしてみて。');
+  }
 }
 sb.auth.onAuthStateChange((e, s)=>{ if(s && s.user && !currentUser) onLoggedIn(s.user); });
 
 async function onLoggedIn(user){
   currentUser = user;
-  $('cardLoginHint').style.display = 'none';
-  $('cardRoot').style.display = 'block';
-  await loadAll();
+  try{
+    await loadAll();
+    $('cardLoginHint').style.display = 'none';
+    $('cardRoot').style.display = 'block';
+  }catch(e){
+    cardHint('カードのデータ読み込みでエラー：'+(e&&e.message||e)+'<br>再読み込みしてみて。');
+  }
   window.refreshDash && window.refreshDash();
   window.refreshAuthUI && window.refreshAuthUI();
 }
