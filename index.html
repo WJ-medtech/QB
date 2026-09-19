@@ -24,6 +24,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="国試アプリ">
 <meta name="theme-color" content="#16232e">
+<meta name="app-build" content="2026-09-20-v7">
+<meta name="app-note" content="カード=メジャー10科目・4周方式・❓原理まち・🔄更新ボタン">
 
 <style>
   :root{
@@ -45,6 +47,10 @@
   .auth-btn{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);
     border-radius:20px;padding:6px 11px;font-size:11px;font-weight:700;white-space:nowrap;}
   .auth-btn.on{background:var(--done-soft);color:var(--done);border-color:var(--done);}
+  .auth-btn[disabled]{opacity:.55;}
+  .auth-btn.hasnew{position:relative;background:var(--gold);color:#3d2c00;border-color:var(--gold);}
+  .auth-btn.hasnew:after{content:'';position:absolute;top:-3px;right:-3px;width:9px;height:9px;
+    border-radius:50%;background:var(--coral);border:1.5px solid var(--ink);}
   .cd{display:flex;align-items:baseline;gap:6px;margin-top:10px;}
   .cd .n{font-size:28px;font-weight:800;font-family:"SF Mono",Menlo,monospace;line-height:1;}
   .cd .l{font-size:10.5px;color:#a9bcc6;}
@@ -396,9 +402,12 @@
     <div>
       <div class="htitle">国試アプリ</div>
       <div class="hsub" id="dateHead"></div>
-      <div class="hsub" style="opacity:.6;">build 2026-09-20-v6 / カード=メジャー10科目・4周方式・❓原理まち</div>
+      <div class="hsub" style="opacity:.6;" id="buildLine"></div>
     </div>
-    <button class="auth-btn" id="authBtn">🔑</button>
+    <div style="display:flex;gap:6px;flex-shrink:0;">
+      <button class="auth-btn" id="refreshBtn">🔄 更新</button>
+      <button class="auth-btn" id="authBtn">🔑</button>
+    </div>
   </div>
   <div class="cdrow">
     <div class="cdbox"><span class="n" id="cdMoshi1">--</span><span class="l">日<br>模試① 11/3</span></div>
@@ -1668,6 +1677,80 @@ function renderDashCards(){
   }
 }
 window.refreshDash=()=>{try{renderDashCards();}catch(e){console.warn('dash',e);}};
+
+/* ===== 🔄 更新ボタン ===================================================
+   1タップで「データを最新にする」＋「アプリ本体に新しい版が出てないか確認」。
+   新しい版があれば、キャッシュを消してから読み直すか聞く。          */
+const APP_BUILD=(document.querySelector('meta[name=app-build]')||{}).content||'?';
+const APP_NOTE=(document.querySelector('meta[name=app-note]')||{}).content||'';
+document.getElementById('buildLine').textContent='build '+APP_BUILD+(APP_NOTE?' / '+APP_NOTE:'');
+
+// サーバーにある index.html の build を見にいく(キャッシュを通さない)
+async function fetchLatestBuild(){
+  if(location.protocol==='file:') return null;
+  try{
+    const r=await fetch(location.pathname+'?cb='+Date.now(),{cache:'no-store'});
+    if(!r.ok) return null;
+    const t=await r.text();
+    const m=t.match(/name=["']app-build["']\s+content=["']([^"']+)["']/);
+    return m?m[1]:null;
+  }catch(e){ return null; }
+}
+// キャッシュとService Workerを捨てて読み直す
+async function hardReload(){
+  try{ if(window.caches){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));} }catch(e){}
+  try{ if(navigator.serviceWorker){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));} }catch(e){}
+  location.replace(location.pathname+'?v='+Date.now());
+}
+let newBuildSeen=null;
+function markNewBuild(b){
+  newBuildSeen=b;
+  document.getElementById('refreshBtn').classList.add('hasnew');
+  document.getElementById('refreshBtn').textContent='🔄 新版あり';
+}
+let refreshing=false;
+async function doRefresh(){
+  if(refreshing) return;
+  refreshing=true;
+  const b=document.getElementById('refreshBtn');
+  const label=b.textContent;
+  b.disabled=true; b.textContent='⏳ 更新中';
+  try{
+    const latest=await fetchLatestBuild();
+    if(latest && latest!==APP_BUILD){
+      if(confirm('アプリの新しい版（'+latest+'）が出てるで。\n今すぐ本体ごと最新にする？\n\n※記録はぜんぶSupabaseに入ってるから、消えることはないで。')){
+        await hardReload(); return;
+      }
+      markNewBuild(latest);
+    }
+    let msg='最新にしたで ✅';
+    try{ if(!sbBroken && sb){ await loadAll(); safeRender(); } }
+    catch(e){ msg='データの読み直しで一部エラー: '+((e&&e.message)||e); }
+    if(window.CardApp && window.CardApp.reload){
+      const r=await window.CardApp.reload();
+      if(r && r.error) msg='カードの読み直しでエラー: '+r.error;
+    }
+    window.refreshDash && window.refreshDash();
+    window.refreshAuthUI && window.refreshAuthUI();
+    toast(msg);
+  }catch(e){
+    toast('更新でエラー: '+((e&&e.message)||e));
+  }finally{
+    b.disabled=false;
+    b.textContent=newBuildSeen?'🔄 新版あり':label.indexOf('新版')>=0?'🔄 新版あり':'🔄 更新';
+    refreshing=false;
+  }
+}
+document.getElementById('refreshBtn').onclick=doRefresh;
+
+// 新しい版が出てないか、そっと見張る(起動時＋アプリに戻ってきた時)
+async function peekUpdate(){
+  if(newBuildSeen||refreshing) return;
+  const latest=await fetchLatestBuild();
+  if(latest && latest!==APP_BUILD) markNewBuild(latest);
+}
+setTimeout(peekUpdate,4000);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) setTimeout(peekUpdate,600); });
 document.getElementById('mapToggle').onclick=()=>{
   const b=document.getElementById('mapBody');
   const open=b.style.display!=='none';
@@ -2713,6 +2796,21 @@ window.CardApp = {
     }catch(e){ return { ok:false, error:String(e&&e.message||e) }; }
   },
   logout: async ()=>{ try{ await sb.auth.signOut(); }catch(e){} },
+  // 🔄更新ボタンから呼ばれる：Supabaseから全部読み直して、開いてる画面を描き直す
+  reload: async ()=>{
+    if(!currentUser) return { ok:false };
+    try{
+      await loadAll();
+      // 学習中やったら、読み直した新しいカードに差し替える（途中でやめさせない）
+      if(session) session.queue.forEach(it=>{
+        const fresh = cards.find(x => x.id === it.card.id);
+        if(fresh) it.card = fresh;
+      });
+      const open = document.querySelector('#view-cards .ctab.active');
+      if(open) switchCTab(open.dataset.ctab);
+      return { ok:true };
+    }catch(e){ return { ok:false, error:String(e&&e.message||e) }; }
+  },
   summary: ()=>{
     if(!currentUser) return null;
     const resumable = savedSession && savedSession.day===today() && Array.isArray(savedSession.queue) && savedSession.idx<savedSession.queue.length;
