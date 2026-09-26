@@ -24,8 +24,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="国試アプリ">
 <meta name="theme-color" content="#16232e">
-<meta name="app-build" content="2026-09-20-v7">
-<meta name="app-note" content="カード=メジャー10科目・4周方式・❓原理まち・🔄更新ボタン">
+<meta name="app-build" content="2026-09-20-v8">
+<meta name="app-note" content="カード=メジャー10科目・4周方式・❓原理まち・🔄更新・🔀シャッフル・カード編集">
 
 <style>
   :root{
@@ -262,8 +262,8 @@
   #view-cards .chead .sub{font-size:11px;color:var(--text-soft);margin-top:1px;}
   #view-cards .ctabs{display:flex;margin:0 0 12px;background:var(--surface);border-radius:14px;padding:4px;
     box-shadow:0 2px 8px rgba(0,0,0,.05);border:1px solid var(--border);}
-  #view-cards .ctab{flex:1;text-align:center;padding:10px 4px;font-size:13px;font-weight:600;color:var(--text-soft);
-    border-radius:11px;cursor:pointer;user-select:none;}
+  #view-cards .ctab{flex:1;text-align:center;padding:10px 2px;font-size:12px;font-weight:600;color:var(--text-soft);
+    border-radius:11px;cursor:pointer;user-select:none;white-space:nowrap;}
   #view-cards .ctab.active{background:var(--primary);color:#fff;}
   #view-cards .cpage{display:none;}
   #view-cards .cpage.active{display:block;}
@@ -335,6 +335,45 @@
   #view-cards .princ-btn{background:none;border:1px solid #d5d3f5;color:#5b4fd1;font-size:12px;font-weight:600;
     padding:6px 12px;border-radius:9px;cursor:pointer;margin:12px auto 0;display:none;}
   #view-cards .princ-btn.show{display:block;}
+  /* ---- シャッフル ---- */
+  #view-cards .mix-presets{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+  #view-cards .mix-presets button{flex:1 1 30%;margin-top:0;padding:8px 4px;font-size:12px;}
+  #view-cards .mix-sub{margin-top:14px;}
+  #view-cards .mix-sub:first-child{margin-top:0;}
+  #view-cards .mix-subhead{display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+    padding-bottom:6px;border-bottom:2px solid var(--primary-light);margin-bottom:8px;}
+  #view-cards .mix-subname{font-size:13.5px;font-weight:800;color:var(--primary-dark);flex:1;min-width:90px;}
+  #view-cards .mix-mini{font-size:11px;padding:4px 9px;border-radius:8px;border:1px solid var(--border);
+    background:#fafffd;color:var(--primary-dark);font-weight:600;cursor:pointer;}
+  #view-cards .mix-range{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-soft);}
+  #view-cards .mix-range input{width:42px;padding:4px;border:1px solid var(--border);border-radius:7px;
+    font-size:13px;text-align:center;background:#fafffd;margin-bottom:0;}
+  #view-cards .mix-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  #view-cards .mix-chip{font-size:11.5px;padding:6px 10px;border-radius:9px;border:1px solid var(--border);
+    background:#fafffd;color:var(--text-soft);font-weight:600;cursor:pointer;}
+  #view-cards .mix-chip.on{background:var(--primary);border-color:var(--primary);color:#fff;}
+  #view-cards .mix-sum{background:var(--primary-light);border-radius:10px;padding:10px 12px;
+    font-size:13px;color:var(--primary-dark);font-weight:700;line-height:1.6;}
+  #view-cards .miss-row{border-bottom:1px solid var(--border);padding:8px 0;font-size:12.5px;line-height:1.5;}
+  #view-cards .miss-row:last-child{border-bottom:none;}
+  #view-cards .miss-row .mch{font-size:10.5px;color:var(--text-soft);}
+  /* ---- カード編集 ---- */
+  #view-cards .edit-box{display:none;margin-top:8px;background:#f7fdfa;border:1px solid var(--border);
+    border-radius:11px;padding:10px 11px;}
+  #view-cards .edit-box.show{display:block;}
+  #view-cards .edit-box textarea{min-height:66px;font-size:15px;}
+  #view-cards .edit-box label{margin-top:9px;}
+  #view-cards .edit-box label:first-child{margin-top:0;}
+  #view-cards .ord-btns{display:flex;gap:4px;flex-shrink:0;}
+  #view-cards .ord-btns button{width:32px;padding:5px 0;border-radius:8px;border:1px solid var(--border);
+    background:#fafffd;color:var(--primary-dark);font-size:12px;cursor:pointer;}
+  #view-cards .ord-btns button:disabled{opacity:.25;}
+  #view-cards .mini .mhead{display:flex;align-items:flex-start;gap:8px;}
+  #view-cards .mini .mhead .mq{flex:1;min-width:0;}
+  #view-cards .edit-inline{background:none;border:1px solid #cfe3d9;color:var(--primary-dark);font-size:12px;
+    font-weight:600;padding:6px 12px;border-radius:9px;cursor:pointer;margin:10px auto 0;display:block;width:100%;}
+  #view-cards .edit-inline-box{display:none;margin-top:10px;text-align:left;}
+  #view-cards .edit-inline-box.show{display:block;}
   #view-cards .q-btn{background:#fff8e6;border:1px solid #e6c46a;color:#9a7412;font-size:12.5px;font-weight:700;
     padding:9px 12px;border-radius:10px;cursor:pointer;margin:14px auto 0;display:block;width:100%;}
   #view-cards .q-btn.on{background:#e6c46a;color:#3d2c00;border-color:#c9a13c;}
@@ -591,6 +630,7 @@
     <div class="ctabs">
       <div class="ctab active" data-ctab="home">ホーム</div>
       <div class="ctab" data-ctab="study">学習</div>
+      <div class="ctab" data-ctab="mix">混ぜる</div>
       <div class="ctab" data-ctab="list">一覧</div>
       <div class="ctab" data-ctab="input">入力</div>
     </div>
@@ -639,6 +679,46 @@
       <div class="sess-head"><span id="sessTitle">—</span><span id="sessCount"></span></div>
       <div class="sess-bar"><i id="sessBar"></i></div>
       <div id="sessBody"><div class="cempty">ホームの「はじめる」から開始してください</div></div>
+    </div>
+
+    <!-- ---- カード:混ぜる(シャッフル) ---- -->
+    <div class="cpage" id="cpage-mix">
+      <div class="card">
+        <h3>🔀 シャッフル練習</h3>
+        <p class="hint">選んだ範囲からランダムに出します。<b>〇×も◎も記録しません</b>。何回回しても本番の進み具合は動かへんので、気楽にどうぞ。</p>
+
+        <label>どの問題を出す？</label>
+        <div class="modeswitch" id="mixFilter">
+          <button data-f="all" class="active">ぜんぶ</button>
+          <button data-f="x">×だけ</button>
+          <button data-f="q">❓だけ</button>
+          <button data-f="nomaru">◎まだ</button>
+        </div>
+
+        <label>何問出す？</label>
+        <div class="modeswitch" id="mixCount">
+          <button data-n="0" class="active">ぜんぶ</button>
+          <button data-n="10">10問</button>
+          <button data-n="20">20問</button>
+          <button data-n="50">50問</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>範囲をえらぶ</h3>
+        <p class="hint">科目名を押すとその科目まるごと、チップを押すとchapter単位で選べます。「Ch◯〜◯」で数字指定もできます。</p>
+        <div class="mix-presets">
+          <button class="ghost" data-pre="all">ぜんぶ選ぶ</button>
+          <button class="ghost" data-pre="major">メジャー10科目</button>
+          <button class="ghost" data-pre="none">ぜんぶ外す</button>
+        </div>
+        <div id="mixTree"></div>
+      </div>
+
+      <div class="card">
+        <div class="mix-sum" id="mixSummary">—</div>
+        <button class="primary" id="mixStart">シャッフルで始める</button>
+      </div>
     </div>
 
     <!-- ---- カード:一覧 ---- -->
@@ -2110,7 +2190,8 @@ async function loadAll(){
 
   fillSubjects($('inSubject'), false);
   fillSubjects($('filterSubject'), true);
-  renderOrder(); renderHome(); renderList(); refreshChapterSelect();
+  restoreMixPrefs();
+  renderOrder(); renderHome(); renderList(); renderMix(); refreshChapterSelect();
 }
 
 async function ensureChProg(s, c){
@@ -2281,6 +2362,140 @@ $('modeSwitch').addEventListener('click', e=>{
 });
 
 // ============================================================
+// 混ぜる（シャッフル練習）— 記録はしない
+// ============================================================
+let mixSel = {};          // key(s,c) => true
+let mixFilter = 'all';    // all / x / q / nomaru
+let mixCount = 0;         // 0 = ぜんぶ
+
+function shuffleArr(a){
+  const r = a.slice();
+  for(let i=r.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; }
+  return r;
+}
+function mixSubjects(){
+  return SUBJECTS.filter(s => Object.keys(STRUCTURE[s]||{}).some(c => hasCards(s,c)));
+}
+function mixPool(){
+  let list = [];
+  Object.keys(mixSel).forEach(k => { if(mixSel[k]) list = list.concat(cardsByCh[k]||[]); });
+  if(mixFilter==='x') list = list.filter(isX);
+  else if(mixFilter==='q') list = list.filter(c => c.need_principle);
+  else if(mixFilter==='nomaru') list = list.filter(c => !isMaru(c));
+  return list;
+}
+async function saveMixPrefs(){
+  targets.shuffle = { sel:Object.keys(mixSel).filter(k=>mixSel[k]), filter:mixFilter, count:mixCount };
+  try{ await sb.from('app_settings').upsert({ user_id: currentUser.id, targets }, { onConflict:'user_id' }); }
+  catch(e){ console.warn('mix prefs', e); }
+}
+function restoreMixPrefs(){
+  const s = targets && targets.shuffle;
+  mixSel = {};
+  if(s && Array.isArray(s.sel)) s.sel.forEach(k => { mixSel[k] = true; });
+  else mixSubjects().forEach(sub => Object.keys(STRUCTURE[sub]).forEach(c => { if(hasCards(sub,c)) mixSel[key(sub,c)] = true; }));
+  mixFilter = (s && s.filter) || 'all';
+  mixCount  = (s && parseInt(s.count)) || 0;
+  [...$('mixFilter').children].forEach(b => b.classList.toggle('active', b.dataset.f === mixFilter));
+  [...$('mixCount').children].forEach(b => b.classList.toggle('active', parseInt(b.dataset.n) === mixCount));
+}
+function renderMix(){
+  const subs = mixSubjects();
+  if(!subs.length){
+    $('mixTree').innerHTML = '<div class="cempty">まだカードがありません。<br>「入力」タブから追加してください。</div>';
+    $('mixSummary').textContent = '—';
+    $('mixStart').disabled = true;
+    return;
+  }
+  $('mixTree').innerHTML = subs.map(s=>{
+    const chs = Object.keys(STRUCTURE[s]).filter(c => hasCards(s,c));
+    const nums = chs.map(Number);
+    return '<div class="mix-sub" data-s="'+esc(s)+'">'+
+      '<div class="mix-subhead">'+
+        '<span class="mix-subname">'+esc(s)+(isMajor(s)?' <span class="badge b-done">メジャー</span>':'')+'</span>'+
+        '<button class="mix-mini" data-act="sall">全部</button>'+
+        '<button class="mix-mini" data-act="snone">解除</button>'+
+        '<span class="mix-range">Ch<input type="number" inputmode="numeric" data-act="from" value="'+Math.min(...nums)+'">'+
+        '〜<input type="number" inputmode="numeric" data-act="to" value="'+Math.max(...nums)+'">'+
+        '<button class="mix-mini" data-act="srange">適用</button></span>'+
+      '</div>'+
+      '<div class="mix-chips">'+ chs.map(c=>{
+        const k = key(s,c), n = (cardsByCh[k]||[]).length;
+        return '<button class="mix-chip'+(mixSel[k]?' on':'')+'" data-k="'+esc(k)+'">Ch'+esc(c)+'<span style="opacity:.7"> ('+n+')</span></button>';
+      }).join('') + '</div></div>';
+  }).join('');
+
+  $('mixTree').querySelectorAll('.mix-chip').forEach(b => b.addEventListener('click', ()=>{
+    const k = b.dataset.k;
+    mixSel[k] = !mixSel[k];
+    b.classList.toggle('on', !!mixSel[k]);
+    updateMixSummary(); saveMixPrefs();
+  }));
+  $('mixTree').querySelectorAll('.mix-sub').forEach(box=>{
+    const s = box.dataset.s;
+    const chs = Object.keys(STRUCTURE[s]).filter(c => hasCards(s,c));
+    const setAll = v => { chs.forEach(c => { mixSel[key(s,c)] = v; }); renderMix(); saveMixPrefs(); };
+    box.querySelector('[data-act=sall]').addEventListener('click', ()=> setAll(true));
+    box.querySelector('[data-act=snone]').addEventListener('click', ()=> setAll(false));
+    box.querySelector('[data-act=srange]').addEventListener('click', ()=>{
+      const f = parseInt(box.querySelector('[data-act=from]').value);
+      const t = parseInt(box.querySelector('[data-act=to]').value);
+      if(isNaN(f) || isNaN(t)) return;
+      const lo = Math.min(f,t), hi = Math.max(f,t);
+      chs.forEach(c => { mixSel[key(s,c)] = (Number(c) >= lo && Number(c) <= hi); });
+      renderMix(); saveMixPrefs();
+    });
+  });
+  updateMixSummary();
+}
+function updateMixSummary(){
+  const chN = Object.keys(mixSel).filter(k=>mixSel[k] && (cardsByCh[k]||[]).length).length;
+  const pool = mixPool();
+  const fname = { all:'ぜんぶ', x:'×だけ', q:'❓だけ', nomaru:'◎まだ' }[mixFilter];
+  const out = mixCount>0 ? Math.min(mixCount, pool.length) : pool.length;
+  $('mixSummary').innerHTML = chN + ' chapter・'+fname+' → <b>'+pool.length+' 問</b>'+
+    (mixCount>0 && pool.length>mixCount ? '（そこから ランダムに '+out+' 問）' : '');
+  $('mixStart').disabled = out === 0;
+  $('mixStart').textContent = out ? ('シャッフルで始める（'+out+'問）') : '範囲に問題がありません';
+}
+$('mixFilter').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  mixFilter = b.dataset.f;
+  [...$('mixFilter').children].forEach(x=> x.classList.toggle('active', x===b));
+  updateMixSummary(); saveMixPrefs();
+});
+$('mixCount').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  mixCount = parseInt(b.dataset.n) || 0;
+  [...$('mixCount').children].forEach(x=> x.classList.toggle('active', x===b));
+  updateMixSummary(); saveMixPrefs();
+});
+$('mixTree').addEventListener('keydown', e=>{ if(e.key==='Enter') e.target.blur(); });
+document.querySelectorAll('#cpage-mix .mix-presets button').forEach(b=> b.addEventListener('click', ()=>{
+  const p = b.dataset.pre;
+  mixSel = {};
+  if(p !== 'none'){
+    mixSubjects().forEach(s=>{
+      if(p==='major' && !isMajor(s)) return;
+      Object.keys(STRUCTURE[s]).forEach(c => { if(hasCards(s,c)) mixSel[key(s,c)] = true; });
+    });
+  }
+  renderMix(); saveMixPrefs();
+}));
+$('mixStart').addEventListener('click', ()=>{
+  const pool = shuffleArr(mixPool());
+  const list = mixCount>0 ? pool.slice(0, mixCount) : pool;
+  if(!list.length) return;
+  session = {
+    phase: 'mix',
+    queue: list.map(c => ({ card:c, stage:'mix', chKey:key(c.subject,c.chapter) })),
+    idx: 0, solved: 0, answered: 0, totalUnique: list.length,
+    doneChapters: new Set(), retried: false, missed: []
+  };
+  switchCTab('study');
+});
+
+// ============================================================
 // 学習セッション
 // ============================================================
 $('btnStart').addEventListener('click', async ()=>{
@@ -2335,7 +2550,7 @@ function resumeSession(){
 }
 
 async function persistSession(){
-  if(!session) return;
+  if(!session || session.phase === 'mix') return;   // シャッフルは保存しない（本番の続きを消さないため）
   const rows = session.queue.map(it => ({
     id: it.card.id, stage: it.stage, chKey: it.chKey,
     subject: it.subject, chapter: it.chapter, retry: !!it.retry
@@ -2359,6 +2574,32 @@ function renderSession(){
     $('sessTitle').textContent = '完了';
     $('sessCount').textContent = '';
     $('sessBar').style.width = '100%';
+
+    if(session.phase === 'mix'){
+      const missIds = [...new Set(session.missed)];
+      const missCards = missIds.map(id => cards.find(c=>c.id===id)).filter(Boolean);
+      body.innerHTML =
+        '<div class="cempty" style="padding:22px 6px;">シャッフル終わり 🔀<br>'+
+        '<b style="font-size:20px;color:var(--primary-dark);">'+session.totalUnique+' 問中 '+
+        (session.totalUnique - missCards.length)+' 問</b> 言えた<br>'+
+        '<span style="font-size:12px;">（記録はしてへんで）</span></div>'+
+        (missCards.length
+          ? '<div class="card"><h3>言えへんかった '+missCards.length+' 問</h3>'+
+            missCards.map(c=>'<div class="miss-row"><div class="mch">'+esc(c.subject+' '+chLabel(c.subject,c.chapter))+'</div>'+
+              esc(c.question)+'</div>').join('')+
+            '<button class="primary" id="againMiss">この'+missCards.length+'問だけもう一回</button></div>'
+          : '')+
+        '<button class="ghost" id="backMix">混ぜるに戻る</button>';
+      if(missCards.length) $('againMiss').addEventListener('click', ()=>{
+        const list = shuffleArr(missCards);
+        session = { phase:'mix', queue:list.map(c=>({card:c,stage:'mix',chKey:key(c.subject,c.chapter)})),
+          idx:0, solved:0, answered:0, totalUnique:list.length, doneChapters:new Set(), retried:false, missed:[] };
+        renderSession();
+      });
+      $('backMix').addEventListener('click', ()=>{ session=null; switchCTab('mix'); });
+      return;
+    }
+
     body.innerHTML = '<div class="cempty">このぶんは終わり 🎉<br>' + session.solved + ' 問クリアしました<br>'+
       'つづけるなら、ホームでもう一度「はじめる」を押してな。</div>' +
       '<button class="primary" id="backHome">ホームに戻る</button>';
@@ -2369,7 +2610,8 @@ function renderSession(){
 
   const it = session.queue[session.idx];
   const c = it.card;
-  const stageName = { r1:'一周目', r2:'二周目（〇×）', r3:'×直し', r4:'◎周' };
+  const isMix = (session.phase === 'mix');
+  const stageName = { r1:'一周目', r2:'二周目（〇×）', r3:'×直し', r4:'◎周', mix:'🔀 シャッフル（記録なし）' };
   $('sessTitle').textContent = c.subject + ' ' + chLabel(c.subject, c.chapter) + ' — ' + (stageName[it.stage]||stageName[session.phase]||'');
   $('sessCount').textContent = (session.idx+1) + ' / ' + session.queue.length;
   $('sessBar').style.width = Math.round(session.solved / Math.max(1,session.totalUnique) * 100) + '%';
@@ -2383,7 +2625,7 @@ function renderSession(){
       ((c.principle || c.principle_image_path) ? '<button class="princ-btn" id="princBtn">原理を見る</button>' : '') +
       '<button class="primary" id="revealBtn">答えを見る</button>' +
       '<div class="grade-row" id="gradeRow">' +
-        (isR1
+        (isR1 || isMix
           ? '<button class="grade-btn g-no" data-r="x">言えなかった</button><button class="grade-btn g-ok" data-r="o">言えた</button>'
           : isR4
             ? '<button class="grade-btn g-no" data-r="x">まだ</button><button class="grade-btn g-ok" data-r="o">◎</button>'
@@ -2391,9 +2633,28 @@ function renderSession(){
       '</div>' +
       '<button class="q-btn' + (c.need_principle ? ' on' : '') + '" id="qBtn">' +
         (c.need_principle ? '❓ 原理まちに入ってる（外す）' : '❓ あとで原理を調べる') + '</button>' +
+      '<button class="edit-inline" id="editInlineBtn">✏️ この問題を直す</button>' +
+      '<div class="edit-inline-box" id="editInlineBox">' +
+        '<label>問題</label><textarea id="eiQ">' + esc(c.question) + '</textarea>' +
+        '<label>答え</label><textarea id="eiA">' + esc(c.answer) + '</textarea>' +
+        '<button class="primary small" id="eiSave">直して保存する</button>' +
+        '<div class="msg" id="eiMsg"></div>' +
+      '</div>' +
       (it.retry ? '<div class="retry-note">もう一度</div>' : '') +
     '</div>' +
-    '<button class="ghost sess-quit" id="quitBtn">中断してホームに戻る</button>';
+    '<button class="ghost sess-quit" id="quitBtn">' + (isMix ? 'やめて「混ぜる」に戻る' : '中断してホームに戻る') + '</button>';
+
+  $('editInlineBtn').addEventListener('click', ()=> $('editInlineBox').classList.toggle('show'));
+  $('eiSave').addEventListener('click', async ()=>{
+    const q = $('eiQ').value.trim(), a = $('eiA').value.trim();
+    if(!q){ showMsg($('eiMsg'), '問題文が空やで', true); return; }
+    const btn = $('eiSave'); btn.disabled = true; btn.textContent = '保存中…';
+    const { error } = await sb.from('cards').update({ question:q, answer:a }).eq('id', c.id);
+    btn.disabled = false; btn.textContent = '直して保存する';
+    if(error){ showMsg($('eiMsg'), '保存できませんでした: '+error.message, true); return; }
+    c.question = q; c.answer = a;
+    renderSession();
+  });
 
   $('qBtn').addEventListener('click', async ()=>{
     const btn = $('qBtn'), nv = !c.need_principle;
@@ -2422,7 +2683,12 @@ function renderSession(){
   });
   body.querySelectorAll('.grade-btn').forEach(b=>
     b.addEventListener('click', ()=> answer(b.dataset.r)));
-  $('quitBtn').addEventListener('click', ()=>{ session=null; switchCTab('home'); renderHome(); });
+  $('quitBtn').addEventListener('click', ()=>{
+    const wasMix = (session && session.phase === 'mix');
+    session = null;
+    if(wasMix){ switchCTab('mix'); }
+    else { switchCTab('home'); renderHome(); }
+  });
 }
 
 // need_principle / r4_ok 列がまだ無いときに、何が起きたか分かるようにする
@@ -2438,6 +2704,15 @@ async function answer(res){
   const it = session.queue[session.idx];
   const c = it.card;
   session.answered++;
+
+  if(session.phase === 'mix'){          // 練習モード：DBには一切書かない
+    if(res === 'o'){ session.solved++; }
+    else { session.missed.push(c.id); session.queue.push({ ...it, retry:true }); }
+    session.idx++;
+    await bumpStudyDay(1);
+    renderSession();
+    return;
+  }
 
   if(session.phase === 'r1'){
     if(res === 'o'){ session.solved++; }
@@ -2557,23 +2832,61 @@ function renderList(){
 function renderChapterCards(box, k){
   renderCardMinis(box, cardsByCh[k] || [], k);
 }
+function subjOptions(sel){
+  return SUBJECTS.map(s=>'<option'+(s===sel?' selected':'')+'>'+esc(s)+'</option>').join('');
+}
+function chapOptions(s, sel){
+  return Object.keys(STRUCTURE[s]||{}).map(c=>
+    '<option value="'+esc(c)+'"'+(c===sel?' selected':'')+'>'+esc(chLabel(s,c))+'</option>').join('');
+}
+// chapter内で問題の順番を1つ動かす（idxを0から振り直して保存）
+async function moveCard(id, dir, k, box){
+  const list = (cardsByCh[k]||[]).slice();
+  const i = list.findIndex(x=>x.id===id), j = i + dir;
+  if(i<0 || j<0 || j>=list.length) return;
+  [list[i], list[j]] = [list[j], list[i]];
+  for(let n=0; n<list.length; n++){
+    if(list[n].idx !== n){
+      const { error } = await sb.from('cards').update({ idx:n }).eq('id', list[n].id);
+      if(error){ alert('順番を保存できませんでした: '+error.message); return; }
+      list[n].idx = n;
+    }
+  }
+  cardsByCh[k] = list;
+  cards.sort((a,b)=> a.subject.localeCompare(b.subject) || String(a.chapter).localeCompare(String(b.chapter)) || a.idx-b.idx);
+  renderCardMinis(box, list, k);
+}
 function renderCardMinis(box, list, k){
   if(!list.length){ box.innerHTML = '<div style="font-size:12.5px;color:var(--text-soft);padding:6px 0;">まだ問題がありません</div>'; return; }
-  box.innerHTML = list.map(c=>{
+  box.innerHTML = list.map((c,i)=>{
     const p = cardProg[c.id] || {};
     const mark = (p.r4_ok ? '<span class="badge b-done">◎</span>' : '')
                + (p.r2_result==='o' ? '<span class="badge b-done">〇</span>'
                : p.r2_result==='x' ? '<span class="badge '+(p.r3_cleared?'b-done':'b-x')+'">'+(p.r3_cleared?'× → 〇':'×')+'</span>' : '')
                + (c.need_principle ? '<span class="badge b-q">❓原理まち</span>' : '');
+    const first = (i===0), last = (i===list.length-1);
     return '<div class="mini" data-id="'+c.id+'">'+
       (k==='__q__' ? '<div class="ch-meta">'+esc(c.subject+' '+chLabel(c.subject,c.chapter))+'</div>' : '')+
-      '<div class="mq">'+esc(c.question)+mark+'</div>'+
+      '<div class="mhead"><div class="mq">'+esc(c.question)+mark+'</div>'+
+      (k==='__q__' ? '' : '<div class="ord-btns"><button data-act="up"'+(first?' disabled':'')+'>▲</button>'+
+        '<button data-act="down"'+(last?' disabled':'')+'>▼</button></div>')+
+      '</div>'+
       '<div class="ma">'+esc(c.answer)+'</div>'+
       ((c.principle || c.principle_image_path) ? '<div class="mp">'+esc(c.principle||'')+
         (c.principle_image_path ? '<img data-path="'+esc(c.principle_image_path)+'" alt="原理の図">' : '')+'</div>' : '')+
-      '<div class="mrow"><button data-act="prin">'+((c.principle||c.principle_image_path)?'原理を直す':'原理を足す')+'</button>'+
+      '<div class="mrow"><button data-act="edit">✏️ 直す</button>'+
+      '<button data-act="prin">'+((c.principle||c.principle_image_path)?'原理を直す':'原理を足す')+'</button>'+
       '<button data-act="q">'+(c.need_principle?'❓を外す':'❓を付ける')+'</button>'+
       '<button data-act="del" class="del">削除</button></div>'+
+      '<div class="edit-box">'+
+        '<label>問題</label><textarea data-act="eq">'+esc(c.question)+'</textarea>'+
+        '<label>答え</label><textarea data-act="ea">'+esc(c.answer)+'</textarea>'+
+        '<label>置き場所（変えると引っ越します）</label>'+
+        '<div class="row2"><div><select data-act="es">'+subjOptions(c.subject)+'</select></div>'+
+        '<div><select data-act="ec">'+chapOptions(c.subject, c.chapter)+'</select></div></div>'+
+        '<button class="primary small" data-act="save-edit">保存する</button>'+
+        '<div class="msg" data-act="edit-msg"></div>'+
+      '</div>'+
       '<div class="prin-edit"><textarea placeholder="この問題の原理・理屈(任意)">'+esc(c.principle||'')+'</textarea>'+
       '<label style="margin-top:8px;">写真(任意)</label>'+
       '<input type="file" accept="image/*" data-act="prin-file">'+
@@ -2591,6 +2904,34 @@ function renderCardMinis(box, list, k){
   box.querySelectorAll('.mini').forEach(el=>{
     const id = el.dataset.id;
     el.querySelector('[data-act=prin]').addEventListener('click', ()=> el.querySelector('.prin-edit').classList.toggle('show'));
+
+    // ---- 並び替え ▲▼ ----
+    const up = el.querySelector('[data-act=up]'), dn = el.querySelector('[data-act=down]');
+    if(up) up.addEventListener('click', ()=> moveCard(id, -1, k, box));
+    if(dn) dn.addEventListener('click', ()=> moveCard(id, +1, k, box));
+
+    // ---- 問題文・答え・置き場所の編集 ----
+    el.querySelector('[data-act=edit]').addEventListener('click', ()=> el.querySelector('.edit-box').classList.toggle('show'));
+    const es = el.querySelector('[data-act=es]'), ec = el.querySelector('[data-act=ec]');
+    es.addEventListener('change', ()=>{ ec.innerHTML = chapOptions(es.value, null); });
+    el.querySelector('[data-act=save-edit]').addEventListener('click', async (ev)=>{
+      const btn = ev.currentTarget, msg = el.querySelector('[data-act=edit-msg]');
+      const c = cards.find(x=>x.id===id);
+      const q = el.querySelector('[data-act=eq]').value.trim();
+      const a = el.querySelector('[data-act=ea]').value.trim();
+      if(!q){ showMsg(msg, '問題文が空やで', true); return; }
+      const ns = es.value, nc = ec.value;
+      const moved = (ns !== c.subject || nc !== c.chapter);
+      const patch = { question:q, answer:a };
+      if(moved){ patch.subject = ns; patch.chapter = nc; patch.idx = (cardsByCh[key(ns,nc)]||[]).length; }
+      btn.disabled = true; btn.textContent = '保存中…';
+      const { error } = await sb.from('cards').update(patch).eq('id', id);
+      btn.disabled = false; btn.textContent = '保存する';
+      if(error){ showMsg(msg, '保存できませんでした: '+error.message, true); return; }
+      if(moved){ await loadAll(); return; }
+      c.question = q; c.answer = a;
+      redraw();
+    });
     el.querySelector('[data-act=q]').addEventListener('click', async (ev)=>{
       const btn = ev.currentTarget, c = cards.find(x=>x.id===id), nv = !c.need_principle;
       btn.disabled = true;
@@ -2779,6 +3120,7 @@ function switchCTab(name){
   if(name==='home') renderHome();
   if(name==='list'){ renderOrder(); renderList(); }
   if(name==='study') renderSession();
+  if(name==='mix') renderMix();
 }
 document.querySelectorAll('#view-cards .ctab').forEach(t=> t.addEventListener('click', ()=> switchCTab(t.dataset.ctab)));
 
