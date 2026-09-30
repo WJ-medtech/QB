@@ -24,7 +24,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="国試アプリ">
 <meta name="theme-color" content="#0E1B24">
-<meta name="app-build" content="2026-09-30-v11">
+<meta name="app-build" content="2026-09-30-v12">
 <meta name="app-note" content="11/3模試までの口頭試問予定（99chapter・3章/日・翌日に2周目・×はその日に解き直し）">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -507,6 +507,20 @@
   .pt-l.ok{color:var(--faint);text-decoration:line-through;text-decoration-color:var(--faint);}
   .pt-l.late{color:var(--qb);}
   .pt-end{font-size:12px;color:var(--faint);text-align:center;padding:12px 0 0;border-top:1px solid var(--line);}
+  /* ---------- 口頭試問だけ使う人（ゲスト）の画面 ---------- */
+  body.guest .monitor,body.guest .mon-legend,body.guest .tabs,body.guest .bf-banner{display:none!important;}
+  body.guest .view:not(#view-cards){display:none!important;}
+  body.guest{padding-bottom:24px;}
+  body.guest header{padding-bottom:0;}
+  body.guest #view-cards .ctab[data-ctab=input],
+  body.guest #view-cards .plan-fold,
+  body.guest #view-cards .q-btn,
+  body.guest #view-cards .edit-inline,
+  body.guest #view-cards .edit-inline-box,
+  body.guest #view-cards .mini .mrow,
+  body.guest #view-cards .ord-btns,
+  body.guest #view-cards #modeSwitch [data-mode=plan]{display:none!important;}
+  body:not(.guest) #view-cards #modeSwitch [data-mode=auto]{display:none;}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
 </style>
 
@@ -767,6 +781,7 @@
           <summary>周を手動で切り替える</summary>
           <div class="modeswitch" id="modeSwitch">
             <button data-mode="plan" class="active">予定どおり</button>
+            <button data-mode="auto">自動</button>
             <button data-mode="r1">一周目</button>
             <button data-mode="r2">二周目</button>
             <button data-mode="r3">×直し</button>
@@ -960,6 +975,7 @@ try{
   console.error('supabase init failed',e);
 }
 let owner=false;
+let authReady=false;   // 計画DBのログイン確認が終わったか（終わるまでは「口頭試問だけの人」かどうか決めない）
 
 const catalog = [
   { name:"内分泌・代謝", track:"main", start:"2026-09-18", end:"2026-09-18", chapters:[
@@ -1309,7 +1325,7 @@ function withTimeout(promise, ms, label){
 }
 
 async function loadAll(){
-  if(sbBroken || !sb){ state.pieces=buildPieces(); return; }
+  if(sbBroken || !sb || !owner){ state.pieces=buildPieces(); return; }
   try{
     const {data:st}=await withTimeout(sb.from('settings').select('*').eq('id',1).single(),8000,'設定の読み込み');
     if(st){state.caps=Array.isArray(st.capacities)?st.capacities:DEFAULT_CAP;
@@ -2067,15 +2083,21 @@ document.getElementById('clearBtn').onclick=async()=>{
   toast('この週の配置をクリアしたで');safeRender();
 };
 function authUI(){
+  const cardIn=!!(window.CardApp&&window.CardApp.isIn());
+  // 口頭試問のDBにだけ入っている人＝口頭試問だけ使う人（ゲスト）
+  const guest=authReady&&!owner&&cardIn;
+  const was=document.body.classList.contains('guest');
+  document.body.classList.toggle('guest',guest);
   document.body.classList.toggle('is-owner',owner);
   const b=document.getElementById('authBtn');
-  const cardIn=window.CardApp&&window.CardApp.isIn();
-  // 両方ログイン済みなら、ボタンは出さない（鍵マークなし）
   b.style.display=(owner&&cardIn)?'none':'';
-  b.textContent=owner?'🔑 カードにログイン'
-    :cardIn?'🔑 計画にログイン'
-    :'🔑 ログイン';
+  b.textContent=guest?'ログアウト':owner?'🔑 カードにログイン':'🔑 ログイン';
   b.classList.remove('on');
+  if(guest!==was){
+    document.querySelector('.htitle').textContent=guest?'口頭試問':'国試アプリ';
+    if(window.CardApp&&window.CardApp.setGuest)window.CardApp.setGuest(guest);
+    if(guest)tab('cards');
+  }
 }
 window.refreshAuthUI=()=>{try{authUI();}catch(e){}};
 function openLoginModal(){
@@ -2093,7 +2115,7 @@ async function logoutBoth(){
 }
 document.getElementById('authBtn').onclick=()=>{
   const cardIn=window.CardApp&&window.CardApp.isIn();
-  if(owner&&cardIn)logoutBoth();
+  if(owner&&cardIn||document.body.classList.contains('guest'))logoutBoth();
   else openLoginModal();
 };
 document.getElementById('loLogout').onclick=logoutBoth;
@@ -2117,6 +2139,7 @@ document.getElementById('loSub').onclick=async()=>{
     owner=true;authUI();
     try{ await loadAll(); }catch(e){ showErr('データ再読み込み',e); }
   }
+  authReady=true;
   authUI();
   if(qOK&&cOK){
     document.getElementById('lo').classList.remove('show');
@@ -2126,7 +2149,10 @@ document.getElementById('loSub').onclick=async()=>{
     msg.textContent='計画DB ✅ ／ カードDB ❌：'+cErr;
     tab('today');safeRender();
   }else if(cOK){
-    msg.textContent='カードDB ✅ ／ 計画DB ❌：'+qErr;
+    // 計画DBにアカウントがない人＝口頭試問だけ使う人。エラー扱いにせず、そのまま口頭試問へ
+    authReady=true;authUI();
+    document.getElementById('lo').classList.remove('show');
+    msg.textContent='';toast('ログインしました');
     safeRender();
   }else{
     msg.textContent='両方失敗：'+qErr;
@@ -2152,6 +2178,7 @@ function safeRender(){
 /* ===== init ===== */
 (async function(){
   if(sbBroken || !sb){
+    authReady=true;
     state.pieces=buildPieces();
     safeRender();
     tab('today');
@@ -2171,6 +2198,7 @@ function safeRender(){
     const {data}=await withTimeout(sb.auth.getSession(),8000,'ログイン状態の確認');
     owner=!!(data&&data.session);
   }catch(e){ showErr('ログイン確認',e); owner=false; }
+  authReady=true;
   authUI();
   try{ sb.auth.onAuthStateChange((e,s)=>{owner=!!s;authUI();}); }catch(e){}
 
@@ -2565,10 +2593,12 @@ function phaseProgress(){
     total = PLAN_TOTAL; done = ps.fin;
     desc = '1周目 ' + ps.r1 + '/' + PLAN_TOTAL + '・2周目 ' + ps.r2 + '/' + PLAN_TOTAL + '。1周目の翌日に2周目、×はその日のうちに解き直します。';
   }else if(p==='r1'){
-    total = PLAN_TOTAL; done = ps.r1;
+    const g = document.body.classList.contains('guest');
+    total = g ? chs.length : PLAN_TOTAL; done = g ? chs.filter(r1Done).length : ps.r1;
     desc = 'まず1周。言えたかどうかは記録しません。言えなかった問題はそのセッションの最後にもう一度出ます。';
   }else if(p==='r2'){
-    total = PLAN_TOTAL; done = ps.r2;
+    const g = document.body.classList.contains('guest');
+    total = g ? chs.length : PLAN_TOTAL; done = g ? chs.filter(r2Done).length : ps.r2;
     desc = 'ここで〇と×をつけます。少しでも自信がなければ×にしてください。';
   }else if(p==='r3'){
     const allX = cards.filter(c => (cardProg[c.id]||{}).r2_result==='x').length;
@@ -2598,8 +2628,11 @@ function renderHome(){
   $('phaseDesc').textContent = desc;
 
   const dleft = daysBetween(today(), MASTER_DEADLINE);
-  $('cHeadSub').textContent = '全' + PLAN_TOTAL + 'chapter' + (dleft >= 0 ? '・模試①まであと' + dleft + '日' : '');
+  const guest = document.body.classList.contains('guest');
+  $('cHeadSub').textContent = guest ? '全' + cards.length + '問'
+    : '全' + PLAN_TOTAL + 'chapter' + (dleft >= 0 ? '・模試①まであと' + dleft + '日' : '');
   $('phaseName').textContent = p==='plan' ? '11/3の模試まで' : 'いまの周';
+  const qh = document.querySelector('#cpage-home .card h3'); if(qh) qh.textContent = p==='plan' ? '今日の分' : 'つぎのchapter';
 
   const box = $('queueBox');
   const resumable = savedSession && savedSession.day === today() && Array.isArray(savedSession.queue) && savedSession.idx < savedSession.queue.length;
@@ -3473,6 +3506,13 @@ document.querySelectorAll('#view-cards .ctab').forEach(t=> t.addEventListener('c
 // ============================================================
 window.CardApp = {
   isIn: ()=> !!currentUser,
+  // 口頭試問だけ使う人のときは、予定表ではなく「自動」（一周目→二周目→…の順）で回す
+  setGuest: (g)=>{
+    if(g){ if(forcedMode==='plan') forcedMode='auto'; }
+    else if(forcedMode==='auto') forcedMode='plan';
+    [...$('modeSwitch').children].forEach(x=> x.classList.toggle('active', x.dataset.mode===forcedMode));
+    if(currentUser){ try{ renderHome(); }catch(e){} }
+  },
   login: async (email,password)=>{
     try{
       const { data, error } = await sb.auth.signInWithPassword({ email, password });
