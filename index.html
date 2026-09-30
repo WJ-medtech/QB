@@ -24,7 +24,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="国試アプリ">
 <meta name="theme-color" content="#0E1B24">
-<meta name="app-build" content="2026-09-30-v14">
+<meta name="app-build" content="2026-09-30-v15">
 <meta name="app-note" content="オーナー／その他の人の2種類（その他の人は今日の記録・カード削除だけ不可）">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2844,7 +2844,7 @@ function renderCardMinis(box, list, k){
     });
     el.querySelector('[data-act=save-prin]').addEventListener('click', async (ev)=>{
       const btn = ev.currentTarget, msg = el.querySelector('[data-act=prin-msg]');
-      const v = el.querySelector('textarea').value.trim();
+      const v = el.querySelector('.prin-edit textarea').value.trim();   // 原理の入力欄（問題の編集欄と取り違えない）
       const file = el.querySelector('[data-act=prin-file]').files[0];
       const c = cards.find(x=>x.id===id);
       let path = c.principle_image_path || null;
