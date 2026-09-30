@@ -24,7 +24,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="国試アプリ">
 <meta name="theme-color" content="#0E1B24">
-<meta name="app-build" content="2026-09-30-v10">
+<meta name="app-build" content="2026-09-30-v11">
 <meta name="app-note" content="11/3模試までの口頭試問予定（99chapter・3章/日・翌日に2周目・×はその日に解き直し）">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -280,7 +280,6 @@
   .tb .ic svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
   .tb.active{color:var(--text);}
   .tb.active:before{content:'';position:absolute;top:0;left:30%;right:30%;height:2px;border-radius:2px;background:var(--text);}
-  .owner{display:none;} body.is-owner .owner{display:block;}
   .view{display:none;} .view.active{display:block;}
 
   /* ---------- ログイン ---------- */
@@ -570,7 +569,7 @@
 <main>
 
 <!-- ========== 今日 ========== -->
-<div class="view" id="view-today">
+<div class="view active" id="view-today">
   <div class="today-head">
     <h1>今日の流れ</h1>
     <div class="ts" id="todaySubj"></div>
@@ -687,7 +686,7 @@
 <div class="view" id="view-tasks">
   <div class="seg planseg"><button data-go="week">週の割りふり</button><button class="on" data-go="tasks">科目ごとの進み</button></div>
   <div class="card">
-    <h2>全科目の進み
+    <h2>科目ごとの進み（〜11/3）
       <button class="wk-btn wk-ghost" id="resyncBtn" style="flex:0 0 auto;padding:6px 10px;font-size:12px;">カタログと同期</button>
     </h2>
     <div id="ownerPlan"></div>
@@ -710,7 +709,7 @@
 </div>
 
 <!-- ========== あゆみ ========== -->
-<div class="view active" id="view-public">
+<div class="view" id="view-public">
   <div class="card"><h2>これまでの積み重ね</h2>
     <div id="growthStats" class="gstats"></div>
     <div class="glabel">学習量の累計（推定時間）</div>
@@ -913,9 +912,9 @@ A: 答え
 </main>
 
 <nav class="tabs" aria-label="画面の切り替え">
-  <button class="tb owner active" data-v="today"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg></span>今日</button>
+  <button class="tb active" data-v="today"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg></span>今日</button>
   <button class="tb" data-v="cards"><span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="13" height="15" rx="2.5"/><path d="M8 3h9.5A2.5 2.5 0 0 1 20 5.5V17"/></svg></span>口頭試問</button>
-  <button class="tb owner" data-v="week" data-also="tasks"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>計画</button>
+  <button class="tb" data-v="week" data-also="tasks"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>計画</button>
   <button class="tb" data-v="public"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 19V11M10 19V6M16 19v-5M21 19H3"/></svg></span>あゆみ</button>
 </nav>
 
@@ -1260,6 +1259,11 @@ const dateDow=s=>{const j=new Date(s+'T00:00:00').getDay();return j===0?6:j-1;};
 const mondayOf=s=>addDays(s,-dateDow(s));
 const dname=s=>DAYS[dateDow(s)];
 
+/* ===== 計画タブに出す科目は11/3（模試①）までに始まるものだけ ===== */
+const PLAN_LIMIT='2026-11-03';
+const planCatalog=()=>catalog.filter(s=>s.start<=PLAN_LIMIT);
+const endShown=s=>s.end>PLAN_LIMIT?PLAN_LIMIT:s.end;
+
 /* ===== build pieces from catalog ===== */
 function sumNums(t){const m=t.match(/\((\d+)\)/g);return m?m.reduce((a,b)=>a+ +b.replace(/[()]/g,''),0):0;}
 function buildPieces(){
@@ -1398,7 +1402,14 @@ async function logIt(id,val){
 /* ===== ui helpers ===== */
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2000);}
-function gate(){if(!owner){toast('編集にはログインが必要です🔒');document.getElementById('lo').classList.add('show');return false;}return true;}
+/* 以前は「ログインしてないと編集できない」ロックだった。いまは誰でも全部の画面を使える。
+   ただし保存だけはSupabase側がログインを求めるので、ログインが切れていた時だけ入り直してもらう */
+function gate(){
+  if(owner)return true;
+  toast('ログインが切れてるみたい。もう一度入ってな');
+  document.getElementById('lo').classList.add('show');
+  return false;
+}
 function short(s,n=15){return s.length>n?s.slice(0,n-1)+'…':s;}
 
 /* ===== render: task row ===== */
@@ -1505,9 +1516,9 @@ function renderSubjSel(){
   const o=document.createElement('option');o.value='AUTO';
   o.textContent='🗓 今の予定：'+(act.map(s=>s.name).join('・')||'—');
   sel.appendChild(o);
-  catalog.forEach(s=>{
+  planCatalog().forEach(s=>{
     const op=document.createElement('option');op.value=s.name;
-    op.textContent=`${s.name}（${fmt(s.start)}〜${fmt(s.end)}）${Math.round(subjProg(s.name)*100)}%`;
+    op.textContent=`${s.name}（${fmt(s.start)}〜${fmt(endShown(s))}）${Math.round(subjProg(s.name)*100)}%`;
     sel.appendChild(op);
   });
   sel.value=weekSubj;
@@ -1616,9 +1627,9 @@ async function autoAssign(){
 /* ===== render: tasks/editor ===== */
 function renderEdSel(){
   const sel=document.getElementById('edSubjSel');
-  if(!edSubj)edSubj=(activeSubjects()[0]||catalog[0]).name;
+  if(!edSubj||!planCatalog().some(s=>s.name===edSubj))edSubj=(planCatalog().find(s=>s.name===(activeSubjects()[0]||{}).name)||planCatalog()[0]).name;
   sel.innerHTML='';
-  catalog.forEach(s=>{
+  planCatalog().forEach(s=>{
     const o=document.createElement('option');o.value=s.name;
     const ps=Object.values(state.pieces).filter(p=>p.subject===s.name);
     const qb=ps.filter(p=>p.type==='qb').reduce((a,p)=>a+p.targetValue,0);
@@ -1708,14 +1719,14 @@ function renderPlanInto(elId, detailed){
   const pp=document.getElementById(elId);pp.innerHTML='';
   const t=today();
   {
-    const l=document.createElement('div');l.className='tlabel2';l.textContent='2026年内 1周プラン（9/17改訂版）';pp.appendChild(l);
-    catalog.slice().sort((a,b)=>a.start.localeCompare(b.start)||a.end.localeCompare(b.end)).forEach(s=>{
+    const l=document.createElement('div');l.className='tlabel2';l.textContent='11/3までの計画';pp.appendChild(l);
+    planCatalog().slice().sort((a,b)=>a.start.localeCompare(b.start)||a.end.localeCompare(b.end)).forEach(s=>{
       const pct=Math.round(subjProg(s.name)*100),now=s.start<=t&&t<=s.end;
       const ps=Object.values(state.pieces).filter(p=>p.subject===s.name);
       const qbDone=ps.filter(p=>p.type==='qb').reduce((a,p)=>a+Math.min(p.doneValue,p.targetValue),0);
       const qbTot=ps.filter(p=>p.type==='qb').reduce((a,p)=>a+p.targetValue,0);
       const r=document.createElement('div');r.className='prow'+(now?' now':'');
-      r.innerHTML=`<span class="pdate">${fmt(s.start)}〜${fmt(s.end)}</span>
+      r.innerHTML=`<span class="pdate">${fmt(s.start)}〜${fmt(endShown(s))}</span>
         <span class="pname">${s.name}${detailed?` <span style="color:var(--ink-soft);font-weight:400;">(QB ${qbDone}/${qbTot})</span>`:''}</span>
         <span class="pbar"><span class="pfill" style="width:${pct}%"></span></span>
         <span class="ppct">${pct}%</span>`;
@@ -2059,11 +2070,12 @@ function authUI(){
   document.body.classList.toggle('is-owner',owner);
   const b=document.getElementById('authBtn');
   const cardIn=window.CardApp&&window.CardApp.isIn();
-  b.textContent=(owner&&cardIn)?'🔓 編集中'
-    :owner?'🔑 カードにログイン'
+  // 両方ログイン済みなら、ボタンは出さない（鍵マークなし）
+  b.style.display=(owner&&cardIn)?'none':'';
+  b.textContent=owner?'🔑 カードにログイン'
     :cardIn?'🔑 計画にログイン'
     :'🔑 ログイン';
-  b.classList.toggle('on',owner&&cardIn);
+  b.classList.remove('on');
 }
 window.refreshAuthUI=()=>{try{authUI();}catch(e){}};
 function openLoginModal(){
@@ -2142,7 +2154,7 @@ function safeRender(){
   if(sbBroken || !sb){
     state.pieces=buildPieces();
     safeRender();
-    tab('public');
+    tab('today');
     return;
   }
   let rendered=false;
@@ -2151,7 +2163,7 @@ function safeRender(){
     showErr('初期化', new Error('10秒たっても応答がありません。通信環境が悪いか、Supabase側で問題が起きています。'));
     if(!Object.keys(state.pieces).length) state.pieces=buildPieces();
     safeRender();
-    tab('public');
+    tab('today');
     rendered=true;
   },10000);
 
@@ -2171,7 +2183,7 @@ function safeRender(){
   if(!rendered){
     clearTimeout(masterTimer);
     safeRender();
-    tab(owner?'today':'public');
+    tab('today');
     rendered=true;
   }
 })();
