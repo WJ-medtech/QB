@@ -24,8 +24,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="国試アプリ">
 <meta name="theme-color" content="#0E1B24">
-<meta name="app-build" content="2026-09-26-v9">
-<meta name="app-note" content="デザイン刷新（モニター画面・今日の3ステップ・タブ4つに整理）">
+<meta name="app-build" content="2026-09-30-v10">
+<meta name="app-note" content="11/3模試までの口頭試問予定（99chapter・3章/日・翌日に2周目・×はその日に解き直し）">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -190,6 +190,12 @@
     border-radius:12px;padding:13px;font-size:15px;font-weight:800;}
   .dash-login-hint{font-size:13px;color:var(--soft);line-height:1.7;padding:2px;}
   .kt-meta{font-size:12px;color:var(--soft);margin-top:8px;}
+  .kt-row{display:flex;align-items:baseline;gap:9px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px;}
+  .kt-row:last-of-type{border-bottom:none;}
+  .kt-row.done{opacity:.5;}
+  .kt-st{font-size:11.5px;color:var(--kt);font-weight:800;width:44px;flex-shrink:0;}
+  .kt-nm{flex:1;min-width:0;font-weight:700;}
+  .kt-tag{font-size:11.5px;color:var(--qb);font-weight:700;}
 
   /* ---------- そのほか（折りたたみ） ---------- */
   .fold{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:8px;overflow:hidden;}
@@ -485,6 +491,23 @@
   #view-cards .pv .pva{font-size:13.5px;color:var(--kt);margin-top:4px;line-height:1.5;}
   #view-cards .pv .pvx{float:right;color:var(--alert);font-size:12.5px;font-weight:700;cursor:pointer;margin-left:8px;}
 
+  #view-cards .queue-row.done{opacity:.5;}
+  #view-cards .plan-fold{padding:0;}
+  #view-cards .plan-fold summary{padding:15px 16px;font-size:15px;font-weight:800;cursor:pointer;list-style:none;display:flex;justify-content:space-between;}
+  #view-cards .plan-fold summary::-webkit-details-marker{display:none;}
+  #view-cards .plan-fold summary:after{content:'＋';color:var(--soft);}
+  #view-cards .plan-fold[open] summary:after{content:'−';}
+  #planTable{padding:0 16px 14px;}
+  .pt-row{display:flex;gap:12px;padding:9px 6px;border-top:1px solid var(--line);}
+  .pt-row.now{background:var(--kt-dim);border-radius:10px;border-top-color:transparent;}
+  .pt-d{width:58px;white-space:nowrap;flex-shrink:0;font-family:var(--num);font-size:20px;font-weight:600;line-height:1.2;font-variant-numeric:tabular-nums;}
+  .pt-d span{font-family:var(--jp);font-size:11px;color:var(--soft);margin-left:3px;font-weight:500;}
+  .pt-c{flex:1;min-width:0;}
+  .pt-l{font-size:13px;line-height:1.6;color:var(--text);}
+  .pt-l i{font-style:normal;font-size:11px;color:var(--soft);margin-right:7px;display:inline-block;width:38px;}
+  .pt-l.ok{color:var(--faint);text-decoration:line-through;text-decoration-color:var(--faint);}
+  .pt-l.late{color:var(--qb);}
+  .pt-end{font-size:12px;color:var(--faint);text-align:center;padding:12px 0 0;border-top:1px solid var(--line);}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
 </style>
 
@@ -512,7 +535,7 @@
     <div class="chan c-kt">
       <div><div class="cname"><i></i>口頭試問</div><div class="csub" id="monKtSub">—</div></div>
       <div class="cval" id="monKtVal">--</div>
-      <div class="trace"><span class="trk"></span><span class="fill" id="monKtFill" style="width:0"></span><span class="dot" id="monKtDot" style="left:0"></span></div>
+      <div class="trace"><span class="trk"></span><span class="fill" id="monKtFill" style="width:0"></span><span class="dot" id="monKtDot" style="left:0"></span><span class="tick" id="monKtTick" style="left:0"></span></div>
     </div>
     <div class="chan c-qb">
       <div><div class="cname"><i></i>QB 1周</div><div class="csub" id="monQbSub">—</div></div>
@@ -525,7 +548,7 @@
       <span><b id="cdMoshi2">--</b>日 模試② 1/18</span>
     </div>
   </div>
-  <div class="mon-legend"><i></i>縦線＝12/31に間に合うペースなら今ここ</div>
+  <div class="mon-legend"><i></i>縦線＝予定どおりなら今ここ（口頭試問は11/2、ほかは12/31まで）</div>
 
   <div class="bf-banner" id="bfBanner"><span id="bfText">過去の日付で記録中</span><button id="bfReset">今日に戻す</button></div>
 </header>
@@ -568,7 +591,7 @@
     <div class="step s-kt">
       <div class="sn">2</div>
       <div class="sbox">
-        <div class="stitle"><h3>口頭試問</h3><span>1回で1chapter</span></div>
+        <div class="stitle"><h3>口頭試問</h3><span>今日の予定どおりに</span></div>
         <div id="dashCardBody"><div class="dash-login-hint">読み込み中…</div></div>
       </div>
     </div>
@@ -744,7 +767,7 @@
         <details class="modefold">
           <summary>周を手動で切り替える</summary>
           <div class="modeswitch" id="modeSwitch">
-            <button data-mode="auto" class="active">自動</button>
+            <button data-mode="plan" class="active">予定どおり</button>
             <button data-mode="r1">一周目</button>
             <button data-mode="r2">二周目</button>
             <button data-mode="r3">×直し</button>
@@ -754,11 +777,16 @@
       </div>
 
       <div class="card">
-        <h3>つぎのchapter</h3>
+        <h3>今日の分</h3>
         <div id="queueBox"></div>
         <button class="primary" id="btnStart">はじめる</button>
-        <p class="hint" style="margin-top:9px;">1回で1chapter出ます。まだやれるときは、終わったらもう一度「はじめる」を押すだけ。</p>
+        <p class="hint" style="margin-top:9px;">1回で1chapter出ます。終わったら、もう一度「はじめる」を押すと次のchapterに進みます。</p>
       </div>
+
+      <details class="card plan-fold">
+        <summary>予定表（9/30〜11/2）</summary>
+        <div id="planTable"></div>
+      </details>
 
       <div class="streak">
         <div class="box"><b id="cStStreak">0</b><span>日連続</span></div>
@@ -1858,23 +1886,25 @@ function renderDashCards(){
     </div>`;
   }
 
-  // --- 口頭試問 ---
+  // --- 口頭試問（分母は予定の全chapter数） ---
   const cb=document.getElementById('dashCardBody');
   const CA=window.CardApp;
   const su=CA&&CA.isIn()?CA.summary():null;
   if(!su){
     setChan('Kt',0,null,'<small>未ログイン</small>','右上の🔑からログイン');
-    if(cb)cb.innerHTML='<div class="dash-login-hint">口頭試問のデータにまだログインしてへん。右上の🔑からログインすると、ここに次のchapterが出るで。</div>';
+    if(cb)cb.innerHTML='<div class="dash-login-hint">口頭試問のデータにまだログインしてへん。右上の🔑からログインすると、今日の分がここに出るで。</div>';
     return;
   }
-  setChan('Kt', su.overall, null, su.phase==='done'?'◎':`${su.phasePct}<small>%</small>`,
-    su.phase==='done'?'ぜんぶ◎':`${su.phaseName}・${su.phaseDone}/${su.phaseTotal}`);
+  const P=su.plan;
+  setChan('Kt', P.fin/P.total, P.expectFin/P.total, `${P.fin}<small>/${P.total}</small>`,
+    `chapter完了・1周目${P.r1}・2周目${P.r2}`);
   if(cb){
-    cb.innerHTML=(su.queue>0
-      ? `<div class="kt-next"><div><div class="kn">${su.nextLabel||'前回の続き'}</div><div class="kl">${su.phaseName}</div></div>
-           <div class="kc">${su.queue}<small> 問</small></div></div>`
-      : `<div class="empty">${su.total?'この周はここまで。お疲れさま。':'まだカードがないで。口頭試問タブの「入力」から追加してな。'}</div>`)+
-      `<button class="dash-cardbtn" id="dashCardGo">${su.queue>0?'はじめる':'口頭試問を開く'}</button>
+    const stN={r1:'1周目',r2:'2周目',r3:'×直し'};
+    const rows=su.todayList.map(it=>`<div class="kt-row${it.done?' done':''}"><span class="kt-st">${stN[it.stage]}</span>
+        <span class="kt-nm">${it.done?'✓ ':''}${it.label}</span><span class="kt-tag">${it.done?'済':(it.late?'遅れ':(it.ready?'':'カード未入力'))}</span></div>`).join('');
+    const left=su.todayList.filter(it=>!it.done).length;
+    cb.innerHTML=(su.todayList.length?rows:`<div class="empty">今日の分はありません</div>`)+
+      `<button class="dash-cardbtn" id="dashCardGo">${su.queue>0?(left?'はじめる':'先取りする'):'口頭試問を開く'}</button>
        <div class="kt-meta">今日 ${su.todayCount}問・${su.streak}日連続</div>`;
     document.getElementById('dashCardGo').onclick=()=>{
       tab('cards');
@@ -2168,7 +2198,8 @@ const SUPABASE_URL = 'https://fxcfzrtcagkkhtqgzubg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4Y2Z6cnRjYWdra2h0cWd6dWJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMTU1MDMsImV4cCI6MjA5Nzc5MTUwM30.qbztqyNqIWaKSzfIArij_RQewHo9B28xsIr5meGRd7o';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const MASTER_DEADLINE = '2026-10-31'; // メジャー10科目をマスターする日
+const MASTER_DEADLINE = '2026-11-03'; // 模試①の日
+
 
 const STRUCTURE = {
   "腎":{"1":7,"2":5,"3":4,"4":12,"5":5},
@@ -2212,6 +2243,33 @@ function rebuildChapters(){
 rebuildChapters();
 const TOTAL_CH = CHAPTERS.length; // = 173
 
+/* ============================================================
+   11/3模試までの口頭試問プラン（11/3以降は白紙）
+   ・腎5chapterは9/30に一周目を終える
+   ・10/1から神経を先頭に、毎日3chapterずつ一周目
+   ・二周目は一周目の翌日。×はその日のうちに解き直す
+   分母は下の PLAN_ORDER の全chapter数（=99）
+   ============================================================ */
+const PLAN_ORDER = ['腎','神経','内分泌','血液','免疫','感染症','呼吸器','循環器','消化器','肝胆膵','産婦人','小児'];
+const PLAN_FIRST_DAY_ONLY = { subject:'腎', date:'2026-09-30' };   // 9/30に一周目を終える科目
+const PLAN_START = '2026-10-01';                                   // ここから毎日3chapter
+const PLAN_PER_DAY = 3;
+function addDaysStr(s, n){ const d = new Date(s+'T00:00:00'); d.setDate(d.getDate()+n); return dstr(d); }
+const PLAN = (function(){
+  const list = [];
+  PLAN_ORDER.forEach(sub => Object.keys(STRUCTURE[sub]||{}).map(Number).sort((a,b)=>a-b)
+    .forEach(c => list.push({ subject:sub, chapter:String(c) })));
+  let i = 0;
+  list.forEach(ch => {
+    if(ch.subject === PLAN_FIRST_DAY_ONLY.subject){ ch.r1 = PLAN_FIRST_DAY_ONLY.date; }
+    else { ch.r1 = addDaysStr(PLAN_START, Math.floor(i / PLAN_PER_DAY)); i++; }
+    ch.r2 = addDaysStr(ch.r1, 1);
+  });
+  return list;
+})();
+const PLAN_TOTAL = PLAN.length;                  // 99
+const PLAN_END = PLAN[PLAN.length-1].r2;         // 11/2
+
 let currentUser = null;
 let cards = [];
 let cardsByCh = {};
@@ -2220,7 +2278,7 @@ let cardProg = {};
 let titles = {};
 let studyDays = {};
 let targets = {};
-let forcedMode = 'auto';
+let forcedMode = 'plan';
 let session = null;
 let savedSession = null;
 
@@ -2383,12 +2441,76 @@ function autoPhase(){
 function phase(){ return forcedMode==='auto' ? autoPhase() : forcedMode; }
 
 // ------------------------------------------------------------
+// 予定（プラン）まわり
+// ------------------------------------------------------------
+function d10(v){ return v ? String(v).slice(0,10) : ''; }
+function planStats(){
+  const t = today();
+  const r1 = PLAN.filter(r1Done).length;
+  const r2 = PLAN.filter(r2Done).length;
+  const fin = PLAN.filter(ch => r2Done(ch) && !xInCh(ch).length).length;
+  const expectFin = PLAN.filter(ch => ch.r2 <= t).length;
+  return { r1, r2, fin, expectFin, total: PLAN_TOTAL };
+}
+// 「Ch1〜3」「神経 Ch1〜3・内分泌 Ch1」のような短い書き方にする
+function fmtChs(list){
+  const out = []; let cur = null;
+  list.forEach(ch => {
+    const n = +ch.chapter;
+    if(cur && cur.subject === ch.subject && n === cur.to + 1){ cur.to = n; }
+    else { cur = { subject:ch.subject, from:n, to:n }; out.push(cur); }
+  });
+  return out.map(g => g.subject + ' Ch' + g.from + (g.to > g.from ? '〜' + g.to : '')).join('・');
+}
+// 今日やる分の一覧（二周目 → ×直し → 一周目の順）。終わった分も「済」として残す
+function planToday(){
+  const t = today();
+  const items = [];
+  PLAN.forEach(ch => {
+    const p = chProg[key(ch.subject,ch.chapter)] || {};
+    if(!p.r1_first_at) return;
+    const started = d10(p.r1_first_at) < t;
+    if(started && (!p.r2_at || d10(p.r2_at) === t)){
+      items.push({ stage:'r2', ch, done:!!p.r2_at, late: ch.r2 < t && !p.r2_at });
+    }else if(p.r2_at && d10(p.r2_at) < t && xInCh(ch).length){
+      items.push({ stage:'r3', ch, done:false, late:true });
+    }
+  });
+  PLAN.forEach(ch => {
+    const p = chProg[key(ch.subject,ch.chapter)] || {};
+    if(ch.r1 > t) return;
+    if(!p.r1_first_at || d10(p.r1_first_at) === t){
+      items.push({ stage:'r1', ch, done:!!p.r1_first_at, late: ch.r1 < t && !p.r1_first_at });
+    }
+  });
+  const order = { r2:0, r3:1, r1:2 };
+  items.sort((a,b)=> order[a.stage]-order[b.stage]);
+  items.forEach(it => { it.cards = it.stage==='r3' ? xInCh(it.ch) : chList(it.ch); it.ready = it.cards.length > 0; });
+  return items;
+}
+// 今日の分がぜんぶ終わったときの「先取り」候補（一周目のつぎのchapter）
+function planAhead(){
+  const ch = PLAN.find(x => !r1Done(x) && hasCards(x.subject,x.chapter));
+  return ch ? { stage:'r1', ch, done:false, ahead:true, cards:chList(ch), ready:true } : null;
+}
+const STAGE_LABEL = { r1:'一周目', r2:'二周目', r3:'×直し' };
+
+// ------------------------------------------------------------
 // つぎのキューを作る（いつも1chapter分）
 // ------------------------------------------------------------
 function buildQueue(){
   const p = phase();
   const chs = liveChapters();
   const none = { phase:p, groups:[], total:0 };
+  if(p === 'plan'){
+    const today_ = planToday();
+    const next = today_.find(it => !it.done && it.ready) || planAhead();
+    if(!next) return none;
+    const lab = STAGE_LABEL[next.stage] + (next.stage==='r2' ? '（〇×をつける。×はこの後すぐ解き直し）' : '') + (next.ahead ? '・先取り' : '');
+    return { phase:'plan', total: next.cards.length,
+      groups:[{ label:lab, stage:next.stage, cards:next.cards, subject:next.ch.subject, chapter:next.ch.chapter,
+                chLabel: next.ch.subject + ' ' + chLabel(next.ch.subject, next.ch.chapter) }] };
+  }
   if(p === 'done' || !chs.length) return none;
 
   let ch = null, list = [], label = '';
@@ -2420,17 +2542,21 @@ function buildQueue(){
 // ============================================================
 // ホーム
 // ============================================================
-const PHASE_NAME = { r1:'一周目', r2:'二周目', r3:'×直し', r4:'◎周', done:'ぜんぶ◎' };
+const PHASE_NAME = { plan:'予定どおり', r1:'一周目', r2:'二周目', r3:'×直し', r4:'◎周', done:'ぜんぶ◎' };
 
 function phaseProgress(){
   const p = phase();
   const chs = liveChapters();
   let done = 0, total = 0, desc = '';
-  if(p==='r1'){
-    total = chs.length; done = chs.filter(r1Done).length;
+  const ps = planStats();
+  if(p==='plan'){
+    total = PLAN_TOTAL; done = ps.fin;
+    desc = '1周目 ' + ps.r1 + '/' + PLAN_TOTAL + '・2周目 ' + ps.r2 + '/' + PLAN_TOTAL + '。1周目の翌日に2周目、×はその日のうちに解き直します。';
+  }else if(p==='r1'){
+    total = PLAN_TOTAL; done = ps.r1;
     desc = 'まず1周。言えたかどうかは記録しません。言えなかった問題はそのセッションの最後にもう一度出ます。';
   }else if(p==='r2'){
-    total = chs.length; done = chs.filter(r2Done).length;
+    total = PLAN_TOTAL; done = ps.r2;
     desc = 'ここで〇と×をつけます。少しでも自信がなければ×にしてください。';
   }else if(p==='r3'){
     const allX = cards.filter(c => (cardProg[c.id]||{}).r2_result==='x').length;
@@ -2444,7 +2570,7 @@ function phaseProgress(){
     desc = '全部◎になりました 🎉 モードを切り替えれば、好きな周をもう一度回せます。';
   }
   const frac = total ? done/total : 0;
-  const idx = { r1:0, r2:1, r3:2, r4:3, done:4 }[p] || 0;
+  const idx = { plan:0, r1:0, r2:1, r3:2, r4:3, done:4 }[p] || 0;
   return { p, chs, done, total, desc, frac, overall: Math.min(1, (idx + (p==='done'?0:frac)) / 4) };
 }
 
@@ -2459,17 +2585,44 @@ function renderHome(){
   $('ringCap').textContent = done + ' / ' + total;
   $('phaseDesc').textContent = desc;
 
-  const majorCh = chs.filter(ch => isMajor(ch.subject)).length;
   const dleft = daysBetween(today(), MASTER_DEADLINE);
-  $('cHeadSub').textContent = 'メジャー10科目 ' + majorCh + 'ch・全' + cards.length + '問'
-    + (dleft >= 0 ? '・10/31まで' + dleft + '日' : '');
+  $('cHeadSub').textContent = '全' + PLAN_TOTAL + 'chapter' + (dleft >= 0 ? '・模試①まであと' + dleft + '日' : '');
+  $('phaseName').textContent = p==='plan' ? '11/3の模試まで' : 'いまの周';
 
   const box = $('queueBox');
   const resumable = savedSession && savedSession.day === today() && Array.isArray(savedSession.queue) && savedSession.idx < savedSession.queue.length;
+  let head = '';
   if(resumable){
     const remain = savedSession.queue.length - savedSession.idx;
-    box.innerHTML = '<div class="queue-row"><div><div class="qn">前回の続き</div>'+
+    head = '<div class="queue-row"><div><div class="qn">前回の続き</div>'+
       '<div class="ql">途中で終わっていた分です</div></div><div class="qn">'+remain+' 問</div></div>';
+  }
+  if(p === 'plan'){
+    const list = planToday();
+    const rows = list.map(it => {
+      const nm = it.ch.subject + ' ' + chLabel(it.ch.subject, it.ch.chapter);
+      const sub = STAGE_LABEL[it.stage] + (it.late ? '・遅れ' : '') + (!it.ready ? '・カード未入力' : '');
+      return '<div class="queue-row'+(it.done?' done':'')+'"><div><div class="qn">'+(it.done?'✓ ':'')+esc(nm)+'</div>'+
+        '<div class="ql">'+esc(sub)+'</div></div><div class="qn">'+(it.done?'済':(it.ready?it.cards.length+' 問':'—'))+'</div></div>';
+    }).join('');
+    const left = list.filter(it => !it.done).length;
+    let body = rows;
+    if(!list.length){
+      const t = today();
+      body = '<div class="cempty" style="padding:18px 6px;">' + (t < PLAN[0].r1 ? 'まだ始まっていません' :
+             t > PLAN_END ? '予定ぶんはここまで。11/3以降はこれから決めます。' : '今日の分はありません') + '</div>';
+    }else if(!left){
+      body += '<div class="cempty" style="padding:14px 6px 4px;">今日の分は終わり 🎉</div>';
+    }
+    box.innerHTML = head + body;
+    const q = buildQueue();
+    const ready = resumable || q.total > 0;
+    $('btnStart').disabled = !ready;
+    $('btnStart').textContent = resumable ? '続きから始める'
+      : (q.total > 0 ? (left ? 'つぎのchapterをはじめる' : '先取りする（つぎの一周目）') : (cards.length ? '今日はここまで' : 'カードを入力してください'));
+    renderPlanTable();
+  }else if(resumable){
+    box.innerHTML = head;
     $('btnStart').disabled = false;
     $('btnStart').textContent = '続きから始める';
   }else{
@@ -2486,6 +2639,7 @@ function renderHome(){
       $('btnStart').disabled = false;
     }
     $('btnStart').textContent = 'はじめる';
+    renderPlanTable();
   }
 
   let streak = 0, d = new Date();
@@ -2494,6 +2648,28 @@ function renderHome(){
   $('cStStreak').textContent = streak;
   $('cStToday').textContent = studyDays[today()] || 0;
   $('cStCards').textContent = cards.length;
+}
+
+// 予定表：日ごとに「一周目／二周目」を並べる（11/3以降は白紙）
+function renderPlanTable(){
+  const box = $('planTable'); if(!box) return;
+  const t = today();
+  const days = {};
+  const add = (d, k, ch) => { (days[d] ||= { r1:[], r2:[] })[k].push(ch); };
+  PLAN.forEach(ch => { add(ch.r1,'r1',ch); add(ch.r2,'r2',ch); });
+  const dow = '日月火水木金土';
+  const dates = Object.keys(days).sort();
+  box.innerHTML = dates.map(d => {
+    const x = days[d], dt = new Date(d+'T00:00:00');
+    const st = (list, fn) => list.length && list.every(fn) ? 'ok' : (d < t && list.some(c => !fn(c)) ? 'late' : '');
+    const c1 = st(x.r1, r1Done), c2 = st(x.r2, r2Done);
+    return '<div class="pt-row'+(d===t?' now':'')+'">'+
+      '<div class="pt-d">'+(dt.getMonth()+1)+'/'+dt.getDate()+'<span>'+dow[dt.getDay()]+'</span></div>'+
+      '<div class="pt-c">'+
+        (x.r1.length ? '<div class="pt-l '+c1+'"><i>1周目</i>'+esc(fmtChs(x.r1))+'</div>' : '')+
+        (x.r2.length ? '<div class="pt-l '+c2+'"><i>2周目</i>'+esc(fmtChs(x.r2))+'</div>' : '')+
+      '</div></div>';
+  }).join('') + '<div class="pt-end">11/3以降はまだ予定なし</div>';
 }
 
 $('modeSwitch').addEventListener('click', e=>{
@@ -2675,7 +2851,7 @@ function resumeSession(){
   if(!Array.isArray(q) || savedSession.idx >= q.length) return false;
   const items = q.map(r=>{
     const c = cards.find(x=>x.id===r.id);
-    return c ? { card:c, stage:r.stage, chKey:r.chKey, subject:r.subject, chapter:r.chapter, retry:r.retry } : null;
+    return c ? { card:c, stage:r.stage, chKey:r.chKey, subject:r.subject, chapter:r.chapter, retry:r.retry, fix:r.fix } : null;
   }).filter(Boolean);
   if(!items.length) return false;
   session = {
@@ -2695,7 +2871,7 @@ async function persistSession(){
   if(!session || session.phase === 'mix') return;   // シャッフルは保存しない（本番の続きを消さないため）
   const rows = session.queue.map(it => ({
     id: it.card.id, stage: it.stage, chKey: it.chKey,
-    subject: it.subject, chapter: it.chapter, retry: !!it.retry
+    subject: it.subject, chapter: it.chapter, retry: !!it.retry, fix: !!it.fix
   }));
   await sb.from('session_progress').upsert({
     user_id: currentUser.id, day: today(), phase: session.phase,
@@ -2754,12 +2930,13 @@ function renderSession(){
   const c = it.card;
   const isMix = (session.phase === 'mix');
   const stageName = { r1:'一周目', r2:'二周目（〇×）', r3:'×直し', r4:'◎周', mix:'🔀 シャッフル（記録なし）' };
+  if(it.fix) stageName.r2 = '×直し（二周目の続き）';
   $('sessTitle').textContent = c.subject + ' ' + chLabel(c.subject, c.chapter) + ' — ' + (stageName[it.stage]||stageName[session.phase]||'');
   $('sessCount').textContent = (session.idx+1) + ' / ' + session.queue.length;
   $('sessBar').style.width = Math.round(session.solved / Math.max(1,session.totalUnique) * 100) + '%';
 
-  const isR1 = (session.phase === 'r1');
-  const isR4 = (session.phase === 'r4');
+  const isR1 = (it.stage === 'r1');
+  const isR4 = (it.stage === 'r4');
   body.innerHTML =
     '<div class="qcard">' +
       '<div class="qtext">' + esc(c.question) + '</div>' +
@@ -2856,15 +3033,28 @@ async function answer(res){
     return;
   }
 
-  if(session.phase === 'r1'){
+  const st = it.stage;
+  if(st === 'r1'){
     if(res === 'o'){ session.solved++; }
     else { session.queue.push({ ...it, retry:true }); }
-  }else if(session.phase === 'r2'){
+  }else if(st === 'r2' && it.fix){       // 二周目で×だった問題を、その日のうちに解き直している最中
+    if(res === 'o'){
+      await ensureCardProg(c.id);
+      await sb.from('card_progress').update({ r3_cleared: true }).eq('user_id', currentUser.id).eq('card_id', c.id);
+      cardProg[c.id] = Object.assign(cardProg[c.id] || { card_id:c.id }, { r3_cleared:true });
+      session.solved++;
+    }else{
+      session.queue.push({ ...it, retry:true });
+    }
+  }else if(st === 'r2'){
     await ensureCardProg(c.id);
-    await sb.from('card_progress').update({ r2_result: res }).eq('user_id', currentUser.id).eq('card_id', c.id);
-    cardProg[c.id] = Object.assign(cardProg[c.id] || { card_id:c.id }, { r2_result: res });
+    // 今日あらためて×になったら、前に解き直し済みでも×直しに戻す
+    const patch = { r2_result: res }; if(res === 'x') patch.r3_cleared = false;
+    await sb.from('card_progress').update(patch).eq('user_id', currentUser.id).eq('card_id', c.id);
+    cardProg[c.id] = Object.assign(cardProg[c.id] || { card_id:c.id }, patch);
     session.solved++;
-  }else if(session.phase === 'r3'){
+    if(res === 'x' && session.phase === 'plan'){ session.queue.push({ ...it, fix:true, retry:true }); session.totalUnique++; }
+  }else if(st === 'r3'){
     if(res === 'o'){
       await ensureCardProg(c.id);
       await sb.from('card_progress').update({ r3_cleared: true }).eq('user_id', currentUser.id).eq('card_id', c.id);
@@ -3304,10 +3494,15 @@ window.CardApp = {
     if(!studyDays[dstr(d)]) d.setDate(d.getDate()-1);
     while(studyDays[dstr(d)]){ streak++; d.setDate(d.getDate()-1); }
     const pp = phaseProgress();
+    const ps = planStats();
+    const list = planToday();
     const nextLabel = resumable ? '前回の続き' : ((q.groups[0]||{}).chLabel || '');
     return { queue, phase:q.phase, streak, todayCount: studyDays[today()]||0, total: cards.length,
              phaseName: PHASE_NAME[pp.p]||'', phaseDone: pp.done, phaseTotal: pp.total,
-             phasePct: Math.round(pp.frac*100), overall: pp.overall, nextLabel };
+             phasePct: Math.round(pp.frac*100), overall: pp.overall, nextLabel,
+             plan: ps, todayList: list.map(it => ({ stage:it.stage, label: it.ch.subject+' '+chLabel(it.ch.subject,it.ch.chapter),
+               done: it.done, late: it.late, ready: it.ready })),
+             nextStage: (q.groups[0]||{}).stage || '' };
   },
   startToday: ()=>{ const b=$('btnStart'); if(b && !b.disabled) b.click(); }
 };
