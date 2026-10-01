@@ -24,7 +24,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="国試アプリ">
 <meta name="theme-color" content="#0E1B24">
-<meta name="app-build" content="2026-10-01-v17">
+<meta name="app-build" content="2026-10-01-v18">
 <meta name="app-note" content="chapterを1回通したら次へ・×は今すぐ／あとでまとめて">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2095,7 +2095,7 @@ function buildQueue(){
     const next = today_.find(it => !it.done && it.ready);
     if(next){
       return { phase:'plan', total: next.cards.length,
-        groups:[{ label:'一周目（〇×をつける）', stage:'r2', cards:next.cards, subject:next.ch.subject, chapter:next.ch.chapter,
+        groups:[{ label: next.cards.length < chList(next.ch).length ? '一周目（続きから・残り' + next.cards.length + '問）' : '一周目（〇×をつける）', stage:'r2', cards:next.cards, subject:next.ch.subject, chapter:next.ch.chapter,
                   chLabel: next.ch.subject + ' ' + chLabel(next.ch.subject, next.ch.chapter) }] };
     }
     const fx = fixCardsOrdered();                       // 今日の分が終わったら、たまっている×をまとめて
@@ -2112,7 +2112,7 @@ function buildQueue(){
   if(p === 'r2'){
     ch = chs.find(x => !r2Done(x));
     if(!ch) return none;
-    list = r2Cards(ch); label = '一周目（〇×をつける）';
+    list = r2Cards(ch); label = list.length < chList(ch).length ? '一周目（続きから・残り' + list.length + '問）' : '一周目（〇×をつける）';
   }else if(p === 'r3'){
     const fx = fixCardsOrdered();
     if(!fx.length) return none;
@@ -2170,8 +2170,6 @@ function renderFixCard(){
   $('fixInfo').textContent = fx.length + '問 ・ ' + gs.slice(0,4).map(g => g.chLabel.replace(/^(\S+) Ch\.(\d+).*$/,'$1 Ch$2') + '(' + g.cards.length + ')').join('、') + (gs.length > 4 ? ' ほか' + (gs.length-4) + 'chapter' : '');
 }
 function startFix(list){
-  const resumable = savedSession && savedSession.day === today() && Array.isArray(savedSession.queue) && savedSession.idx < savedSession.queue.length;
-  if(resumable && !confirm('途中のセッションが残っています。\n×直しを始めると、途中の分は消えます。始めますか？')) return Promise.resolve();
   startSession({ phase:'r3', groups:fixGroups(list) });
   return persistSession().then(()=> switchCTab('study'));
 }
@@ -2199,8 +2197,10 @@ function renderHome(){
   let head = '';
   if(resumable){
     const remain = savedSession.queue.length - savedSession.idx;
+    const cur = savedSession.queue[savedSession.idx] || {};
+    const curName = cur.subject ? cur.subject + ' ' + chLabel(cur.subject, cur.chapter) : '途中で終わっていた分です';
     head = '<div class="queue-row"><div><div class="qn">前回の続き</div>'+
-      '<div class="ql">途中で終わっていた分です</div></div><div class="qn">'+remain+' 問</div></div>';
+      '<div class="ql">'+esc(curName)+'</div></div><div class="qn">'+remain+' 問</div></div>';
   }
   if(p === 'plan'){
     const list = planToday();
@@ -3093,7 +3093,7 @@ function pickPlan(s,c){
   if(!list.length) return null;
   if($('pickNoRec').checked) return { stage:'mix', label:'記録しない練習', cards:list };
   const unmarked = list.filter(x => !(cardProg[x.id]||{}).r2_result);
-  if(!r2Done(ch)) return { stage:'r2', label:'一周目（〇×をつける）', cards:r2Cards(ch) };
+  if(!r2Done(ch)){ const rc = r2Cards(ch); return { stage:'r2', label: rc.length < list.length ? '一周目（続きから・残り' + rc.length + '問）' : '一周目（〇×をつける）', cards:rc }; }
   if(unmarked.length) return { stage:'r2', label:'一周目（まだ〇×がない問題だけ）', cards:unmarked };
   const xs = xInCh(ch);
   if(xs.length) return { stage:'r3', label:'×直し（このchapterの×だけ）', cards:xs };
@@ -3134,8 +3134,7 @@ $('btnPick').addEventListener('click', async ()=>{
     session = { phase:'mix', queue: pl.cards.map(x => ({ card:x, stage:'mix', chKey:key(s,c) })),
       idx:0, solved:0, answered:0, totalUnique:pl.cards.length, doneChapters:new Set(), retried:false, missed:[], back:'home' };
   }else{
-    const resumable = savedSession && savedSession.day === today() && Array.isArray(savedSession.queue) && savedSession.idx < savedSession.queue.length;
-    if(resumable && !confirm('途中のセッションが残っています。\nこのchapterを始めると、途中の分は消えます。始めますか？')) return;
+    // 途中のchapterがあっても気にせず始めてOK：〇×は1問ごとに保存されていて、あとで「続きから」出てくる
     startSession({ phase:pl.stage, groups:[{ stage:pl.stage, cards:pl.cards, subject:s, chapter:c }] });
     await persistSession();
   }
