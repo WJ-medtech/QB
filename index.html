@@ -24,8 +24,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="国試アプリ">
 <meta name="theme-color" content="#0E1B24">
-<meta name="app-build" content="2026-10-01-v16">
-<meta name="app-note" content="〇×は最初の周から・2回正解で◎・chapterを選んで演習・カード作成前に入れ先を確認">
+<meta name="app-build" content="2026-10-01-v17">
+<meta name="app-note" content="chapterを1回通したら次へ・×は今すぐ／あとでまとめて">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -699,6 +699,13 @@
         <div id="queueBox"></div>
         <button class="primary" id="btnStart">はじめる</button>
         <p class="hint" style="margin-top:9px;">1回で1chapter出ます。終わったら、もう一度「はじめる」を押すと次のchapterに進みます。</p>
+      </div>
+
+      <div class="card" id="fixCard" style="display:none;">
+        <h3>×直し</h3>
+        <div class="pick-info" id="fixInfo" style="color:var(--alert);margin-top:0;"></div>
+        <button class="primary small" id="btnFix">×をまとめて解き直す</button>
+        <p class="hint" style="margin-top:8px;">chapterをまたいで、×だった問題だけを解けます。急がなくても大丈夫。あとからまとめてでOK。</p>
       </div>
 
       <div class="card" id="pickCard">
@@ -2003,6 +2010,24 @@ function isMaru(c){ return !!(cardProg[c.id]||{}).r4_ok; }
 function xCards(){ return cards.filter(isX); }
 function xInCh(ch){ return chList(ch).filter(isX); }
 function notMaruInCh(ch){ return chList(ch).filter(c => !isMaru(c)); }
+// 一周目で、まだ〇×をつけていない問題だけ（途中でやめた続きから）。ぜんぶ未記録ならchapter全部
+function r2Cards(ch){
+  const list = chList(ch);
+  const un = list.filter(c => !(cardProg[c.id]||{}).r2_result);
+  return (un.length && un.length < list.length) ? un : list;
+}
+// ×直し：全chapterの×を、chapterの順にまとめる（複数chapterを並行して解ける）
+function fixCardsOrdered(){ const out = []; CHAPTERS.forEach(ch => xInCh(ch).forEach(c => out.push(c))); return out; }
+function fixGroups(list){
+  const groups = []; let cur = null;
+  list.forEach(c => {
+    const k = key(c.subject,c.chapter);
+    if(!cur || cur.k !== k){ cur = { k, stage:'r3', cards:[], subject:c.subject, chapter:c.chapter,
+      chLabel:c.subject+' '+chLabel(c.subject,c.chapter), label:'×直し' }; groups.push(cur); }
+    cur.cards.push(c);
+  });
+  return groups;
+}
 
 function autoPhase(){
   const chs = liveChapters();
@@ -2037,7 +2062,7 @@ function fmtChs(list){
   });
   return out.map(g => g.subject + ' Ch' + g.from + (g.to > g.from ? '〜' + g.to : '')).join('・');
 }
-// 今日やる分の一覧（〇×をつける一周目 → ×直し）。終わった分も「済」として残す
+// 今日やる分の一覧（〇×をつける一周目）。終わった分も「済」として残す
 // ※カードを作る日（ch.r1）はアプリでは記録しない。作った翌日（ch.r2）に〇×をつける
 function planToday(){
   const t = today();
@@ -2045,20 +2070,16 @@ function planToday(){
   PLAN.forEach(ch => {
     const p = chProg[key(ch.subject,ch.chapter)] || {};
     if(ch.r2 <= t && (!p.r2_at || d10(p.r2_at) === t)){
-      items.push({ stage:'r2', ch, done:!!p.r2_at, late: ch.r2 < t && !p.r2_at });
-    }else if(p.r2_at && d10(p.r2_at) < t && xInCh(ch).length){
-      items.push({ stage:'r3', ch, done:false, late:true });
+      const cs = p.r2_at ? chList(ch) : r2Cards(ch);
+      items.push({ stage:'r2', ch, done:!!p.r2_at, late: ch.r2 < t && !p.r2_at, cards:cs, ready:cs.length>0 });
     }
   });
-  const order = { r2:0, r3:1 };
-  items.sort((a,b)=> order[a.stage]-order[b.stage]);
-  items.forEach(it => { it.cards = it.stage==='r3' ? xInCh(it.ch) : chList(it.ch); it.ready = it.cards.length > 0; });
   return items;
 }
 // 今日の分がぜんぶ終わったときの「先取り」候補（まだ〇×をつけていないつぎのchapter）
 function planAhead(){
   const ch = PLAN.find(x => !r2Done(x) && hasCards(x.subject,x.chapter));
-  return ch ? { stage:'r2', ch, done:false, ahead:true, cards:chList(ch), ready:true } : null;
+  return ch ? { stage:'r2', ch, done:false, ahead:true, cards:r2Cards(ch), ready:true } : null;
 }
 const STAGE_LABEL = { r2:'一周目（〇×）', r3:'×直し', r4:'二周目' };
 
@@ -2071,12 +2092,19 @@ function buildQueue(){
   const none = { phase:p, groups:[], total:0 };
   if(p === 'plan'){
     const today_ = planToday();
-    const next = today_.find(it => !it.done && it.ready) || planAhead();
-    if(!next) return none;
-    const lab = (next.stage==='r2' ? '一周目（〇×をつける。×はこの後すぐ解き直し）' : '×直し') + (next.ahead ? '・先取り' : '');
-    return { phase:'plan', total: next.cards.length,
-      groups:[{ label:lab, stage:next.stage, cards:next.cards, subject:next.ch.subject, chapter:next.ch.chapter,
-                chLabel: next.ch.subject + ' ' + chLabel(next.ch.subject, next.ch.chapter) }] };
+    const next = today_.find(it => !it.done && it.ready);
+    if(next){
+      return { phase:'plan', total: next.cards.length,
+        groups:[{ label:'一周目（〇×をつける）', stage:'r2', cards:next.cards, subject:next.ch.subject, chapter:next.ch.chapter,
+                  chLabel: next.ch.subject + ' ' + chLabel(next.ch.subject, next.ch.chapter) }] };
+    }
+    const fx = fixCardsOrdered();                       // 今日の分が終わったら、たまっている×をまとめて
+    if(fx.length) return { phase:'plan', combined:true, total:fx.length, groups:fixGroups(fx) };
+    const ah = planAhead();
+    if(!ah) return none;
+    return { phase:'plan', total: ah.cards.length,
+      groups:[{ label:'一周目（〇×をつける）・先取り', stage:'r2', cards:ah.cards, subject:ah.ch.subject, chapter:ah.ch.chapter,
+                chLabel: ah.ch.subject + ' ' + chLabel(ah.ch.subject, ah.ch.chapter) }] };
   }
   if(p === 'done' || !chs.length) return none;
 
@@ -2084,11 +2112,11 @@ function buildQueue(){
   if(p === 'r2'){
     ch = chs.find(x => !r2Done(x));
     if(!ch) return none;
-    list = chList(ch); label = '一周目（〇×をつける。×はすぐ解き直し）';
+    list = r2Cards(ch); label = '一周目（〇×をつける）';
   }else if(p === 'r3'){
-    ch = chs.find(x => xInCh(x).length);
-    if(!ch) return none;
-    list = xInCh(ch); label = '×直し';
+    const fx = fixCardsOrdered();
+    if(!fx.length) return none;
+    return { phase:'r3', combined:true, total:fx.length, groups:fixGroups(fx) };
   }else{ // r4
     ch = chs.find(x => notMaruInCh(x).length);
     if(!ch) return none;
@@ -2114,14 +2142,14 @@ function phaseProgress(){
   const ps = planStats();
   if(p==='plan'){
     total = PLAN_TOTAL; done = ps.r1;
-    desc = '一周目（〇×） ' + ps.r1 + '/' + PLAN_TOTAL + '・二周目（◎） ' + ps.r2 + '/' + PLAN_TOTAL + '。カードを作った翌日に〇×をつけて、×はその場ですぐ解き直します。2回正解したら◎です。';
+    desc = '一周目（〇×） ' + ps.r1 + '/' + PLAN_TOTAL + '・二周目（◎） ' + ps.r2 + '/' + PLAN_TOTAL + '。カードを作った翌日に〇×をつけます。×は、終わったあとに「今すぐ解き直す」か「あとで」を選べます。2回正解したら◎です。';
   }else if(p==='r2'){
     total = PLAN_TOTAL; done = ps.r1;
-    desc = '最初から〇と×をつけます（これが一周目）。少しでも自信がなければ×にしてください。×はその場ですぐ解き直します。';
+    desc = '最初から〇と×をつけます（これが一周目）。少しでも自信がなければ×にしてください。1chapterを1回通したら、次のchapterに進めます。×はあとでまとめて解き直せます。';
   }else if(p==='r3'){
     const allX = cards.filter(c => (cardProg[c.id]||{}).r2_result==='x').length;
     total = allX || 1; done = allX - xCards().length;
-    desc = '一周目で×だった問題のうち、まだ〇になっていないものだけ。〇になったらその問題は抜けます。';
+    desc = '一周目で×だった問題のうち、まだ〇になっていないものを、chapterをまたいでまとめて。〇になったらその問題は抜けます。';
   }else if(p==='r4'){
     total = cards.length || 1; done = cards.filter(isMaru).length;
     desc = '二周目。ここでも正解したら◎（2回正解で◎）。全部◎になったら終わりです。';
@@ -2134,8 +2162,24 @@ function phaseProgress(){
   return { p, chs, done, total, desc, frac, overall: Math.min(1, (idx + (p==='done'?0:frac)) / 3) };
 }
 
+function renderFixCard(){
+  const fx = fixCardsOrdered();
+  $('fixCard').style.display = fx.length ? '' : 'none';
+  if(!fx.length) return;
+  const gs = fixGroups(fx);
+  $('fixInfo').textContent = fx.length + '問 ・ ' + gs.slice(0,4).map(g => g.chLabel.replace(/^(\S+) Ch\.(\d+).*$/,'$1 Ch$2') + '(' + g.cards.length + ')').join('、') + (gs.length > 4 ? ' ほか' + (gs.length-4) + 'chapter' : '');
+}
+function startFix(list){
+  const resumable = savedSession && savedSession.day === today() && Array.isArray(savedSession.queue) && savedSession.idx < savedSession.queue.length;
+  if(resumable && !confirm('途中のセッションが残っています。\n×直しを始めると、途中の分は消えます。始めますか？')) return Promise.resolve();
+  startSession({ phase:'r3', groups:fixGroups(list) });
+  return persistSession().then(()=> switchCTab('study'));
+}
+$('btnFix').addEventListener('click', ()=>{ const fx = fixCardsOrdered(); if(fx.length) startFix(fx); });
+
 function renderHome(){
   refreshPickCh();
+  renderFixCard();
   const pp = phaseProgress();
   const p = pp.p, chs = pp.chs, done = pp.done, total = pp.total, desc = pp.desc;
   $('phaseBig').textContent = PHASE_NAME[p] || '一周目';
@@ -2165,7 +2209,9 @@ function renderHome(){
     let body = '';
     if(!resumable && q.total > 0){
       const g = q.groups[0];
-      body = '<div class="queue-row"><div><div class="qn">'+esc(g.chLabel||g.label)+'</div>'+
+      body = q.combined
+        ? '<div class="queue-row"><div><div class="qn">×直し（まとめて）</div><div class="ql">'+q.groups.length+' chapterぶん</div></div><div class="qn">'+q.total+' 問</div></div>'
+        : '<div class="queue-row"><div><div class="qn">'+esc(g.chLabel||g.label)+'</div>'+
         '<div class="ql">'+esc(g.label)+'</div></div><div class="qn">'+g.cards.length+' 問</div></div>';
     }else if(!resumable){
       const t = today();
@@ -2190,6 +2236,9 @@ function renderHome(){
         (cards.length === 0 ? 'まだカードがありません。<br>「入力」タブから口頭試問を追加してください。'
                             : 'この周はここまでです 🎉') + '</div>';
       $('btnStart').disabled = true;
+    }else if(q.combined){
+      box.innerHTML = '<div class="queue-row"><div><div class="qn">×直し（まとめて）</div><div class="ql">'+q.groups.length+' chapterぶん</div></div><div class="qn">'+q.total+' 問</div></div>';
+      $('btnStart').disabled = false;
     }else{
       box.innerHTML = q.groups.map(g=>
         '<div class="queue-row"><div><div class="qn">'+esc(g.chLabel||g.label)+'</div>'+
@@ -2477,10 +2526,27 @@ function renderSession(){
       return;
     }
 
-    body.innerHTML = '<div class="cempty">このぶんは終わり 🎉<br>' + session.solved + ' 問クリアしました<br>'+
-      'つづけるなら、ホームでもう一度「はじめる」を押してな。</div>' +
-      '<button class="primary" id="backHome">ホームに戻る</button>';
+    const marked = session.queue.some(it => it.stage === 'r2');
+    const ids = [...new Set(session.queue.filter(it => it.stage === 'r2').map(it => it.card.id))];
+    const xs = ids.map(id => cards.find(c => c.id === id)).filter(c => c && isX(c));
+    const nq = buildQueue();
+    const nextLabel = nq.total > 0 ? (nq.combined ? '×直しをまとめて解く（' + nq.total + '問）'
+      : 'つぎのchapterへ：' + (nq.groups[0].chLabel || '')) : '';
+    body.innerHTML = '<div class="cempty" style="padding:22px 6px;">' +
+      (marked ? 'このchapterの一周目、おわり 🎉<br><b style="font-size:18px;">' + ids.length + ' 問に〇×をつけました</b>' +
+                (xs.length ? '<br><span style="color:var(--alert);">×が ' + xs.length + ' 問</span>' : '<br>ぜんぶ〇でした')
+                : 'このぶんは終わり 🎉<br>' + session.solved + ' 問クリアしました') + '</div>' +
+      (nextLabel ? '<button class="primary" id="nextCh">' + esc(nextLabel) + '</button>' : '') +
+      (xs.length && !nq.combined ? '<button class="ghost" id="fixNow" style="border-color:var(--alert);color:var(--alert);">×を今すぐ解き直す（' + xs.length + '問）</button>' : '') +
+      '<button class="ghost" id="backHome">ホームに戻る</button>';
     clearPersistedSession();
+    if($('nextCh')) $('nextCh').addEventListener('click', async ()=>{
+      const q2 = buildQueue(); if(q2.total === 0) return;
+      startSession(q2); await persistSession(); renderSession();
+    });
+    if($('fixNow')) $('fixNow').addEventListener('click', async ()=>{
+      startSession({ phase:'r3', groups:fixGroups(xs) }); await persistSession(); renderSession();
+    });
     $('backHome').addEventListener('click', ()=>{ session=null; switchCTab('home'); renderHome(); });
     return;
   }
@@ -2612,7 +2678,6 @@ async function answer(res){
     await sb.from('card_progress').update(patch).eq('user_id', currentUser.id).eq('card_id', c.id);
     cardProg[c.id] = Object.assign(cardProg[c.id] || { card_id:c.id }, patch);
     session.solved++;
-    if(res === 'x'){ session.queue.push({ ...it, fix:true, retry:true }); session.totalUnique++; }
   }else if(st === 'r3'){
     if(res === 'o'){
       await ensureCardProg(c.id);
@@ -3028,10 +3093,10 @@ function pickPlan(s,c){
   if(!list.length) return null;
   if($('pickNoRec').checked) return { stage:'mix', label:'記録しない練習', cards:list };
   const unmarked = list.filter(x => !(cardProg[x.id]||{}).r2_result);
-  if(!r2Done(ch)) return { stage:'r2', label:'一周目（〇×をつける。×はすぐ解き直し）', cards:list };
+  if(!r2Done(ch)) return { stage:'r2', label:'一周目（〇×をつける）', cards:r2Cards(ch) };
   if(unmarked.length) return { stage:'r2', label:'一周目（まだ〇×がない問題だけ）', cards:unmarked };
   const xs = xInCh(ch);
-  if(xs.length) return { stage:'r3', label:'×直し', cards:xs };
+  if(xs.length) return { stage:'r3', label:'×直し（このchapterの×だけ）', cards:xs };
   const nm = notMaruInCh(ch);
   if(nm.length) return { stage:'r4', label:'二周目（◎にする）', cards:nm };
   return { stage:'mix', label:'ぜんぶ◎ずみ → 復習（記録なし）', cards:list };
