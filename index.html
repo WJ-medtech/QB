@@ -24,8 +24,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="国試アプリ">
 <meta name="theme-color" content="#0E1B24">
-<meta name="app-build" content="2026-10-01-v18">
-<meta name="app-note" content="chapterを1回通したら次へ・×は今すぐ／あとでまとめて">
+<meta name="app-build" content="2026-10-05-v20">
+<meta name="app-note" content="10/5〜11/2の1か月計画専用「計画」タブ（毎日の達成をSupabaseに記録）">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -534,6 +534,80 @@
   .lg-t{flex:1;min-width:0;}
   .lg-n{color:var(--soft);font-size:12px;margin-left:4px;}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+
+  /* ---------- 1か月計画（計画タブ） ---------- */
+  body[data-view=plan] header .monitor,body[data-view=plan] header .mon-legend{display:none;}
+  body[data-view=plan] header{padding-bottom:4px;}
+  #view-plan .monitor{margin-top:0;margin-bottom:12px;}
+  .mp-nav{display:flex;align-items:center;gap:8px;margin:6px 0 12px;}
+  .mp-navb{width:46px;height:46px;flex:0 0 auto;border-radius:13px;border:1px solid var(--line);background:var(--surface);color:var(--text);font-size:18px;font-weight:700;}
+  .mp-navb[disabled]{opacity:.3;}
+  .mp-date{flex:1;text-align:center;min-width:0;}
+  .mp-date b{font-family:var(--num);font-size:34px;font-weight:600;line-height:1;letter-spacing:.01em;}
+  .mp-date b small{font-size:18px;color:var(--soft);margin-left:3px;font-family:var(--jp);font-weight:700;}
+  .mp-date span{display:block;font-size:12px;color:var(--soft);margin-top:3px;}
+  .mp-back{display:block;margin:-4px auto 12px;background:var(--surface2);color:var(--text);border:1px solid var(--line2);border-radius:999px;padding:7px 16px;font-size:12.5px;font-weight:700;}
+  .mp-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px;}
+  .mp-head h2{margin:0;font-size:15px;}
+  .mp-badge{font-size:12px;font-weight:800;padding:4px 11px;border-radius:999px;background:var(--surface2);color:var(--soft);white-space:nowrap;}
+  .mp-badge.ok{background:var(--vid-dim);color:var(--vid);}
+  .mp-badge.part{background:var(--qb-dim);color:var(--qb);}
+  .mp-badge.miss{background:var(--alert-dim);color:var(--alert);}
+  .mp-bar{height:4px;border-radius:3px;background:var(--line2);overflow:hidden;margin:6px 0 4px;}
+  .mp-bar i{display:block;height:100%;background:var(--vid);transition:width .35s ease;}
+  .mp-grp{margin-top:16px;}
+  .mp-gh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;font-weight:800;margin-bottom:8px;}
+  .mp-gh span{font-family:var(--num);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;}
+  .mp-gh span small{font-size:12px;color:var(--soft);font-family:var(--jp);font-weight:600;margin-left:1px;}
+  .mp-gh.kt{color:var(--kt);} .mp-gh.ox{color:var(--vid);} .mp-gh.qb{color:var(--qb);}
+  .mp-chips{display:flex;flex-wrap:wrap;gap:7px;}
+  .mp-chip{min-height:44px;padding:8px 14px;border-radius:12px;border:1px solid var(--line2);background:var(--surface2);color:var(--text);font-size:14px;font-weight:700;display:inline-flex;align-items:center;gap:6px;}
+  .mp-chip small{font-size:10.5px;opacity:.75;font-weight:700;}
+  .mp-chip.kt.on{background:var(--kt-dim);border-color:var(--kt);color:var(--kt);}
+  .mp-chip.ox.on{background:var(--vid-dim);border-color:var(--vid);color:var(--vid);}
+  .mp-none{font-size:13px;color:var(--faint);padding:2px 2px 0;}
+  .mp-qrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);}
+  .mp-qrow:first-of-type{border-top:none;}
+  .mp-ck{width:44px;height:44px;flex:0 0 auto;border-radius:50%;border:2px solid var(--line2);background:var(--surface2);color:transparent;font-size:19px;font-weight:800;}
+  .mp-qrow.ok .mp-ck{background:var(--qb);border-color:var(--qb);color:var(--qb-ink);}
+  .mp-qrow.part .mp-ck{border-color:var(--qb);}
+  .mp-qname{flex:1;min-width:0;}
+  .mp-qname b{display:block;font-size:15px;}
+  .mp-qname span{font-size:12px;color:var(--soft);}
+  .mp-qnum{display:flex;align-items:center;gap:5px;flex:0 0 auto;font-size:12.5px;color:var(--soft);}
+  .mp-qnum input{width:64px;padding:9px 6px;text-align:center;border:1px solid var(--line2);border-radius:10px;background:var(--surface2);color:var(--text);font-family:var(--num);font-size:19px;font-weight:600;}
+  .mp-qrow.ok .mp-qnum input{border-color:var(--qb);color:var(--qb);}
+  .mp-memo{width:100%;min-height:62px;margin-top:14px;padding:10px 12px;border:1px solid var(--line2);border-radius:11px;background:var(--surface2);color:var(--text);font-family:inherit;font-size:16px;resize:vertical;}
+  .mp-all{width:100%;margin-top:12px;padding:12px;border-radius:12px;border:1px solid var(--line2);background:var(--surface2);color:var(--text);font-size:13.5px;font-weight:800;}
+  .mp-all.go{background:var(--vid);border-color:var(--vid);color:var(--vid-ink);}
+  .mp-hint{font-size:11.5px;color:var(--faint);margin-top:8px;line-height:1.6;}
+  .mp-late{border-color:rgba(255,122,107,.4);}
+  .mp-late h2{color:var(--alert);}
+  .mp-lsum{font-size:13px;color:var(--soft);margin:0 0 6px;line-height:1.7;}
+  .mp-lsum b{font-family:var(--num);font-size:18px;color:var(--text);font-weight:600;}
+  .mp-lrow{display:block;width:100%;text-align:left;background:none;border:none;border-top:1px solid var(--line);padding:9px 2px;font-size:13px;line-height:1.65;color:var(--text);}
+  .mp-lrow b{font-family:var(--num);font-size:16px;font-weight:600;margin-right:6px;}
+  .mp-lrow em{font-style:normal;font-size:11px;font-weight:800;margin-right:4px;}
+  .mp-lrow em.kt{color:var(--kt);} .mp-lrow em.ox{color:var(--vid);} .mp-lrow em.qb{color:var(--qb);}
+  .mp-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+  .mp-cal > i{font-style:normal;text-align:center;font-size:11px;color:var(--faint);font-weight:700;padding-bottom:2px;}
+  .mp-c0{display:block;}
+  .mp-cell{min-height:50px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--soft);padding:5px 1px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;}
+  .mp-cell b{font-family:var(--num);font-size:17px;font-weight:600;line-height:1;color:inherit;}
+  .mp-cell small{font-size:10px;line-height:1.1;font-weight:700;opacity:.85;}
+  .mp-cell.ok{background:var(--vid-dim);border-color:rgba(94,224,140,.5);color:var(--vid);}
+  .mp-cell.part{background:var(--qb-dim);border-color:rgba(247,196,76,.5);color:var(--qb);}
+  .mp-cell.miss{background:var(--alert-dim);border-color:rgba(255,122,107,.45);color:var(--alert);}
+  .mp-cell.future{opacity:.65;}
+  .mp-cell.today{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--text);}
+  .mp-cell.sel{outline:2px solid var(--kt);outline-offset:1px;}
+  .mp-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--soft);margin-top:10px;}
+  .mp-legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;vertical-align:-1px;}
+  .mp-bk{width:100%;min-height:90px;padding:10px 12px;border:1px solid var(--line2);border-radius:11px;background:var(--surface2);color:var(--text);font-family:ui-monospace,Menlo,monospace;font-size:12px;}
+  .mp-bkb{display:flex;gap:8px;margin-top:8px;}
+  .mp-sync{font-size:11.5px;color:var(--soft);text-align:center;margin:-4px 4px 12px;line-height:1.6;}
+  .mp-sync.ok{color:var(--vid);} .mp-sync.saving{color:var(--soft);}
+  .mp-sync.err,.mp-sync.notable{color:var(--alert);}
 </style>
 
 
@@ -594,8 +668,11 @@
 
 <main>
 
+<!-- ========== 計画：1か月（10/5〜11/2）専用 ========== -->
+<div class="view active" id="view-plan"></div>
+
 <!-- ========== 今日：記録する・見る ========== -->
-<div class="view active" id="view-today">
+<div class="view" id="view-today">
   <div class="sect first"><span>今日の記録</span><span class="sect-r" id="todayHead"></span></div>
   <div class="card lg" id="todayLog"></div>
 
@@ -847,13 +924,18 @@ A: 答え
 </main>
 
 <nav class="tabs" aria-label="画面の切り替え">
-  <button class="tb active" data-v="today"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg></span>今日</button>
+  <button class="tb active" data-v="plan"><span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9l1.5 1.5L12 8M8 15l1.5 1.5L12 14M14.5 9.5H17M14.5 15.5H17"/></svg></span>計画</button>
+  <button class="tb" data-v="today"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg></span>記録</button>
   <button class="tb" data-v="cards"><span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="13" height="15" rx="2.5"/><path d="M8 3h9.5A2.5 2.5 0 0 1 20 5.5V17"/></svg></span>口頭試問</button>
 </nav>
 
 <div class="toast" id="toast"></div>
 
 
+<script>
+/* ===== 1か月計画のデータ（10/5〜11/2）。予定を変えるときはここだけ直す ===== */
+window.MONTH_PLAN={"start":"2026-10-05","end":"2026-11-02","exam":"2026-11-03","days":{"2026-10-05":{"kt":[["神経",1,3]],"qb":[["総論",57]]},"2026-10-06":{"kt":[["神経",4,6]],"qb":[["総論",18],["救急",39]]},"2026-10-07":{"kt":[["神経",7,9]],"qb":[["救急",46],["中毒",11]]},"2026-10-08":{"kt":[["神経",10,12]],"qb":[["中毒",19],["麻酔",10],["腎",28]]},"2026-10-09":{"kt":[["内分泌",1,3]],"qb":[["腎",57]]},"2026-10-10":{"kt":[["内分泌",4,7]],"qb":[["腎",2],["神経",55]]},"2026-10-11":{"kt":[["内分泌",8,8],["血液",1,3]],"qb":[["神経",57]]},"2026-10-12":{"kt":[["血液",4,6]],"qb":[["神経",46],["内分泌",11]]},"2026-10-13":{"kt":[["血液",7,9]],"qb":[["内分泌",57]]},"2026-10-14":{"kt":[["免疫",1,3]],"qb":[["内分泌",48],["血液",9]]},"2026-10-15":{"kt":[["免疫",4,5],["感染症",1,1]],"qb":[["血液",57]]},"2026-10-16":{"kt":[["感染症",2,4]],"qb":[["血液",15],["免疫",42]]},"2026-10-17":{"kt":[["感染症",5,7],["呼吸器",1,1]],"qb":[["免疫",35],["感染症",22]]},"2026-10-18":{"kt":[["呼吸器",2,5]],"qb":[["感染症",57]]},"2026-10-19":{"kt":[["呼吸器",6,9]],"qb":[["感染症",44],["呼吸器",13]]},"2026-10-20":{"kt":[["循環器",1,3]],"qb":[["呼吸器",57]]},"2026-10-21":{"kt":[["循環器",4,6]],"qb":[["呼吸器",57]]},"2026-10-22":{"kt":[["循環器",7,8],["消化器",1,1]],"qb":[["呼吸器",4],["循環器",53]]},"2026-10-23":{"kt":[["消化器",2,4]],"qb":[["循環器",57]]},"2026-10-24":{"kt":[["消化器",5,6],["肝胆膵",1,2]],"qb":[["循環器",21],["消化管",36]]},"2026-10-25":{"kt":[["肝胆膵",3,5],["産婦人",1,1]],"qb":[["消化管",57]]},"2026-10-26":{"kt":[["産婦人",2,5]],"qb":[["消化管",19],["肝胆膵",38]]},"2026-10-27":{"kt":[["産婦人",6,8]],"qb":[["肝胆膵",30],["婦人",27]]},"2026-10-28":{"kt":[["産婦人",9,11]],"qb":[["婦人",52],["産",5]]},"2026-10-29":{"kt":[["産婦人",12,12],["小児",1,2]],"qb":[["産",57]]},"2026-10-30":{"kt":[["小児",3,5]],"qb":[["産",45],["小児",12]]},"2026-10-31":{"kt":[["小児",6,9]],"qb":[["小児",57]]},"2026-11-01":{"kt":[["小児",10,13]],"qb":[["小児",57]]},"2026-11-02":{"kt":[],"qb":[["小児",58]]}}};
+</script>
 <script>
 /* ===== これを一番最初に登録：真っ白防止の砦 ===== */
 window.onerror=(m,src,l,c,e)=>{
@@ -1234,6 +1316,7 @@ async function loadAll(){
     state.logs[d].entries.push({pieceId:r.piece_id,value:+r.value,unit:r.unit});
     state.logs[d].total=Math.round((state.logs[d].total+ +r.value)*10)/10;});
   await loadHistory();
+  try{ await mpLoadRemote(); }catch(e){ console.warn('month plan',e); }
 }
 /* 全期間の記録を読み込む（Supabaseは1回で1000件までなので、1000件ずつ順番に集める） */
 async function loadHistory(){
@@ -1520,7 +1603,7 @@ function renderDashCards(){
   setChan('Kt', P.r1/P.total, P.expectR1/P.total, `${P.r1}<small>/${P.total}</small>`,
     `一周目（〇×）が終わったchapter・二周目 ${P.r2}`);
 }
-window.refreshDash=()=>{try{renderDashCards();renderLogViews();}catch(e){console.warn('dash',e);}};
+window.refreshDash=()=>{try{renderDashCards();renderLogViews();mpRenderSafe();}catch(e){console.warn('dash',e);}};
 
 /* ===== 🔄 更新ボタン ===================================================
    1タップで「データを最新にする」＋「アプリ本体に新しい版が出てないか確認」。
@@ -1617,7 +1700,341 @@ function renderAll(){
   document.getElementById('cdQB').textContent=dTo('2026-12-31');
   document.getElementById('cdMoshi2').textContent=dTo('2027-01-18');
   renderToday();
+  mpRenderSafe();
 }
+
+/* ============================================================
+   「計画」タブ — 10/5〜11/2 の1か月計画専用
+   ・予定は window.MONTH_PLAN（ファイル先頭の <script>）にまとめてある
+   ・毎日の「できた／できてない」は Supabase（計画DB）の month_plan_days 表に保存する
+     （端末にも控えを置くので、電波がないときも記録できて、あとで自動で送る）
+   ・カードDBにログインしていれば、口頭試問の「作成」「〇×」は自動で✓になる
+   ============================================================ */
+const MP=window.MONTH_PLAN;
+const MP_DATES=Object.keys(MP.days).sort();
+const MP_KEY='mp.v1';
+let mpLog={days:{}};
+try{const raw=localStorage.getItem(MP_KEY);if(raw){const o=JSON.parse(raw);if(o&&o.days)mpLog=o;}}catch(e){}
+const MP_EMPTY={kt:{},ox:{},qb:{},memo:''};
+let mpSel=null, mpWarned=false;
+const mpNf=n=>Math.round(n).toLocaleString();
+function mpPeek(d){const v=mpLog.days[d];return v?{kt:v.kt||{},ox:v.ox||{},qb:v.qb||{},memo:v.memo||''}:MP_EMPTY;}
+function mpDay(d){const x=(mpLog.days[d]=mpLog.days[d]||{});x.kt=x.kt||{};x.ox=x.ox||{};x.qb=x.qb||{};x.memo=x.memo||'';return x;}
+function mpSaveLocal(){
+  try{localStorage.setItem(MP_KEY,JSON.stringify(mpLog));mpWarned=false;}
+  catch(e){if(!mpWarned){toast('⚠️ この端末に保存できませんでした');}mpWarned=true;}
+}
+/* ---- Supabase と同期 ---- */
+const MP_TABLE='month_plan_days';
+const mpSync={state:'local',msg:'',uid:null,pending:new Set(),timer:null,busy:false};
+try{(JSON.parse(localStorage.getItem('mp.pending')||'[]')||[]).forEach(d=>mpSync.pending.add(d));}catch(e){}
+function mpSavePending(){try{localStorage.setItem('mp.pending',JSON.stringify([...mpSync.pending]));}catch(e){}}
+function mpCanSync(){return !!(owner&&sb&&!sbBroken);}
+function mpNoTable(err){const m=String((err&&err.message)||'');return (err&&(err.code==='42P01'||err.code==='PGRST205'))||(m.includes(MP_TABLE)&&/does not exist|schema cache|Could not find/i.test(m));}
+async function mpUid(){
+  if(mpSync.uid)return mpSync.uid;
+  try{const {data}=await sb.auth.getSession();mpSync.uid=(data&&data.session&&data.session.user&&data.session.user.id)||null;}catch(e){}
+  return mpSync.uid;
+}
+function mpRowOf(d){const v=mpPeek(d);return {kt:v.kt,ox:v.ox,qb:v.qb,memo:v.memo};}
+function mpStatusHTML(){
+  const n=mpSync.pending.size;
+  switch(mpSync.state){
+    case 'ok':return '☁️ Supabaseに保存ずみ';
+    case 'saving':return '⏳ Supabaseに保存中…';
+    case 'err':return `⚠️ Supabaseに送れていない記録が${n}日分あります（この端末には保存ずみ。電波が戻ったら自動で送ります）`;
+    case 'notable':return '⚠️ Supabaseに記録用の表がまだありません。SQLを実行するまでは、この端末にだけ保存します';
+    default:return '📱 この端末にだけ保存中（🔑からログインするとSupabaseにも保存されます）';
+  }
+}
+function mpStatusUI(){
+  const el=document.getElementById('mpSyncLine');if(!el)return;
+  el.innerHTML=escH(mpStatusHTML()).replace(/^(☁️|⏳|⚠️|📱)/,'$1');
+  el.className='mp-sync '+mpSync.state;
+}
+function mpSave(...days){
+  days.forEach(d=>{if(d)mpSync.pending.add(d);});
+  mpSavePending();mpSaveLocal();
+  if(!mpCanSync()){mpSync.state='local';mpStatusUI();return;}
+  if(mpSync.state==='notable'){mpStatusUI();return;}
+  clearTimeout(mpSync.timer);
+  mpSync.timer=setTimeout(mpFlush,700);
+}
+async function mpFlush(){
+  clearTimeout(mpSync.timer);
+  if(!mpCanSync()){mpSync.state='local';mpStatusUI();return;}
+  if(mpSync.busy){mpSync.timer=setTimeout(mpFlush,700);return;}
+  if(!mpSync.pending.size){if(mpSync.state!=='notable')mpSync.state='ok';mpStatusUI();return;}
+  const uid=await mpUid();
+  if(!uid){mpSync.state='local';mpStatusUI();return;}
+  const days=[...mpSync.pending];
+  const snap={};days.forEach(d=>{snap[d]=JSON.stringify(mpRowOf(d));});
+  const rows=days.map(d=>Object.assign({user_id:uid,day:d,updated_at:new Date().toISOString()},mpRowOf(d)));
+  mpSync.busy=true;mpSync.state='saving';mpStatusUI();
+  try{
+    const {error}=await withTimeout(sb.from(MP_TABLE).upsert(rows,{onConflict:'user_id,day'}),8000,'計画の記録の保存');
+    if(error)throw error;
+    days.forEach(d=>{if(JSON.stringify(mpRowOf(d))===snap[d])mpSync.pending.delete(d);});
+    mpSavePending();
+    mpSync.state=mpSync.pending.size?'saving':'ok';mpSync.msg='';
+  }catch(e){
+    mpSync.state=mpNoTable(e)?'notable':'err';mpSync.msg=String((e&&e.message)||e);
+    console.warn('month plan save',e);
+  }finally{mpSync.busy=false;}
+  mpStatusUI();
+  if(mpSync.pending.size&&mpSync.state==='saving')mpSync.timer=setTimeout(mpFlush,700);
+}
+/* 起動時・ログイン時・🔄更新で呼ばれる。Supabaseの記録を読み込んで、端末の控えとあわせる */
+async function mpLoadRemote(){
+  if(!mpCanSync()){mpSync.state='local';mpRenderSafe();return;}
+  const uid=await mpUid();
+  if(!uid){mpSync.state='local';mpRenderSafe();return;}
+  let data;
+  try{
+    const r=await withTimeout(sb.from(MP_TABLE).select('day,kt,ox,qb,memo'),8000,'計画の記録の読み込み');
+    if(r.error)throw r.error;
+    data=r.data||[];
+  }catch(e){
+    mpSync.state=mpNoTable(e)?'notable':'err';mpSync.msg=String((e&&e.message)||e);
+    console.warn('month plan load',e);mpRenderSafe();return;
+  }
+  const remote={};data.forEach(r=>{remote[String(r.day).slice(0,10)]=r;});
+  // この端末にしかない記録（Supabaseに入れる前の分）は、送る対象にする
+  Object.keys(mpLog.days).forEach(d=>{if(!remote[d])mpSync.pending.add(d);});
+  // それ以外はSupabaseの内容を正とする（まだ送れていない分だけは端末の内容を残す）
+  Object.keys(remote).forEach(d=>{
+    if(mpSync.pending.has(d))return;
+    const r=remote[d],o=v=>(v&&typeof v==='object')?v:{};
+    mpLog.days[d]={kt:o(r.kt),ox:o(r.ox),qb:o(r.qb),memo:typeof r.memo==='string'?r.memo:''};
+  });
+  mpSavePending();mpSaveLocal();
+  mpSync.state=mpSync.pending.size?'saving':'ok';
+  mpRenderSafe();
+  await mpFlush();
+}
+/* メモを入力している途中で画面を描き直すと、入力が途切れるのでそのときだけ描き直さない */
+function mpRenderSafe(){
+  const a=document.activeElement;
+  if(a&&a.classList&&a.classList.contains('mp-memo')){mpStatusUI();return;}
+  mpRender();
+}
+window.addEventListener('online',()=>{if(mpSync.pending.size)mpFlush();});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&mpSync.pending.size)mpFlush();});
+function mpExpand(list){const out=[];(list||[]).forEach(([s,a,b])=>{for(let c=a;c<=b;c++)out.push({id:s+':'+c,subj:s,ch:c});});return out;}
+/* その日にやること。〇×は「前日に作成した章」 */
+function mpItems(d){
+  const P=MP.days[d];if(!P)return null;
+  const prev=MP.days[addDays(d,-1)];
+  return {kt:mpExpand(P.kt),ox:mpExpand(prev?prev.kt:[]),qb:P.qb.map(([s,n])=>({id:s,subj:s,n}))};
+}
+function mpAuto(it,kind){
+  const CA=window.CardApp;
+  if(!CA||!CA.isIn||!CA.isIn()||!CA.chStat)return false;
+  const st=CA.chStat(it.subj,it.ch);
+  return !!st&&(kind==='kt'?st.made:st.r2);
+}
+function mpQbActual(d,it){return Math.min(it.n,Math.max(0,Math.round(+mpPeek(d).qb[it.id]||0)));}
+function mpDone(d,kind,it){return !!mpPeek(d)[kind][it.id]||mpAuto(it,kind);}
+function mpStat(d){
+  const it=mpItems(d);if(!it)return null;
+  const kt=it.kt.filter(x=>mpDone(d,'kt',x)).length;
+  const ox=it.ox.filter(x=>mpDone(d,'ox',x)).length;
+  const qT=it.qb.reduce((a,x)=>a+x.n,0),qD=it.qb.reduce((a,x)=>a+mpQbActual(d,x),0);
+  const qI=it.qb.filter(x=>mpQbActual(d,x)>=x.n).length;
+  const total=it.kt.length+it.ox.length+it.qb.length,done=kt+ox+qI;
+  return {it,kt,ktT:it.kt.length,ox,oxT:it.ox.length,qD,qT,done,total,complete:total>0&&done===total,any:(kt+ox+qD)>0};
+}
+function mpState(d){
+  const s=mpStat(d),t=today();
+  if(s.complete)return 'ok';
+  if(s.any)return 'part';
+  return d<t?'miss':'future';
+}
+function mpRuns(a){
+  if(!a.length)return '';
+  const out=[];let s=a[0],p=a[0];
+  for(let i=1;i<=a.length;i++){const c=a[i];if(c===p+1){p=c;continue;}out.push(s===p?`${s}`:`${s}〜${p}`);s=c;p=c;}
+  return out.join('・');
+}
+function mpGroup(list){
+  const g={};list.forEach(x=>{(g[x.subj]=g[x.subj]||[]).push(x.ch);});
+  return Object.keys(g).map(s=>`${s} Ch${mpRuns(g[s])}`).join('、');
+}
+function mpLate(t){
+  const rows=[];let k=0,o=0,q=0;
+  MP_DATES.filter(d=>d<t).forEach(d=>{
+    const s=mpStat(d);if(s.complete)return;
+    const ktL=s.it.kt.filter(x=>!mpDone(d,'kt',x)),oxL=s.it.ox.filter(x=>!mpDone(d,'ox',x));
+    const qbL=s.it.qb.map(x=>({subj:x.subj,left:x.n-mpQbActual(d,x)})).filter(x=>x.left>0);
+    k+=ktL.length;o+=oxL.length;q+=qbL.reduce((a,x)=>a+x.left,0);
+    rows.push({d,ktL,oxL,qbL});
+  });
+  return {rows,k,o,q};
+}
+function mpTotals(t){
+  let kD=0,kT=0,kE=0,oD=0,oT=0,oE=0,qD=0,qT=0,qE=0,days=0,okDays=0;
+  const past=[];
+  MP_DATES.forEach(d=>{
+    const s=mpStat(d);
+    kD+=s.kt;kT+=s.ktT;oD+=s.ox;oT+=s.oxT;qD+=s.qD;qT+=s.qT;
+    if(d<=t){kE+=s.ktT;oE+=s.oxT;qE+=s.qT;days++;if(s.complete)okDays++;past.push(d);}
+  });
+  let i=past.length-1,streak=0;
+  if(i>=0&&!mpStat(past[i]).complete)i--;
+  while(i>=0&&mpStat(past[i]).complete){streak++;i--;}
+  return {kD,kT,kE,oD,oT,oE,qD,qT,qE,days,okDays,streak};
+}
+function mpChan(cls,name,done,total,exp,unit){
+  const f=total?Math.min(1,done/total):0,e=total?Math.min(1,exp/total):0,diff=done-exp;
+  const sub=exp===0&&done===0?'まだ予定なし':(diff===0?'予定どおり':(diff>0?`予定より ${mpNf(diff)}${unit}先行`:`予定より ${mpNf(-diff)}${unit}遅れ`));
+  return `<div class="chan ${cls}"><div><div class="cname"><i></i>${name}</div><div class="csub">${sub}</div></div>`+
+    `<div class="cval">${mpNf(done)}<small>/${mpNf(total)}</small></div>`+
+    `<div class="trace"><span class="trk"></span><span class="fill" style="width:${f*100}%"></span><span class="dot" style="left:${f*100}%"></span><span class="tick" style="left:${e*100}%"></span></div></div>`;
+}
+function mpChip(kind,it,d){
+  const man=!!mpPeek(d)[kind][it.id],auto=mpAuto(it,kind),on=man||auto;
+  return `<button class="mp-chip ${kind} ${on?'on':''}" data-act="chip" data-kind="${kind}" data-id="${escH(it.id)}" aria-pressed="${on}">${on?'✓ ':''}${escH(it.subj)} Ch${it.ch}${auto&&!man?'<small>自動</small>':''}</button>`;
+}
+function mpQrow(it,d){
+  const a=mpQbActual(d,it),st=a>=it.n?'ok':(a>0?'part':'');
+  return `<div class="mp-qrow ${st}"><button class="mp-ck" data-act="qbtoggle" data-id="${escH(it.id)}" aria-label="${escH(it.subj)}を完了にする／戻す">✓</button>`+
+    `<div class="mp-qname"><b>${escH(it.subj)}</b><span>予定 ${it.n}問</span></div>`+
+    `<label class="mp-qnum"><input type="number" inputmode="numeric" min="0" max="${it.n}" placeholder="0" value="${a>0?a:''}" data-act="qbnum" data-id="${escH(it.id)}">問</label></div>`;
+}
+function mpCal(t){
+  let h='月火水木金土日'.split('').map(x=>`<i>${x}</i>`).join('');
+  for(let i=0;i<dateDow(MP_DATES[0]);i++)h+='<span class="mp-c0"></span>';
+  MP_DATES.forEach(d=>{
+    const s=mpStat(d),st=mpState(d),day=+d.slice(8),first=(d===MP_DATES[0]||day===1);
+    const lab=(first?(+d.slice(5,7))+'/':'')+day;
+    const mini=s.complete?'✓':(s.done>0||s.any?`${s.done}/${s.total}`:(d<t?'×':''));
+    h+=`<button class="mp-cell ${st}${d===mpSel?' sel':''}${d===t?' today':''}" data-act="goto" data-date="${d}" aria-label="${fmt(d)}を開く"><b>${lab}</b><small>${mini||'&nbsp;'}</small></button>`;
+  });
+  return h;
+}
+function mpRender(){
+  const root=document.getElementById('view-plan');if(!root)return;
+  const t=today();
+  if(!mpSel||!MP.days[mpSel])mpSel=t<MP.start?MP.start:(t>MP.end?MP.end:t);
+  const d=mpSel,s=mpStat(d),v=mpPeek(d),idx=MP_DATES.indexOf(d);
+  const st=mpState(d);
+  const badge=st==='ok'?['ok','✓ 達成']:st==='part'?['part','途中']:st==='miss'?['miss','未達']:['','これから'];
+  const rel=d===t?'今日':(d<t?'過去の日':'先の日');
+  const dleft=daysBetweenISO(t,MP.exam);
+  const pct=s.total?Math.round(s.done/s.total*100):0;
+  const CA=window.CardApp,cardIn=!!(CA&&CA.isIn&&CA.isIn());
+  const T=mpTotals(t),L=mpLate(t);
+  let h='';
+  h+=`<div class="sect first"><span>1か月計画（${fmt(MP.start)}〜${fmt(MP.end)}）</span><span class="sect-r">${dleft>=0?`模試①まであと${dleft}日`:'模試①は終了'}</span></div>`;
+  h+=`<div class="mp-nav"><button class="mp-navb" data-act="prev" aria-label="前の日" ${idx<=0?'disabled':''}>◀</button>`+
+     `<div class="mp-date"><b>${fmt(d)}<small>${dname(d)}</small></b><span>${rel}・${idx+1}日目 / ${MP_DATES.length}日</span></div>`+
+     `<button class="mp-navb" data-act="next" aria-label="次の日" ${idx>=MP_DATES.length-1?'disabled':''}>▶</button></div>`;
+  if(d!==t&&t>=MP.start&&t<=MP.end)h+=`<button class="mp-back" data-act="today">今日（${fmt(t)}）にもどる</button>`;
+  h+=`<div id="mpSyncLine" class="mp-sync ${mpSync.state}">${escH(mpStatusHTML())}</div>`;
+
+  h+=`<div class="card"><div class="mp-head"><h2>この日の予定</h2><span class="mp-badge ${badge[0]}">${badge[1]}</span></div>`+
+     `<div class="mp-bar"><i style="width:${pct}%"></i></div><div class="csub" style="font-size:12px;color:var(--soft)">${s.done} / ${s.total} 項目 完了</div>`;
+
+  h+=`<div class="mp-grp"><div class="mp-gh kt"><div>口頭試問　作成</div><span>${s.kt}<small>/${s.ktT}章</small></span></div>`+
+     (s.it.kt.length?`<div class="mp-chips">${s.it.kt.map(x=>mpChip('kt',x,d)).join('')}</div>`:'<div class="mp-none">この日は作成なし</div>')+`</div>`;
+  h+=`<div class="mp-grp"><div class="mp-gh ox"><div>口頭試問　〇×（前日に作った分）</div><span>${s.ox}<small>/${s.oxT}章</small></span></div>`+
+     (s.it.ox.length?`<div class="mp-chips">${s.it.ox.map(x=>mpChip('ox',x,d)).join('')}</div>`:'<div class="mp-none">この日は〇×なし</div>')+`</div>`;
+  h+=`<div class="mp-grp"><div class="mp-gh qb"><div>QB 1周目</div><span>${s.qD}<small>/${s.qT}問</small></span></div>`+
+     (s.it.qb.length?s.it.qb.map(x=>mpQrow(x,d)).join(''):'<div class="mp-none">この日はQBなし</div>')+`</div>`;
+  if(!cardIn)h+=`<div class="mp-hint">🔑 カードにログインすると、口頭試問の「作成」「〇×」が自動で✓になります。QBは○を押すと予定ぶん完了、右の欄に数字を入れると途中まで記録できます。</div>`;
+  else h+=`<div class="mp-hint">口頭試問の「作成」「〇×」は、カードアプリの状況から自動で✓になります。QBは○を押すと予定ぶん完了、右の欄に数字を入れると途中まで記録できます。</div>`;
+  h+=`<textarea class="mp-memo" data-act="memo" placeholder="メモ（できなかった理由・気づきなど）">${escH(v.memo)}</textarea>`;
+  h+=`<button class="mp-all ${s.complete?'':'go'}" data-act="all">${s.complete?'この日のチェックをぜんぶ戻す':'この日をぜんぶ完了にする'}</button></div>`;
+
+  if(L.rows.length){
+    h+=`<div class="card mp-late"><h2>遅れている分</h2><p class="mp-lsum">作成 <b>${L.k}</b>章・〇× <b>${L.o}</b>章・QB <b>${mpNf(L.q)}</b>問　<span style="color:var(--faint)">（日付を押すとその日を開きます）</span></p>`+
+       L.rows.slice(0,12).map(r=>`<button class="mp-lrow" data-act="goto" data-date="${r.d}"><b>${fmt(r.d)}</b>`+
+         (r.ktL.length?`<em class="kt">作成</em>${escH(mpGroup(r.ktL))}　`:'')+
+         (r.oxL.length?`<em class="ox">〇×</em>${escH(mpGroup(r.oxL))}　`:'')+
+         (r.qbL.length?`<em class="qb">QB</em>${r.qbL.map(x=>escH(x.subj)+'あと'+x.left+'問').join('、')}`:'')+`</button>`).join('')+
+       (L.rows.length>12?`<div class="mp-hint">ほか ${L.rows.length-12}日ぶん</div>`:'')+`</div>`;
+  }
+
+  h+=`<div class="sect"><span>ぜんぶの進み</span><span class="sect-r">縦線＝予定なら今日まで</span></div>`;
+  h+=`<div class="monitor">`+
+     mpChan('c-kt','口頭試問　作成',T.kD,T.kT,T.kE,'章')+
+     mpChan('c-vid','口頭試問　〇×',T.oD,T.oT,T.oE,'章')+
+     mpChan('c-qb','QB 1周目',T.qD,T.qT,T.qE,'問')+
+     `<div class="mon-foot"><span><b>${T.okDays}</b>/${T.days}日 達成</span><span>連続 <b>${T.streak}</b>日</span><span class="deadline"><b>${Math.max(0,dleft)}</b>日 模試① 11/3</span></div></div>`;
+
+  h+=`<div class="sect"><span>毎日の記録</span><span class="sect-r">押すとその日を開く</span></div>`;
+  h+=`<div class="card"><div class="mp-cal">${mpCal(t)}</div>`+
+     `<div class="mp-legend"><span><i style="background:var(--vid)"></i>達成</span><span><i style="background:var(--qb)"></i>途中</span><span><i style="background:var(--alert)"></i>未達</span><span><i style="background:var(--line2)"></i>これから</span></div></div>`;
+
+  h+=`<div class="fold"><h2>バックアップ・引っ越し <button class="fbtn" data-act="bktoggle">ひらく</button></h2><div class="fbody" id="mpBkBody" style="display:none;">`+
+     `<div class="mp-hint" style="margin-top:0">記録はSupabaseに保存されるので、ふだんは使わなくて大丈夫です。Supabaseにつながらないときの非常用に、記録を文字で書き出したり読み込んだりできます。</div>`+
+     `<textarea class="mp-bk" id="mpBk" placeholder="ここに書き出した内容が出ます。読み込むときはここに貼ってください"></textarea>`+
+     `<div class="mp-bkb"><button class="wk-btn wk-ghost" data-act="export">書き出す（コピー）</button><button class="wk-btn wk-ghost" data-act="import">読み込む</button></div></div></div>`;
+  root.innerHTML=h;
+}
+(function(){
+  const root=document.getElementById('view-plan');
+  const redraw=()=>{const y=window.scrollY;mpRender();window.scrollTo(0,y);};
+  root.addEventListener('click',e=>{
+    const b=e.target.closest('[data-act]');if(!b)return;
+    const act=b.dataset.act,d=mpSel;
+    if(act==='prev'||act==='next'){
+      const n=MP_DATES[MP_DATES.indexOf(d)+(act==='next'?1:-1)];
+      if(n){mpSel=n;mpRender();window.scrollTo(0,0);}
+    }else if(act==='today'){mpSel=null;mpRender();window.scrollTo(0,0);}
+    else if(act==='goto'){mpSel=b.dataset.date;mpRender();window.scrollTo(0,0);}
+    else if(act==='chip'){
+      const kind=b.dataset.kind,id=b.dataset.id,it={id,subj:id.split(':')[0],ch:+id.split(':')[1]};
+      if(mpAuto(it,kind)){toast('カードアプリ側で終わっているので、自動で✓です');return;}
+      const x=mpDay(d);
+      if(x[kind][id])delete x[kind][id];else x[kind][id]=1;
+      mpSave(d);redraw();
+    }else if(act==='qbtoggle'){
+      const it=mpItems(d).qb.find(q=>q.id===b.dataset.id);if(!it)return;
+      const x=mpDay(d);
+      if(mpQbActual(d,it)>=it.n)delete x.qb[it.id];else x.qb[it.id]=it.n;
+      mpSave(d);redraw();
+    }else if(act==='all'){
+      const s=mpStat(d),x=mpDay(d);
+      if(s.complete){
+        if(!confirm('この日のチェックと問題数をぜんぶ戻す？（メモは残ります）'))return;
+        x.kt={};x.ox={};x.qb={};
+      }else{
+        s.it.kt.forEach(i=>{x.kt[i.id]=1;});s.it.ox.forEach(i=>{x.ox[i.id]=1;});s.it.qb.forEach(i=>{x.qb[i.id]=i.n;});
+      }
+      mpSave(d);redraw();
+    }else if(act==='bktoggle'){
+      const bd=document.getElementById('mpBkBody');const open=bd.style.display!=='none';
+      bd.style.display=open?'none':'block';b.textContent=open?'ひらく':'とじる';
+    }else if(act==='export'){
+      const ta=document.getElementById('mpBk');ta.value=JSON.stringify(mpLog);ta.focus();ta.select();
+      try{navigator.clipboard.writeText(ta.value).then(()=>toast('コピーしました'),()=>toast('選択したので、手動でコピーしてください'));}
+      catch(err){toast('選択したので、手動でコピーしてください');}
+    }else if(act==='import'){
+      const ta=document.getElementById('mpBk');let o;
+      try{o=JSON.parse(ta.value);}catch(err){toast('読み込めませんでした（形式が違います）');return;}
+      if(!o||typeof o!=='object'||!o.days||typeof o.days!=='object'){toast('読み込めませんでした（形式が違います）');return;}
+      if(!confirm('いまの記録を、貼りつけた内容で上書きします。よろしいですか？'))return;
+      const clean={days:{}};
+      Object.keys(o.days).forEach(k=>{
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(k)||!o.days[k]||typeof o.days[k]!=='object')return;
+        const r=o.days[k];
+        clean.days[k]={kt:(r.kt&&typeof r.kt==='object')?r.kt:{},ox:(r.ox&&typeof r.ox==='object')?r.ox:{},qb:(r.qb&&typeof r.qb==='object')?r.qb:{},memo:typeof r.memo==='string'?r.memo:''};
+      });
+      mpLog=clean;mpSave(...Object.keys(clean.days));mpRender();toast('読み込みました');
+    }
+  });
+  root.addEventListener('change',e=>{
+    const el=e.target;if(!el||el.dataset.act!=='qbnum')return;
+    const it=mpItems(mpSel).qb.find(q=>q.id===el.dataset.id);if(!it)return;
+    let n=Math.round(parseFloat(el.value));if(!isFinite(n)||n<0)n=0;if(n>it.n)n=it.n;
+    const x=mpDay(mpSel);if(n>0)x.qb[it.id]=n;else delete x.qb[it.id];
+    mpSave(mpSel);redraw();
+  });
+  root.addEventListener('input',e=>{
+    if(e.target&&e.target.dataset.act==='memo'){mpDay(mpSel).memo=e.target.value;mpSave(mpSel);}
+  });
+})();
 
 /* ===== tabs / auth ===== */
 function tab(v){
@@ -1685,10 +2102,10 @@ document.getElementById('loSub').onclick=async()=>{
   if(qOK&&cOK){
     document.getElementById('lo').classList.remove('show');
     msg.textContent='';toast('両方のDBにログインできたで');
-    tab('today');safeRender();
+    tab('plan');safeRender();
   }else if(qOK){
     msg.textContent='計画DB ✅ ／ カードDB ❌：'+cErr;
-    tab('today');safeRender();
+    tab('plan');safeRender();
   }else if(cOK){
     // 計画DBにアカウントがない人＝口頭試問だけ使う人。エラー扱いにせず、そのまま口頭試問へ
     authReady=true;authUI();
@@ -1722,7 +2139,7 @@ function safeRender(){
     authReady=true;
     state.pieces=buildPieces();
     safeRender();
-    tab('today');
+    tab('plan');
     return;
   }
   let rendered=false;
@@ -1731,7 +2148,7 @@ function safeRender(){
     showErr('初期化', new Error('10秒たっても応答がありません。通信環境が悪いか、Supabase側で問題が起きています。'));
     if(!Object.keys(state.pieces).length) state.pieces=buildPieces();
     safeRender();
-    tab('today');
+    tab('plan');
     rendered=true;
   },10000);
 
@@ -1752,7 +2169,7 @@ function safeRender(){
   if(!rendered){
     clearTimeout(masterTimer);
     safeRender();
-    tab('today');
+    tab('plan');
     rendered=true;
   }
 })();
@@ -1826,26 +2243,25 @@ const TOTAL_CH = CHAPTERS.length; // = 173
 
 /* ============================================================
    11/3模試までの口頭試問プラン（11/3以降は白紙）
-   ・カードを作る日（ch.r1）：腎5chapterは9/30、10/1から神経を先頭に毎日3chapterずつ
+   ・予定は ファイル先頭の window.MONTH_PLAN（10/5〜11/2）から作る
+   ・カードを作る日（ch.r1）：腎5chapterは9/30、10/5から神経→内分泌→…の順に、1日3〜4chapter
    ・〇×をつける日（ch.r2）：カードを作った翌日。×はその場ですぐ解き直す（これが「一周目」）
    ・2回正解したら◎（二周目）
-   分母は下の PLAN_ORDER の全chapter数（=99）
+   分母は 計画に入っている全chapter数（=99）
    ============================================================ */
-const PLAN_ORDER = ['腎','神経','内分泌','血液','免疫','感染症','呼吸器','循環器','消化器','肝胆膵','産婦人','小児'];
-const PLAN_FIRST_DAY_ONLY = { subject:'腎', date:'2026-09-30' };   // 9/30に一周目を終える科目
-const PLAN_START = '2026-10-01';                                   // ここから毎日3chapter
-const PLAN_PER_DAY = 3;
 function addDaysStr(s, n){ const d = new Date(s+'T00:00:00'); d.setDate(d.getDate()+n); return dstr(d); }
 const PLAN = (function(){
   const list = [];
-  PLAN_ORDER.forEach(sub => Object.keys(STRUCTURE[sub]||{}).map(Number).sort((a,b)=>a-b)
-    .forEach(c => list.push({ subject:sub, chapter:String(c) })));
-  let i = 0;
-  list.forEach(ch => {
-    if(ch.subject === PLAN_FIRST_DAY_ONLY.subject){ ch.r1 = PLAN_FIRST_DAY_ONLY.date; }
-    else { ch.r1 = addDaysStr(PLAN_START, Math.floor(i / PLAN_PER_DAY)); i++; }
-    ch.r2 = addDaysStr(ch.r1, 1);
-  });
+  Object.keys(STRUCTURE['腎']||{}).map(Number).sort((a,b)=>a-b)
+    .forEach(c => list.push({ subject:'腎', chapter:String(c), r1:'2026-09-30', r2:'2026-10-01' }));   // 腎は9/30に一周目を終える
+  const MP = window.MONTH_PLAN;
+  if(MP && MP.days){
+    Object.keys(MP.days).sort().forEach(d => {
+      (MP.days[d].kt||[]).forEach(seg => {
+        for(let c = seg[1]; c <= seg[2]; c++) list.push({ subject:seg[0], chapter:String(c), r1:d, r2:addDaysStr(d,1) });
+      });
+    });
+  }
   return list;
 })();
 const PLAN_TOTAL = PLAN.length;                  // 99
@@ -3161,6 +3577,8 @@ document.querySelectorAll('#view-cards .ctab').forEach(t=> t.addEventListener('c
 // ============================================================
 window.CardApp = {
   isIn: ()=> !!currentUser,
+  // 計画タブ用：その章のカードを作ったか／〇×（一周目）が終わったか
+  chStat: (s,c)=>{ if(!currentUser) return null; const k = key(s,String(c)); return { made: hasCards(s,String(c)), r2: !!(chProg[k]||{}).r2_at }; },
   // 日ごとの口頭試問の記録（今日タブの「記録」に出す）
   history: ()=>{
     const H = {}; const get = d => (H[d] ||= { p1:[], n:0 });
