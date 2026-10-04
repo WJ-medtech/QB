@@ -24,8 +24,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="国試アプリ">
 <meta name="theme-color" content="#0E1B24">
-<meta name="app-build" content="2026-10-05-v21">
-<meta name="app-note" content="10/5〜11/2の1か月計画専用「計画」タブ（記録タブ廃止・データ一覧はホーム下）">
+<meta name="app-build" content="2026-10-05-v24">
+<meta name="app-note" content="10/5〜11/2の1か月計画専用「計画」タブ（作成おわりボタン・全部〇で自動記録）">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -608,6 +608,27 @@
   .mp-sync{font-size:11.5px;color:var(--soft);text-align:center;margin:-4px 4px 12px;line-height:1.6;}
   .mp-sync.ok{color:var(--vid);} .mp-sync.saving{color:var(--soft);}
   .mp-sync.err,.mp-sync.notable{color:var(--alert);}
+  .mp-did{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-top:1px solid var(--line);font-size:13.5px;line-height:1.6;}
+  .mp-did:first-of-type{border-top:none;}
+  .mp-did em{flex:0 0 auto;font-style:normal;font-size:11.5px;font-weight:800;width:62px;}
+  .mp-did em.kt{color:var(--kt);} .mp-did em.ox{color:var(--vid);}
+  .mp-pd{color:var(--soft);font-size:12px;}
+
+  /* ---------- 口頭試問：シンプル表示 ---------- */
+  #cpage-home .phase-hero,#cpage-home #fixCard,#cpage-home .plan-fold,#cpage-home .streak,#orderCard{display:none!important;}
+  .subj-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .subj-chip{min-height:38px;padding:7px 11px;border-radius:999px;border:1px solid var(--line2);background:var(--surface2);color:var(--text);font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:5px;}
+  .subj-chip small{font-family:var(--num);font-size:13px;font-weight:600;color:var(--soft);}
+  .subj-chip.on{background:var(--kt-dim);border-color:var(--kt);color:var(--kt);}
+  .subj-chip.on small{color:var(--kt);}
+  .subj-chip.empty{opacity:.45;}
+  .subj-chip.on{opacity:1;}
+  .notice{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(5,12,17,.74);}
+  .notice.show{display:flex;}
+  .notice-card{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--line2);border-radius:18px;padding:20px 20px 16px;}
+  .notice-card h2{margin:0 0 10px;font-size:16px;color:var(--kt);}
+  .notice-card p{margin:0 0 10px;font-size:14.5px;line-height:1.85;}
+  .notice-card button{width:100%;margin-top:8px;padding:13px;border:none;border-radius:12px;background:var(--kt);color:var(--kt-ink);font-size:15px;font-weight:800;}
 </style>
 
 
@@ -740,8 +761,7 @@
       <div class="sub" id="cHeadSub">173 chapter</div>
     </div>
     <div class="ctabs">
-      <div class="ctab active" data-ctab="home">ホーム</div>
-      <div class="ctab" data-ctab="study">学習</div>
+      <div class="ctab active" data-ctab="home">学習</div>
       <div class="ctab" data-ctab="mix">シャッフル</div>
       <div class="ctab" data-ctab="list">一覧</div>
       <div class="ctab" data-ctab="input">入力</div>
@@ -776,7 +796,7 @@
         </details>
       </div>
 
-      <div class="card">
+      <div class="card" id="resumeCard">
         <div id="queueBox"></div>
         <button class="primary" id="btnStart">はじめる</button>
         <p class="hint" style="margin-top:9px;">1回で1chapter出ます。終わったら、もう一度「はじめる」を押すと次のchapterに進みます。</p>
@@ -790,12 +810,12 @@
       </div>
 
       <div class="card" id="pickCard">
-        <h3>chapterを選んで演習</h3>
+        <h3>chapterを選んで学習</h3>
         <select id="pickSubj"></select>
         <select id="pickCh" style="margin-top:8px;"></select>
         <div class="pick-info" id="pickInfo"></div>
         <label class="pick-chk"><input type="checkbox" id="pickNoRec"> 記録しない練習にする（〇×をつけない）</label>
-        <button class="primary small" id="btnPick">このchapterを演習する</button>
+        <button class="primary" id="btnPick">このchapterを学習する</button>
       </div>
 
       <details class="card plan-fold">
@@ -814,7 +834,7 @@
     <div class="cpage" id="cpage-study">
       <div class="sess-head"><span id="sessTitle">—</span><span id="sessCount"></span></div>
       <div class="sess-bar"><i id="sessBar"></i></div>
-      <div id="sessBody"><div class="cempty">ホームの「はじめる」から開始してください</div></div>
+      <div id="sessBody"><div class="cempty">「学習」でchapterを選んで始めてください</div></div>
     </div>
 
     <!-- ---- カード:混ぜる(シャッフル) ---- -->
@@ -860,11 +880,12 @@
     <!-- ---- カード:一覧 ---- -->
     <div class="cpage" id="cpage-list">
       <div class="card" style="padding:12px 14px;">
-        <select id="filterSubject"><option value="">すべての科目</option></select>
+        <div class="subj-chips" id="listChips"></div>
+        <select id="filterSubject" style="display:none;"><option value="">すべての科目</option></select>
         <button class="ghost" id="qOnlyBtn" style="margin-top:8px;">❓ 原理まちだけ見る</button>
       </div>
       <div id="listWrap"></div>
-      <div class="card">
+      <div class="card" id="orderCard">
         <h3>進む順番</h3>
         <p class="hint">上から順に出題されます。▲▼で入れ替えると、まだ手をつけていないchapterの順番がすぐ変わります。</p>
         <div id="orderList"></div>
@@ -921,6 +942,13 @@ A: 答え
         <button class="primary small" id="manBtn">追加する</button>
         <div class="msg" id="manMsg"></div>
       </div>
+
+      <div class="card" id="madeCard">
+        <h3>作成おわり</h3>
+        <div class="pick-info" id="madeInfo" style="margin-top:0;"></div>
+        <button class="primary" id="madeBtn">このchapterの作成おわり</button>
+        <p class="hint" style="margin-top:8px;">このchapterのカードを作り終えたら押してください。計画タブの今日の記録に「作成おわり」として入ります。</p>
+      </div>
     </div>
   </div>
 </div>
@@ -932,6 +960,14 @@ A: 答え
   <button class="tb" data-v="cards"><span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="13" height="15" rx="2.5"/><path d="M8 3h9.5A2.5 2.5 0 0 1 20 5.5V17"/></svg></span>口頭試問</button>
 </nav>
 
+<div class="notice" id="mpNotice" role="dialog" aria-modal="true" aria-labelledby="mpNoticeT">
+  <div class="notice-card">
+    <h2 id="mpNoticeT">お知らせ</h2>
+    <p>模試に向けて勉強するので、これまで取り組んだメジャー科や産婦人科なども、もう一回取り組みます。</p>
+    <p>なので、これまで取り組んだQBなどは反映していません。</p>
+    <button id="mpNoticeOk">わかった</button>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 
@@ -1831,13 +1867,35 @@ function mpItems(d){
   return {kt:mpExpand(P.kt),ox:mpExpand(P.oxExtra||[]).concat(mpExpand(prev?prev.kt:[])),qb:P.qb.map(([s,n])=>({id:s,subj:s,n}))};
 }
 function mpAuto(it,kind){
+  if(kind!=='ox')return false;
   const CA=window.CardApp;
   if(!CA||!CA.isIn||!CA.isIn()||!CA.chStat)return false;
   const st=CA.chStat(it.subj,it.ch);
-  return !!st&&(kind==='kt'?st.made:st.r2);
+  return !!(st&&st.allO);
 }
+/* 作成・〇×の記録は「やった日」に入れる。その章をいつやったか（いちばん早い日）を返す */
+function mpMarkedDate(kind,id){
+  const ks=Object.keys(mpLog.days).sort();
+  for(const d of ks){const x=mpLog.days[d];if(x&&x[kind]&&x[kind][id])return d;}
+  return null;
+}
+function mpUnmarkAll(kind,id){
+  const ch=[];
+  Object.keys(mpLog.days).forEach(d=>{const x=mpLog.days[d];if(x&&x[kind]&&x[kind][id]){delete x[kind][id];ch.push(d);}});
+  return ch;
+}
+/* 予定ではどの日の分か（「この日の記録」で、予定外の日にやった分に日付を出すため） */
+const MP_PLANDAY={kt:{},ox:{}};
+MP_DATES.forEach(d=>{const it=mpItems(d);it.kt.forEach(x=>{MP_PLANDAY.kt[x.id]=d;});it.ox.forEach(x=>{if(!MP_PLANDAY.ox[x.id])MP_PLANDAY.ox[x.id]=d;});});
+/* 口頭試問タブから呼ぶ窓口 */
+window.mpMarked=(kind,subj,ch)=>mpMarkedDate(kind,subj+':'+ch);
+window.mpMark=(kind,subj,ch)=>{
+  const id=subj+':'+ch;if(mpMarkedDate(kind,id))return false;
+  const t=today();mpDay(t)[kind][id]=1;mpSave(t);mpRenderSafe();return true;
+};
+window.mpUnmark=(kind,subj,ch)=>{const ds=mpUnmarkAll(kind,subj+':'+ch);if(ds.length){mpSave(...ds);mpRenderSafe();}};
 function mpQbActual(d,it){return Math.min(it.n,Math.max(0,Math.round(+mpPeek(d).qb[it.id]||0)));}
-function mpDone(d,kind,it){return !!mpPeek(d)[kind][it.id]||mpAuto(it,kind);}
+function mpDone(d,kind,it){return !!mpMarkedDate(kind,it.id)||mpAuto(it,kind);}
 function mpStat(d){
   const it=mpItems(d);if(!it)return null;
   const kt=it.kt.filter(x=>mpDone(d,'kt',x)).length;
@@ -1895,8 +1953,24 @@ function mpChan(cls,name,done,total,exp,unit){
     `<div class="trace"><span class="trk"></span><span class="fill" style="width:${f*100}%"></span><span class="dot" style="left:${f*100}%"></span><span class="tick" style="left:${e*100}%"></span></div></div>`;
 }
 function mpChip(kind,it,d){
-  const man=!!mpPeek(d)[kind][it.id],auto=mpAuto(it,kind),on=man||auto;
-  return `<button class="mp-chip ${kind} ${on?'on':''}" data-act="chip" data-kind="${kind}" data-id="${escH(it.id)}" aria-pressed="${on}">${on?'✓ ':''}${escH(it.subj)} Ch${it.ch}${auto&&!man?'<small>自動</small>':''}</button>`;
+  const man=mpMarkedDate(kind,it.id),auto=mpAuto(it,kind),on=!!man||auto;
+  const note=man?(man!==d?fmt(man):''):(auto?'自動':'');
+  return `<button class="mp-chip ${kind} ${on?'on':''}" data-act="chip" data-kind="${kind}" data-id="${escH(it.id)}" aria-pressed="${on}">${on?'✓ ':''}${escH(it.subj)} Ch${it.ch}${note?`<small>${note}</small>`:''}</button>`;
+}
+/* この日にやった口頭試問（作成おわり・全部〇）。予定と違う日の分は「予定m/d」をつける */
+function mpDidHTML(d){
+  const v=mpPeek(d),rows=[];
+  [['kt','作成おわり'],['ox','全部〇']].forEach(([k,lab])=>{
+    const ids=Object.keys(v[k]||{});if(!ids.length)return;
+    const byPlan={};
+    ids.forEach(id=>{const pd=MP_PLANDAY[k][id]||'';(byPlan[pd]=byPlan[pd]||[]).push({subj:id.split(':')[0],ch:+id.split(':')[1]});});
+    const parts=Object.keys(byPlan).sort().map(pd=>{
+      const l=byPlan[pd].sort((a,b)=>a.subj===b.subj?a.ch-b.ch:0);
+      return escH(mpGroup(l))+(pd&&pd!==d?`<span class="mp-pd">（予定${fmt(pd)}）</span>`:(!pd?'<span class="mp-pd">（予定外）</span>':''));
+    });
+    rows.push(`<div class="mp-did"><em class="${k}">${lab}</em><span>${parts.join('、')}</span></div>`);
+  });
+  return rows.join('');
 }
 function mpQrow(it,d){
   const a=mpQbActual(d,it),st=a>=it.n?'ok':(a>0?'part':'');
@@ -1944,8 +2018,9 @@ function mpRender(){
      (s.it.ox.length?`<div class="mp-chips">${s.it.ox.map(x=>mpChip('ox',x,d)).join('')}</div>`:'<div class="mp-none">この日は〇×なし</div>')+`</div>`;
   h+=`<div class="mp-grp"><div class="mp-gh qb"><div>QB 1周目</div><span>${s.qD}<small>/${s.qT}問</small></span></div>`+
      (s.it.qb.length?s.it.qb.map(x=>mpQrow(x,d)).join(''):'<div class="mp-none">この日はQBなし</div>')+`</div>`;
-  if(!cardIn)h+=`<div class="mp-hint">🔑 カードにログインすると、口頭試問の「作成」「〇×」が自動で✓になります。QBは○を押すと予定ぶん完了、右の欄に数字を入れると途中まで記録できます。</div>`;
-  else h+=`<div class="mp-hint">口頭試問の「作成」「〇×」は、カードアプリの状況から自動で✓になります。QBは○を押すと予定ぶん完了、右の欄に数字を入れると途中まで記録できます。</div>`;
+  h+=`<div class="mp-hint">作成：口頭試問タブの「入力」で「作成おわり」を押すと✓（ここで押してもOK）。〇×：そのchapterが全部〇になると自動で✓${cardIn?'':'（🔑でカードにログインしているとき）'}。QB：○で予定ぶん完了、数字で途中まで。</div>`;
+  const did=mpDidHTML(d);
+  if(did)h+=`<div class="mp-grp"><div class="mp-gh"><div>${d===t?'今日':fmt(d)}やった口頭試問</div></div>${did}</div>`;
   h+=`<textarea class="mp-memo" data-act="memo" placeholder="メモ（できなかった理由・気づきなど）">${escH(v.memo)}</textarea>`;
   h+=`<button class="mp-all ${s.complete?'':'go'}" data-act="all">${s.complete?'この日のチェックをぜんぶ戻す':'この日をぜんぶ完了にする'}</button></div>`;
 
@@ -1988,24 +2063,30 @@ function mpRender(){
     else if(act==='goto'){mpSel=b.dataset.date;mpRender();window.scrollTo(0,0);}
     else if(act==='chip'){
       const kind=b.dataset.kind,id=b.dataset.id,it={id,subj:id.split(':')[0],ch:+id.split(':')[1]};
-      if(mpAuto(it,kind)){toast('カードアプリ側で終わっているので、自動で✓です');return;}
-      const x=mpDay(d);
-      if(x[kind][id])delete x[kind][id];else x[kind][id]=1;
-      mpSave(d);redraw();
+      const man=mpMarkedDate(kind,id);
+      if(!man&&mpAuto(it,kind)){toast('全部〇になっているので、自動で✓です');return;}
+      if(man){mpSave(...mpUnmarkAll(kind,id));}
+      else{const at=d<today()?d:today();mpDay(at)[kind][id]=1;mpSave(at);}
+      redraw();
     }else if(act==='qbtoggle'){
       const it=mpItems(d).qb.find(q=>q.id===b.dataset.id);if(!it)return;
       const x=mpDay(d);
       if(mpQbActual(d,it)>=it.n)delete x.qb[it.id];else x.qb[it.id]=it.n;
       mpSave(d);redraw();
     }else if(act==='all'){
-      const s=mpStat(d),x=mpDay(d);
+      const s=mpStat(d),x=mpDay(d),changed=[d];
       if(s.complete){
-        if(!confirm('この日のチェックと問題数をぜんぶ戻す？（メモは残ります）'))return;
-        x.kt={};x.ox={};x.qb={};
+        if(!confirm('この日の予定のチェックと問題数をぜんぶ戻す？（メモは残ります）'))return;
+        s.it.kt.forEach(i=>changed.push(...mpUnmarkAll('kt',i.id)));
+        s.it.ox.forEach(i=>changed.push(...mpUnmarkAll('ox',i.id)));
+        x.qb={};
       }else{
-        s.it.kt.forEach(i=>{x.kt[i.id]=1;});s.it.ox.forEach(i=>{x.ox[i.id]=1;});s.it.qb.forEach(i=>{x.qb[i.id]=i.n;});
+        const at=d<today()?d:today(),y=mpDay(at);changed.push(at);
+        s.it.kt.forEach(i=>{if(!mpMarkedDate('kt',i.id))y.kt[i.id]=1;});
+        s.it.ox.forEach(i=>{if(!mpDone(d,'ox',i))y.ox[i.id]=1;});
+        s.it.qb.forEach(i=>{x.qb[i.id]=i.n;});
       }
-      mpSave(d);redraw();
+      mpSave(...new Set(changed));redraw();
     }else if(act==='bktoggle'){
       const bd=document.getElementById('mpBkBody');const open=bd.style.display!=='none';
       bd.style.display=open?'none':'block';b.textContent=open?'ひらく':'とじる';
@@ -2039,6 +2120,15 @@ function mpRender(){
   });
 })();
 
+/* ===== 1回だけのお知らせ（「わかった」を押すまで、開くたびに出る） ===== */
+(function(){
+  const K='notice.moshi1.v1';
+  let seen=null;try{seen=localStorage.getItem(K);}catch(e){}
+  const el=document.getElementById('mpNotice');
+  if(seen||!el)return;
+  el.classList.add('show');
+  document.getElementById('mpNoticeOk').onclick=()=>{try{localStorage.setItem(K,'1');}catch(e){}el.classList.remove('show');};
+})();
 /* ===== tabs / auth ===== */
 function tab(v){
   document.querySelectorAll('.tb').forEach(b=>b.classList.toggle('active',b.dataset.v===v||(b.dataset.also||'').split(',').includes(v)));
@@ -2292,7 +2382,7 @@ const $ = id => document.getElementById(id);
 const key = (s,c) => s + '||' + c;
 const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 function dstr(d){ const x=new Date(d); return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0'); }
-function today(){ return dstr(new Date()); }
+function today(){ const d = new Date(); d.setHours(d.getHours()-3); return dstr(d); }   // 深夜3時までは前の日（計画タブと同じ）
 function daysBetween(a,b){ return Math.round((new Date(b)-new Date(a))/86400000); }
 function chLabel(s,c){ const t=titles[key(s,c)]; return 'Ch.'+c+(t?' '+t:''); }
 function showMsg(el, text, isErr){ el.textContent=text; el.classList.toggle('err',!!isErr); el.classList.add('show'); }
@@ -2431,6 +2521,11 @@ function liveChapters(){ return CHAPTERS.filter(ch => hasCards(ch.subject,ch.cha
 function r1Done(ch){ return !!(chProg[key(ch.subject,ch.chapter)]||{}).r1_first_at; }
 function r2Done(ch){ return !!(chProg[key(ch.subject,ch.chapter)]||{}).r2_at; }
 function isX(c){ const p = cardProg[c.id]||{}; return p.r2_result==='x' && !p.r3_cleared; }
+// そのchapterのカードが、ぜんぶ〇（×だった問題も解き直して〇）になっているか
+function chAllO(ch){
+  const list = chList(ch);
+  return list.length > 0 && list.every(c => { const p = cardProg[c.id]||{}; return p.r2_result==='o' || (p.r2_result==='x' && !!p.r3_cleared); });
+}
 function isMaru(c){ return !!(cardProg[c.id]||{}).r4_ok; }
 function xCards(){ return cards.filter(isX); }
 function xInCh(ch){ return chList(ch).filter(isX); }
@@ -2677,6 +2772,7 @@ function renderHome(){
   let streak = 0, d = new Date();
   if(!studyDays[dstr(d)]) d.setDate(d.getDate()-1);
   while(studyDays[dstr(d)]){ streak++; d.setDate(d.getDate()-1); }
+  $('resumeCard').style.display = resumable ? '' : 'none';
   $('cStStreak').textContent = streak;
   $('cStToday').textContent = studyDays[today()] || 0;
   $('cStCards').textContent = cards.length;
@@ -2918,7 +3014,7 @@ async function clearPersistedSession(){
 
 function renderSession(){
   const body = $('sessBody');
-  if(!session){ body.innerHTML = '<div class="cempty">ホームの「はじめる」から開始してください</div>'; return; }
+  if(!session){ body.innerHTML = '<div class="cempty">「学習」でchapterを選んで始めてください</div>'; return; }
 
   if(session.idx >= session.queue.length){
     $('sessTitle').textContent = '完了';
@@ -2939,7 +3035,7 @@ function renderSession(){
               esc(c.question)+'</div>').join('')+
             '<button class="primary" id="againMiss">この'+missCards.length+'問だけもう一回</button></div>'
           : '')+
-        '<button class="ghost" id="backMix">' + (session.back==='home' ? 'ホームに戻る' : '混ぜるに戻る') + '</button>';
+        '<button class="ghost" id="backMix">' + (session.back==='home' ? 'chapter選びに戻る' : 'シャッフルに戻る') + '</button>';
       const backTo = session.back || 'mix';
       if(missCards.length) $('againMiss').addEventListener('click', ()=>{
         const list = shuffleArr(missCards);
@@ -2963,7 +3059,7 @@ function renderSession(){
                 : 'このぶんは終わり 🎉<br>' + session.solved + ' 問クリアしました') + '</div>' +
       (nextLabel ? '<button class="primary" id="nextCh">' + esc(nextLabel) + '</button>' : '') +
       (xs.length && !nq.combined ? '<button class="ghost" id="fixNow" style="border-color:var(--alert);color:var(--alert);">×を今すぐ解き直す（' + xs.length + '問）</button>' : '') +
-      '<button class="ghost" id="backHome">ホームに戻る</button>';
+      '<button class="ghost" id="backHome">chapter選びに戻る</button>';
     clearPersistedSession();
     if($('nextCh')) $('nextCh').addEventListener('click', async ()=>{
       const q2 = buildQueue(); if(q2.total === 0) return;
@@ -3011,7 +3107,7 @@ function renderSession(){
       '</div>' +
       (it.retry ? '<div class="retry-note">もう一度</div>' : '') +
     '</div>' +
-    '<button class="ghost sess-quit" id="quitBtn">' + (isMix && session.back!=='home' ? 'やめて「混ぜる」に戻る' : '中断してホームに戻る') + '</button>';
+    '<button class="ghost sess-quit" id="quitBtn">' + (isMix && session.back!=='home' ? 'やめてシャッフルに戻る' : '中断してchapter選びに戻る') + '</button>';
 
   $('editInlineBtn').addEventListener('click', ()=> $('editInlineBox').classList.toggle('show'));
   $('eiSave').addEventListener('click', async ()=>{
@@ -3127,6 +3223,8 @@ async function answer(res){
 
   session.idx++;
   await maybeFinishChapter(it);
+  // 全部〇になったら、計画タブの今日の記録に「全部〇」として入れる
+  try{ const cc = it.card; if(cc && window.mpMark && chAllO({ subject:cc.subject, chapter:String(cc.chapter) })) window.mpMark('ox', cc.subject, cc.chapter); }catch(e){ console.warn('mpMark', e); }
   await bumpStudyDay(1);
   await persistSession();
   renderSession();
@@ -3161,7 +3259,16 @@ function chStatus(s,c){
 let qOnly = false;
 function qCards(){ return cards.filter(c => c.need_principle); }
 
+function renderListChips(){
+  const box = $('listChips'); if(!box) return;
+  const f = $('filterSubject').value;
+  const chip = (v, label, n) => '<button class="subj-chip' + (!qOnly && f===v ? ' on' : '') + (n===0 ? ' empty' : '') +
+    '" data-s="' + esc(v) + '">' + esc(label) + (n!=null ? '<small>' + n + '</small>' : '') + '</button>';
+  box.innerHTML = chip('', 'すべて', null) + SUBJECTS.map(s => chip(s, s,
+    Object.keys(STRUCTURE[s]||{}).reduce((a,c) => a + (cardsByCh[key(s,c)]||[]).length, 0))).join('');
+}
 function renderList(){
+  renderListChips();
   const f = $('filterSubject').value;
   const wrap = $('listWrap');
 
@@ -3372,6 +3479,10 @@ function renderCardMinis(box, list, k){
   hydrateImages(box);
 }
 $('filterSubject').addEventListener('change', ()=>{ qOnly = false; renderList(); });
+$('listChips').addEventListener('click', e=>{
+  const b = e.target.closest('.subj-chip'); if(!b) return;
+  $('filterSubject').value = b.dataset.s; qOnly = false; renderList(); window.scrollTo(0,0);
+});
 $('qOnlyBtn').addEventListener('click', ()=>{ qOnly = !qOnly; renderList(); window.scrollTo(0,0); });
 
 // ---------- 進む順番の編集 ----------
@@ -3427,8 +3538,32 @@ function refreshChapterSelect(){
   if(cur && STRUCTURE[s] && STRUCTURE[s][cur]!==undefined) sel.value = cur;
   $('inTitle').value = titles[key(s, sel.value)] || '';
 }
-$('inSubject').addEventListener('change', refreshChapterSelect);
-$('inChapter').addEventListener('change', ()=>{ $('inTitle').value = titles[key($('inSubject').value, $('inChapter').value)] || ''; });
+$('inSubject').addEventListener('change', ()=>{ refreshChapterSelect(); updateMade(); });
+function updateMade(){
+  const s = $('inSubject').value, c = $('inChapter').value; if(!s || !c) return;
+  const n = (cardsByCh[key(s,c)]||[]).length;
+  const at = window.mpMarked ? window.mpMarked('kt', s, c) : null;
+  const md = d => { const [,m,dd] = d.split('-'); return (+m)+'/'+(+dd); };
+  $('madeInfo').textContent = s + ' ' + chLabel(s,c) + '・いま ' + n + '問' + (at ? '・' + md(at) + 'に作成おわり済み' : '');
+  $('madeBtn').textContent = at ? '作成おわりを取り消す' : 'このchapterの作成おわり';
+  $('madeBtn').className = at ? 'ghost' : 'primary';
+}
+$('madeBtn').addEventListener('click', ()=>{
+  const s = $('inSubject').value, c = $('inChapter').value; if(!s || !c) return;
+  if(!window.mpMark){ alert('計画タブが読み込めていません。再読み込みしてみてください。'); return; }
+  if(window.mpMarked('kt', s, c)){
+    if(!confirm(s + ' ' + chLabel(s,c) + ' の「作成おわり」を取り消す？')) return;
+    window.mpUnmark('kt', s, c);
+  }else{
+    const n = (cardsByCh[key(s,c)]||[]).length;
+    if(!n && !confirm('このchapterにはまだカードが0問です。それでも作成おわりにする？')) return;
+    window.mpMark('kt', s, c);
+    window.toast && window.toast(s + ' ' + chLabel(s,c) + '：作成おわり ✓（今日の記録に入れました）');
+  }
+  updateMade();
+});
+['cSaveBtn','manBtn'].forEach(id => $(id).addEventListener('click', ()=> setTimeout(updateMade, 1500)));
+$('inChapter').addEventListener('change', ()=>{ $('inTitle').value = titles[key($('inSubject').value, $('inChapter').value)] || ''; updateMade(); });
 $('inTitle').addEventListener('blur', async ()=>{
   const s=$('inSubject').value, c=$('inChapter').value, t=$('inTitle').value.trim();
   if(!t || titles[key(s,c)] === t) return;
@@ -3569,8 +3704,10 @@ $('btnPick').addEventListener('click', async ()=>{
 // ============================================================
 // カード内タブ
 // ============================================================
+function sessOwner(){ return session ? ((session.phase==='mix' && session.back!=='home') ? 'mix' : 'home') : null; }
 function switchCTab(name){
-  document.querySelectorAll('#view-cards .ctab').forEach(t=> t.classList.toggle('active', t.dataset.ctab===name));
+  const lit = name==='study' ? (sessOwner()||'home') : name;
+  document.querySelectorAll('#view-cards .ctab').forEach(t=> t.classList.toggle('active', t.dataset.ctab===lit));
   document.querySelectorAll('#view-cards .cpage').forEach(p=> p.classList.remove('active'));
   $('cpage-'+name).classList.add('active');
   window.scrollTo(0,0);
@@ -3578,8 +3715,12 @@ function switchCTab(name){
   if(name==='list'){ renderOrder(); renderList(); }
   if(name==='study') renderSession();
   if(name==='mix') renderMix();
+  if(name==='input') updateMade();
 }
-document.querySelectorAll('#view-cards .ctab').forEach(t=> t.addEventListener('click', ()=> switchCTab(t.dataset.ctab)));
+document.querySelectorAll('#view-cards .ctab').forEach(t=> t.addEventListener('click', ()=>{
+  const n = t.dataset.ctab;
+  switchCTab(session && sessOwner()===n ? 'study' : n);
+}));
 
 // ============================================================
 // 統合アプリ向けの公開API(ホームのダッシュボードが使う)
@@ -3587,7 +3728,7 @@ document.querySelectorAll('#view-cards .ctab').forEach(t=> t.addEventListener('c
 window.CardApp = {
   isIn: ()=> !!currentUser,
   // 計画タブ用：その章のカードを作ったか／〇×（一周目）が終わったか
-  chStat: (s,c)=>{ if(!currentUser) return null; const k = key(s,String(c)); return { made: hasCards(s,String(c)), r2: !!(chProg[k]||{}).r2_at }; },
+  chStat: (s,c)=>{ if(!currentUser) return null; return { made: hasCards(s,String(c)), allO: chAllO({ subject:s, chapter:String(c) }) }; },
   // 日ごとの口頭試問の記録（今日タブの「記録」に出す）
   history: ()=>{
     const H = {}; const get = d => (H[d] ||= { p1:[], n:0 });
@@ -3619,7 +3760,8 @@ window.CardApp = {
         if(fresh) it.card = fresh;
       });
       const open = document.querySelector('#view-cards .ctab.active');
-      if(open) switchCTab(open.dataset.ctab);
+      if($('cpage-study').classList.contains('active')) switchCTab('study');
+      else if(open) switchCTab(open.dataset.ctab);
       return { ok:true };
     }catch(e){ return { ok:false, error:String(e&&e.message||e) }; }
   },
