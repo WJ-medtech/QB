@@ -24,8 +24,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="国試アプリ">
 <meta name="theme-color" content="#0E1B24">
-<meta name="app-build" content="2026-10-05-v20">
-<meta name="app-note" content="10/5〜11/2の1か月計画専用「計画」タブ（毎日の達成をSupabaseに記録）">
+<meta name="app-build" content="2026-10-05-v21">
+<meta name="app-note" content="10/5〜11/2の1か月計画専用「計画」タブ（記録タブ廃止・データ一覧はホーム下）">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -668,8 +668,30 @@
 
 <main>
 
-<!-- ========== 計画：1か月（10/5〜11/2）専用 ========== -->
-<div class="view active" id="view-plan"></div>
+<!-- ========== 計画：1か月（10/5〜11/2）専用。ホーム画面 ========== -->
+<div class="view active" id="view-plan">
+<div id="mpRoot"></div>
+<div class="sect">参考</div>
+  <div class="fold">
+    <h2>データ一覧（medu4・QB） <button class="fbtn" id="refToggle">ひらく</button></h2>
+    <div class="fbody" id="refBody" style="display:none;">
+<div class="tlabel2">medu4（chapter数／コマ数）</div>
+      <table class="reftable">
+        <tr><th>科目</th><th>chapter</th><th>コマ</th></tr>
+        <tr><td>腎</td><td>5</td><td>7</td></tr><tr><td>内分泌</td><td>8</td><td>12</td></tr><tr><td>血液</td><td>9</td><td>10</td></tr><tr><td>免疫</td><td>5</td><td>7</td></tr><tr><td>感染症</td><td>7</td><td>9</td></tr><tr><td>呼吸器</td><td>9</td><td>12</td></tr><tr><td>循環器</td><td>8</td><td>14</td></tr><tr><td>消化管</td><td>6</td><td>9</td></tr><tr><td>肝胆膵</td><td>5</td><td>8</td></tr><tr><td>神経</td><td>12</td><td>15</td></tr><tr><td>産婦人科</td><td>12</td><td>15</td></tr><tr><td>小児</td><td>13</td><td>16</td></tr><tr><td>小児外科</td><td>4</td><td>4</td></tr><tr><td>整形</td><td>5</td><td>7</td></tr><tr><td>眼</td><td>6</td><td>7</td></tr><tr><td>耳鼻</td><td>6</td><td>7</td></tr><tr><td>泌尿器</td><td>6</td><td>6</td></tr><tr><td>精神</td><td>9</td><td>6</td></tr><tr><td>皮膚</td><td>9</td><td>6</td></tr><tr><td>放射線</td><td>3</td><td>3</td></tr><tr><td>救急</td><td>5</td><td>7</td></tr><tr><td>中毒麻酔</td><td>5</td><td>4</td></tr><tr><td>公衆衛生</td><td>16</td><td>17</td></tr>
+        <tr class="reftotal"><td>合計</td><td>173</td><td>208</td></tr>
+      </table>
+      <div class="tlabel2">QB（問題数／1周目問題数）</div>
+      <table class="reftable">
+        <tr><th>単元</th><th>問題数</th><th>1周目問題</th></tr>
+        <tr><td>消化管</td><td>291</td><td>112</td></tr><tr><td>肝胆膵</td><td>195</td><td>68</td></tr><tr><td>循環器</td><td>378</td><td>131</td></tr><tr><td>内分泌</td><td>298</td><td>116</td></tr><tr><td>腎</td><td>186</td><td>87</td></tr><tr><td>免疫</td><td>157</td><td>77</td></tr><tr><td>血液</td><td>202</td><td>81</td></tr><tr><td>感染症</td><td>239</td><td>123</td></tr><tr><td>呼吸器</td><td>295</td><td>131</td></tr><tr><td>神経</td><td>361</td><td>158</td></tr><tr><td>中毒</td><td>63</td><td>30</td></tr><tr><td>救急</td><td>136</td><td>85</td></tr><tr><td>麻酔</td><td>32</td><td>10</td></tr><tr><td>総論</td><td>147</td><td>75</td></tr><tr><td>小児</td><td>423</td><td>184</td></tr><tr><td>婦人</td><td>204</td><td>79</td></tr><tr><td>産</td><td>337</td><td>107</td></tr><tr><td>眼</td><td>151</td><td>73</td></tr><tr><td>耳鼻</td><td>151</td><td>74</td></tr><tr><td>整形</td><td>152</td><td>78</td></tr><tr><td>精神</td><td>205</td><td>85</td></tr><tr><td>皮膚</td><td>150</td><td>86</td></tr><tr><td>泌尿器</td><td>150</td><td>65</td></tr><tr><td>放射線</td><td>53</td><td>26</td></tr><tr><td>公衆衛生</td><td>605</td><td>322</td></tr><tr><td>必修</td><td>1418</td><td>754</td></tr>
+        <tr class="reftotal"><td>合計</td><td>6979</td><td>3217</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="build" id="buildLine"></div>
+
+</div>
 
 <!-- ========== 今日：記録する・見る ========== -->
 <div class="view" id="view-today">
@@ -702,24 +724,6 @@
       <div class="empty" style="padding:8px 2px 0;">入力し忘れた日の分は、ここを過去の日付にしてから記録ボタンを押すと、その日の記録になります。</div>
     </div>
   </div>
-  <div class="fold">
-    <h2>データ一覧（medu4・QB） <button class="fbtn" id="refToggle">ひらく</button></h2>
-    <div class="fbody" id="refBody" style="display:none;">
-<div class="tlabel2">medu4（chapter数／コマ数）</div>
-      <table class="reftable">
-        <tr><th>科目</th><th>chapter</th><th>コマ</th></tr>
-        <tr><td>腎</td><td>5</td><td>7</td></tr><tr><td>内分泌</td><td>8</td><td>12</td></tr><tr><td>血液</td><td>9</td><td>10</td></tr><tr><td>免疫</td><td>5</td><td>7</td></tr><tr><td>感染症</td><td>7</td><td>9</td></tr><tr><td>呼吸器</td><td>9</td><td>12</td></tr><tr><td>循環器</td><td>8</td><td>14</td></tr><tr><td>消化管</td><td>6</td><td>9</td></tr><tr><td>肝胆膵</td><td>5</td><td>8</td></tr><tr><td>神経</td><td>12</td><td>15</td></tr><tr><td>産婦人科</td><td>12</td><td>15</td></tr><tr><td>小児</td><td>13</td><td>16</td></tr><tr><td>小児外科</td><td>4</td><td>4</td></tr><tr><td>整形</td><td>5</td><td>7</td></tr><tr><td>眼</td><td>6</td><td>7</td></tr><tr><td>耳鼻</td><td>6</td><td>7</td></tr><tr><td>泌尿器</td><td>6</td><td>6</td></tr><tr><td>精神</td><td>9</td><td>6</td></tr><tr><td>皮膚</td><td>9</td><td>6</td></tr><tr><td>放射線</td><td>3</td><td>3</td></tr><tr><td>救急</td><td>5</td><td>7</td></tr><tr><td>中毒麻酔</td><td>5</td><td>4</td></tr><tr><td>公衆衛生</td><td>16</td><td>17</td></tr>
-        <tr class="reftotal"><td>合計</td><td>173</td><td>208</td></tr>
-      </table>
-      <div class="tlabel2">QB（問題数／1周目問題数）</div>
-      <table class="reftable">
-        <tr><th>単元</th><th>問題数</th><th>1周目問題</th></tr>
-        <tr><td>消化管</td><td>291</td><td>112</td></tr><tr><td>肝胆膵</td><td>195</td><td>68</td></tr><tr><td>循環器</td><td>378</td><td>131</td></tr><tr><td>内分泌</td><td>298</td><td>116</td></tr><tr><td>腎</td><td>186</td><td>87</td></tr><tr><td>免疫</td><td>157</td><td>77</td></tr><tr><td>血液</td><td>202</td><td>81</td></tr><tr><td>感染症</td><td>239</td><td>123</td></tr><tr><td>呼吸器</td><td>295</td><td>131</td></tr><tr><td>神経</td><td>361</td><td>158</td></tr><tr><td>中毒</td><td>63</td><td>30</td></tr><tr><td>救急</td><td>136</td><td>85</td></tr><tr><td>麻酔</td><td>32</td><td>10</td></tr><tr><td>総論</td><td>147</td><td>75</td></tr><tr><td>小児</td><td>423</td><td>184</td></tr><tr><td>婦人</td><td>204</td><td>79</td></tr><tr><td>産</td><td>337</td><td>107</td></tr><tr><td>眼</td><td>151</td><td>73</td></tr><tr><td>耳鼻</td><td>151</td><td>74</td></tr><tr><td>整形</td><td>152</td><td>78</td></tr><tr><td>精神</td><td>205</td><td>85</td></tr><tr><td>皮膚</td><td>150</td><td>86</td></tr><tr><td>泌尿器</td><td>150</td><td>65</td></tr><tr><td>放射線</td><td>53</td><td>26</td></tr><tr><td>公衆衛生</td><td>605</td><td>322</td></tr><tr><td>必修</td><td>1418</td><td>754</td></tr>
-        <tr class="reftotal"><td>合計</td><td>6979</td><td>3217</td></tr>
-      </table>
-    </div>
-  </div>
-  <div class="build" id="buildLine"></div>
 </div>
 
 <!-- ========== CARDS (旧medu5 統合) ========== -->
@@ -925,7 +929,6 @@ A: 答え
 
 <nav class="tabs" aria-label="画面の切り替え">
   <button class="tb active" data-v="plan"><span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9l1.5 1.5L12 8M8 15l1.5 1.5L12 14M14.5 9.5H17M14.5 15.5H17"/></svg></span>計画</button>
-  <button class="tb" data-v="today"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg></span>記録</button>
   <button class="tb" data-v="cards"><span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="13" height="15" rx="2.5"/><path d="M8 3h9.5A2.5 2.5 0 0 1 20 5.5V17"/></svg></span>口頭試問</button>
 </nav>
 
@@ -934,7 +937,7 @@ A: 答え
 
 <script>
 /* ===== 1か月計画のデータ（10/5〜11/2）。予定を変えるときはここだけ直す ===== */
-window.MONTH_PLAN={"start":"2026-10-05","end":"2026-11-02","exam":"2026-11-03","days":{"2026-10-05":{"kt":[["神経",1,3]],"qb":[["総論",57]]},"2026-10-06":{"kt":[["神経",4,6]],"qb":[["総論",18],["救急",39]]},"2026-10-07":{"kt":[["神経",7,9]],"qb":[["救急",46],["中毒",11]]},"2026-10-08":{"kt":[["神経",10,12]],"qb":[["中毒",19],["麻酔",10],["腎",28]]},"2026-10-09":{"kt":[["内分泌",1,3]],"qb":[["腎",57]]},"2026-10-10":{"kt":[["内分泌",4,7]],"qb":[["腎",2],["神経",55]]},"2026-10-11":{"kt":[["内分泌",8,8],["血液",1,3]],"qb":[["神経",57]]},"2026-10-12":{"kt":[["血液",4,6]],"qb":[["神経",46],["内分泌",11]]},"2026-10-13":{"kt":[["血液",7,9]],"qb":[["内分泌",57]]},"2026-10-14":{"kt":[["免疫",1,3]],"qb":[["内分泌",48],["血液",9]]},"2026-10-15":{"kt":[["免疫",4,5],["感染症",1,1]],"qb":[["血液",57]]},"2026-10-16":{"kt":[["感染症",2,4]],"qb":[["血液",15],["免疫",42]]},"2026-10-17":{"kt":[["感染症",5,7],["呼吸器",1,1]],"qb":[["免疫",35],["感染症",22]]},"2026-10-18":{"kt":[["呼吸器",2,5]],"qb":[["感染症",57]]},"2026-10-19":{"kt":[["呼吸器",6,9]],"qb":[["感染症",44],["呼吸器",13]]},"2026-10-20":{"kt":[["循環器",1,3]],"qb":[["呼吸器",57]]},"2026-10-21":{"kt":[["循環器",4,6]],"qb":[["呼吸器",57]]},"2026-10-22":{"kt":[["循環器",7,8],["消化器",1,1]],"qb":[["呼吸器",4],["循環器",53]]},"2026-10-23":{"kt":[["消化器",2,4]],"qb":[["循環器",57]]},"2026-10-24":{"kt":[["消化器",5,6],["肝胆膵",1,2]],"qb":[["循環器",21],["消化管",36]]},"2026-10-25":{"kt":[["肝胆膵",3,5],["産婦人",1,1]],"qb":[["消化管",57]]},"2026-10-26":{"kt":[["産婦人",2,5]],"qb":[["消化管",19],["肝胆膵",38]]},"2026-10-27":{"kt":[["産婦人",6,8]],"qb":[["肝胆膵",30],["婦人",27]]},"2026-10-28":{"kt":[["産婦人",9,11]],"qb":[["婦人",52],["産",5]]},"2026-10-29":{"kt":[["産婦人",12,12],["小児",1,2]],"qb":[["産",57]]},"2026-10-30":{"kt":[["小児",3,5]],"qb":[["産",45],["小児",12]]},"2026-10-31":{"kt":[["小児",6,9]],"qb":[["小児",57]]},"2026-11-01":{"kt":[["小児",10,13]],"qb":[["小児",57]]},"2026-11-02":{"kt":[],"qb":[["小児",58]]}}};
+window.MONTH_PLAN={"start":"2026-10-05","end":"2026-11-02","exam":"2026-11-03","days":{"2026-10-05":{"kt":[["神経",1,3]],"qb":[["総論",57]],"oxExtra":[["腎",1,5]]},"2026-10-06":{"kt":[["神経",4,6]],"qb":[["総論",18],["救急",39]]},"2026-10-07":{"kt":[["神経",7,9]],"qb":[["救急",46],["中毒",11]]},"2026-10-08":{"kt":[["神経",10,12]],"qb":[["中毒",19],["麻酔",10],["腎",28]]},"2026-10-09":{"kt":[["内分泌",1,3]],"qb":[["腎",57]]},"2026-10-10":{"kt":[["内分泌",4,7]],"qb":[["腎",2],["神経",55]]},"2026-10-11":{"kt":[["内分泌",8,8],["血液",1,3]],"qb":[["神経",57]]},"2026-10-12":{"kt":[["血液",4,6]],"qb":[["神経",46],["内分泌",11]]},"2026-10-13":{"kt":[["血液",7,9]],"qb":[["内分泌",57]]},"2026-10-14":{"kt":[["免疫",1,3]],"qb":[["内分泌",48],["血液",9]]},"2026-10-15":{"kt":[["免疫",4,5],["感染症",1,1]],"qb":[["血液",57]]},"2026-10-16":{"kt":[["感染症",2,4]],"qb":[["血液",15],["免疫",42]]},"2026-10-17":{"kt":[["感染症",5,7],["呼吸器",1,1]],"qb":[["免疫",35],["感染症",22]]},"2026-10-18":{"kt":[["呼吸器",2,5]],"qb":[["感染症",57]]},"2026-10-19":{"kt":[["呼吸器",6,9]],"qb":[["感染症",44],["呼吸器",13]]},"2026-10-20":{"kt":[["循環器",1,3]],"qb":[["呼吸器",57]]},"2026-10-21":{"kt":[["循環器",4,6]],"qb":[["呼吸器",57]]},"2026-10-22":{"kt":[["循環器",7,8],["消化器",1,1]],"qb":[["呼吸器",4],["循環器",53]]},"2026-10-23":{"kt":[["消化器",2,4]],"qb":[["循環器",57]]},"2026-10-24":{"kt":[["消化器",5,6],["肝胆膵",1,2]],"qb":[["循環器",21],["消化管",36]]},"2026-10-25":{"kt":[["肝胆膵",3,5],["産婦人",1,1]],"qb":[["消化管",57]]},"2026-10-26":{"kt":[["産婦人",2,5]],"qb":[["消化管",19],["肝胆膵",38]]},"2026-10-27":{"kt":[["産婦人",6,8]],"qb":[["肝胆膵",30],["婦人",27]]},"2026-10-28":{"kt":[["産婦人",9,11]],"qb":[["婦人",52],["産",5]]},"2026-10-29":{"kt":[["産婦人",12,12],["小児",1,2]],"qb":[["産",57]]},"2026-10-30":{"kt":[["小児",3,5]],"qb":[["産",45],["小児",12]]},"2026-10-31":{"kt":[["小児",6,9]],"qb":[["小児",57]]},"2026-11-01":{"kt":[["小児",10,13]],"qb":[["小児",57]]},"2026-11-02":{"kt":[],"qb":[["小児",58]]}}};
 </script>
 <script>
 /* ===== これを一番最初に登録：真っ白防止の砦 ===== */
@@ -1825,7 +1828,7 @@ function mpExpand(list){const out=[];(list||[]).forEach(([s,a,b])=>{for(let c=a;
 function mpItems(d){
   const P=MP.days[d];if(!P)return null;
   const prev=MP.days[addDays(d,-1)];
-  return {kt:mpExpand(P.kt),ox:mpExpand(prev?prev.kt:[]),qb:P.qb.map(([s,n])=>({id:s,subj:s,n}))};
+  return {kt:mpExpand(P.kt),ox:mpExpand(P.oxExtra||[]).concat(mpExpand(prev?prev.kt:[])),qb:P.qb.map(([s,n])=>({id:s,subj:s,n}))};
 }
 function mpAuto(it,kind){
   const CA=window.CardApp;
@@ -1913,7 +1916,7 @@ function mpCal(t){
   return h;
 }
 function mpRender(){
-  const root=document.getElementById('view-plan');if(!root)return;
+  const root=document.getElementById('mpRoot');if(!root)return;
   const t=today();
   if(!mpSel||!MP.days[mpSel])mpSel=t<MP.start?MP.start:(t>MP.end?MP.end:t);
   const d=mpSel,s=mpStat(d),v=mpPeek(d),idx=MP_DATES.indexOf(d);
@@ -1937,7 +1940,7 @@ function mpRender(){
 
   h+=`<div class="mp-grp"><div class="mp-gh kt"><div>口頭試問　作成</div><span>${s.kt}<small>/${s.ktT}章</small></span></div>`+
      (s.it.kt.length?`<div class="mp-chips">${s.it.kt.map(x=>mpChip('kt',x,d)).join('')}</div>`:'<div class="mp-none">この日は作成なし</div>')+`</div>`;
-  h+=`<div class="mp-grp"><div class="mp-gh ox"><div>口頭試問　〇×（前日に作った分）</div><span>${s.ox}<small>/${s.oxT}章</small></span></div>`+
+  h+=`<div class="mp-grp"><div class="mp-gh ox"><div>口頭試問　〇×（前日に作った分など）</div><span>${s.ox}<small>/${s.oxT}章</small></span></div>`+
      (s.it.ox.length?`<div class="mp-chips">${s.it.ox.map(x=>mpChip('ox',x,d)).join('')}</div>`:'<div class="mp-none">この日は〇×なし</div>')+`</div>`;
   h+=`<div class="mp-grp"><div class="mp-gh qb"><div>QB 1周目</div><span>${s.qD}<small>/${s.qT}問</small></span></div>`+
      (s.it.qb.length?s.it.qb.map(x=>mpQrow(x,d)).join(''):'<div class="mp-none">この日はQBなし</div>')+`</div>`;
@@ -1973,7 +1976,7 @@ function mpRender(){
   root.innerHTML=h;
 }
 (function(){
-  const root=document.getElementById('view-plan');
+  const root=document.getElementById('mpRoot');
   const redraw=()=>{const y=window.scrollY;mpRender();window.scrollTo(0,y);};
   root.addEventListener('click',e=>{
     const b=e.target.closest('[data-act]');if(!b)return;
@@ -2244,7 +2247,7 @@ const TOTAL_CH = CHAPTERS.length; // = 173
 /* ============================================================
    11/3模試までの口頭試問プラン（11/3以降は白紙）
    ・予定は ファイル先頭の window.MONTH_PLAN（10/5〜11/2）から作る
-   ・カードを作る日（ch.r1）：腎5chapterは9/30、10/5から神経→内分泌→…の順に、1日3〜4chapter
+   ・カードを作る日（ch.r1）：腎5chapterは9/30（〇×は10/5）、10/5から神経→内分泌→…の順に、1日3〜4chapter
    ・〇×をつける日（ch.r2）：カードを作った翌日。×はその場ですぐ解き直す（これが「一周目」）
    ・2回正解したら◎（二周目）
    分母は 計画に入っている全chapter数（=99）
@@ -2261,6 +2264,12 @@ const PLAN = (function(){
         for(let c = seg[1]; c <= seg[2]; c++) list.push({ subject:seg[0], chapter:String(c), r1:d, r2:addDaysStr(d,1) });
       });
     });
+  }
+  // 予定より遅れて〇×をつける章（oxExtra）は、その日を〇×の日にする
+  if(MP && MP.days){
+    Object.keys(MP.days).forEach(d => (MP.days[d].oxExtra||[]).forEach(seg => {
+      list.forEach(ch => { if(ch.subject===seg[0] && +ch.chapter>=seg[1] && +ch.chapter<=seg[2]) ch.r2 = d; });
+    }));
   }
   return list;
 })();
