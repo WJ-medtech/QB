@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0E1B24">
-<meta name="app-build" content="2026-11-03-plan">
+<meta name="app-build" content="2026-11-03-plan2">
 <style>
 :root{
   --bg:#0E1B24; --surface:#142532; --surface2:#1A2F3E; --line:#243E4E; --line2:#2E4C5E;
@@ -652,7 +652,7 @@ function renderHome(){
   const vb=$('viewerBanner');
   if(!qUser){vb.style.display='block';vb.textContent='ログインしていません。WJの記録を表示中です（閲覧のみ）。自分の記録をつけるには右上の🔑からログイン。';}
   else vb.style.display='none';
-  $('authBtn').textContent=(qUser||cUser)?'ログアウト':'🔑 ログイン';
+  $('authBtn').textContent=(qUser&&cUser)?'ログアウト':(qUser||cUser)?'🔑 ログイン（半分）':'🔑 ログイン';
   const dm=dayMap();
   renderToday(dm,t);
   renderProgress(t);
@@ -905,20 +905,26 @@ async function loadExtras(){
 }
 
 /* ---- 究極MAP ---- */
+const UMAP_FROM='2026-11-04';
 function renderUmap(){
-  const cnt={},last={};
-  umapRows.forEach(r=>{cnt[r.umap_no]=(cnt[r.umap_no]||0)+1;last[r.umap_no]=String(r.viewed_on).slice(0,10);});
+  const cnt={},pre={},last={};
+  umapRows.forEach(r=>{
+    const d=String(r.viewed_on).slice(0,10);
+    if(d>=UMAP_FROM){cnt[r.umap_no]=(cnt[r.umap_no]||0)+1;last[r.umap_no]=d;}else pre[r.umap_no]=true;
+  });
+  const since=umapRows.filter(r=>String(r.viewed_on).slice(0,10)>=UMAP_FROM).length;
   const seen=UMAP.filter((_,i)=>cnt[i+1]).length;
-  $('umapSum').textContent=qUser&&!umapMsg?'見た '+seen+'/24本・のべ'+umapRows.length+'回':'';
+  $('umapSum').textContent=qUser&&!umapMsg?'11/4から のべ'+since+'回・'+seen+'/24本':'';
   const body=$('umapBody');
   if(!qUser){body.innerHTML='<div class="empty">ログインすると「見た」を記録できます。</div>';return;}
   if(umapMsg){body.innerHTML='<div class="empty" style="color:var(--alert)">'+esc(umapMsg)+'</div>';return;}
-  body.innerHTML=UMAP.map((u,i)=>{
-    const n=i+1,c=cnt[n]||0;
-    return '<div class="urow"><span class="un">'+pad(n)+'</span><div class="ut">'+esc(u[0])+'<small>'+u[1]+(c?'・最後 '+fmt(last[n]):'')+'</small></div>'+
-      '<button class="ucnt'+(c?' on':'')+'" data-undo="'+n+'"'+(c?'':' disabled')+'>'+(c?'✓ '+c+'回':'—')+'</button>'+
+  body.innerHTML='<div class="hsub" style="margin-bottom:4px;">数字は 11/4から見た回数。それより前に見た分は「前に視聴済み」と出ます。</div>'+UMAP.map((u,i)=>{
+    const n=i+1,c=cnt[n]||0,any=c||pre[n];
+    const info=u[1]+(pre[n]?'・前に視聴済み':'')+(c?'・最後 '+fmt(last[n]):'');
+    return '<div class="urow"><span class="un">'+pad(n)+'</span><div class="ut">'+esc(u[0])+'<small>'+info+'</small></div>'+
+      '<button class="ucnt'+(c?' on':'')+'" data-undo="'+n+'"'+(any?'':' disabled')+'>'+(c?'✓ '+c+'回':'0回')+'</button>'+
       '<button class="useen" data-seen="'+n+'">見た</button></div>';
-  }).join('')+'<div class="hsub" style="margin-top:10px;">「✓ 〇回」を押すと、1回取り消せます。</div>';
+  }).join('')+'<div class="hsub" style="margin-top:10px;">回数のところを押すと、最後の1回を取り消せます。</div>';
 }
 $('umapToggle').onclick=()=>{const b=$('umapBody'),o=b.style.display==='block';b.style.display=o?'none':'block';$('umapToggle').textContent=o?'ひらく':'とじる';};
 $('umapBody').addEventListener('click',async e=>{
@@ -993,7 +999,7 @@ function openLogin(){
   $('loLogout').style.display=(qUser||cUser)?'block':'none';
   $('loModal').classList.add('show');
 }
-$('authBtn').onclick=()=>{ if(qUser||cUser){ if(confirm('ログアウトする？'))logoutAll(); } else openLogin(); };
+$('authBtn').onclick=()=>{ if(qUser&&cUser){ if(confirm('ログアウトする？'))logoutAll(); } else openLogin(); };
 $('loClose').onclick=()=>$('loModal').classList.remove('show');
 $('loLogout').onclick=()=>{ $('loModal').classList.remove('show'); logoutAll(); };
 $('oralLoginBtn').onclick=openLogin;
@@ -1007,7 +1013,17 @@ $('loSub').onclick=async()=>{
   msg.textContent='確認中...';
   let qOK=!!qUser,cOK=!!cUser,qErr='',cErr='';
   if(!qOK&&sbQ){const {data,error}=await sbQ.auth.signInWithPassword({email,password});if(error)qErr=error.message;else{qOK=true;qUser=data.user;}}
-  if(!cOK&&sbC){const {data,error}=await sbC.auth.signInWithPassword({email,password});if(error)cErr=error.message;else{cOK=true;await onCardLogin(data.user);}}
+  if(!cOK&&sbC){
+    try{const {data,error}=await withTimeout(sbC.auth.signInWithPassword({email,password}),10000,'口頭試問カードのログイン');if(error)cErr=error.message;else{cOK=true;cardErr='';await onCardLogin(data.user);}}
+    catch(e){cErr=(e&&e.message)||String(e);}
+  }
+  if(cErr){cardErr=cErr;setOralLoginMsg();}
+  if(qOK&&!cOK&&cErr){
+    msg.textContent='';$('loModal').classList.remove('show');$('loPass').value='';
+    await loadQB();renderHome();
+    alert('QBの記録にはログインできましたが、口頭試問カードにはログインできませんでした。\n\n'+cardErrText(cErr));
+    return;
+  }
   if(qOK||cOK){
     $('loModal').classList.remove('show');msg.textContent='';
     $('loPass').value='';
@@ -1028,7 +1044,7 @@ $('loPass').addEventListener('keydown',e=>{if(e.key==='Enter')$('loSub').click()
   if(!sbQ){return;}
   try{const {data}=await withTimeout(sbQ.auth.getSession(),8000,'ログイン状態の確認');qUser=(data&&data.session&&data.session.user)||null;}catch(e){showErr('ログイン確認',e);}
   try{sbQ.auth.onAuthStateChange((ev,s)=>{qUser=(s&&s.user)||null;});}catch(e){}
-  try{const {data}=await withTimeout(sbC.auth.getSession(),8000,'カードDBのログイン確認');if(data&&data.session&&data.session.user)await onCardLogin(data.session.user);}catch(e){console.warn('card session',e);}
+  try{const {data}=await withTimeout(sbC.auth.getSession(),8000,'カードDBのログイン確認');if(data&&data.session&&data.session.user)await onCardLogin(data.session.user);}catch(e){console.warn('card session',e);cardErr=(e&&e.message)||String(e);setOralLoginMsg();}
   await loadQB();
   renderHome();
 })();
@@ -1074,10 +1090,19 @@ const key=(s,c)=>s+'||'+c;
 function chLabel(s,c){const t=titles[key(s,c)];return 'Ch.'+c+(t?' '+t:'');}
 function showMsg(el,text,isErr){el.textContent=text;el.classList.toggle('err',!!isErr);}
 
+let cardErr='';
+function cardErrText(m){
+  if(/fetch|network|Load failed|応答なし|timeout/i.test(m))return '口頭試問カード用のSupabase（URLが fxcfzr… で始まる方）につながりません。しばらく使っていないとプロジェクトが「一時停止（Paused）」になります。Supabaseでそのプロジェクトを開いて「Restore project」を押してください。\n（くわしく：'+m+'）';
+  if(/Invalid login/i.test(m))return 'メールアドレスかパスワードがちがうようです。\n（くわしく：'+m+'）';
+  return m;
+}
+function setOralLoginMsg(){
+  $('oralLoginMsg').innerHTML=cardErr?'<span style="color:var(--alert);white-space:pre-wrap;">'+esc(cardErrText(cardErr))+'</span>':'口頭試問のカードを使うには、ログインが必要です。';
+}
 async function onCardLogin(user){
   cUser=user;
   try{await cLoadAll();}catch(e){showErr('カードの読み込み',e);}
-  renderHome();
+  try{renderHome();}catch(e){console.warn('renderHome',e);}
   if($('view-oral').classList.contains('active'))oralEnter();
 }
 function oralEnter(){
@@ -1099,6 +1124,8 @@ async function cLoadAll(){
     sbC.from('card_progress').select('*').eq('user_id',cUser.id),
     sbC.from('chapter_progress').select('*').eq('user_id',cUser.id)
   ]);
+  const bad=[t,c,cp,chp].find(x=>x&&x.error);
+  if(bad)throw new Error(cardErrText(bad.error.message||String(bad.error)));
   titles={};(t.data||[]).forEach(r=>titles[key(r.subject,r.chapter)]=r.title);
   cards=c.data||[];cardsByCh={};cards.forEach(x=>{(cardsByCh[key(x.subject,x.chapter)] ||= []).push(x);});
   cardProg={};(cp.data||[]).forEach(r=>cardProg[r.card_id]=r);
