@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0E1B24">
-<meta name="app-build" content="2026-10-12-simple">
+<meta name="app-build" content="2026-11-03-plan">
 <style>
 :root{
   --bg:#0E1B24; --surface:#142532; --surface2:#1A2F3E; --line:#243E4E; --line2:#2E4C5E;
@@ -235,6 +235,43 @@ textarea.fld{min-height:100px;resize:vertical;}
 .prin-thumb img{max-width:120px;border-radius:8px;display:block;margin-top:6px;}
 .copybox{background:var(--bg);border:1px dashed var(--line2);border-radius:11px;padding:12px;padding-top:36px;font-size:12.5px;color:var(--soft);white-space:pre-wrap;line-height:1.6;position:relative;}
 .copybtn{position:absolute;top:8px;right:8px;background:var(--kt);color:var(--kt-ink);border:none;border-radius:8px;font-size:12px;font-weight:800;padding:5px 10px;}
+.urow{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line);}
+.urow:first-child{border-top:none;}
+.urow .un{width:22px;font-size:12px;color:var(--faint);font-weight:800;font-variant-numeric:tabular-nums;}
+.urow .ut{flex:1;min-width:0;font-size:14px;font-weight:700;}
+.urow .ut small{display:block;font-size:11.5px;color:var(--soft);font-weight:500;}
+.ucnt{font-size:12.5px;font-weight:800;color:var(--faint);min-width:48px;text-align:right;background:none;border:none;padding:6px 2px;}
+.ucnt.on{color:var(--vid);}
+.useen{border:1px solid var(--kt);background:transparent;color:var(--kt);border-radius:9px;padding:8px 13px;font-size:13px;font-weight:800;}
+.useen:active{background:var(--kt);color:var(--kt-ink);}
+.plist{margin-top:12px;}
+.tp{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:14px;}
+.tp:first-child{border-top:none;}
+.tp .tl1{flex:1;min-width:0;font-weight:700;}
+.tp .tl1 small{display:block;font-size:11.5px;color:var(--soft);font-weight:500;}
+.tp .tn{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.tp .tn.done{color:var(--vid);}
+.tp .tag{font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;background:var(--surface2);color:var(--soft);border:1px solid var(--line2);white-space:nowrap;}
+.pg{padding:11px 0;border-top:1px solid var(--line);}
+.pg:first-child{border-top:none;padding-top:0;}
+.pg:last-child{padding-bottom:0;}
+.pg .ph{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px;font-weight:800;margin-bottom:6px;}
+.pg .ph span:last-child{font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.pg .pn{font-size:12px;color:var(--soft);margin-top:5px;line-height:1.6;}
+.pn b.ahead{color:var(--vid);} .pn b.behind{color:var(--qb);}
+.bar.kt i{background:var(--kt);}
+.ecgrow{display:flex;gap:8px;margin-top:12px;}
+.ecgrow .fld{flex:1;margin:0;}
+.ecgrow .btn{width:auto;padding:0 18px;}
+.blk{display:flex;align-items:center;gap:10px;padding:8px 6px;border-top:1px solid var(--line);font-size:13.5px;}
+.blk .bd{width:78px;flex:none;color:var(--soft);font-size:12px;font-variant-numeric:tabular-nums;}
+.blk .bn{flex:1;min-width:0;font-weight:700;}
+.blk .bn small{display:block;font-size:11px;color:var(--soft);font-weight:500;}
+.blk .bc{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--soft);white-space:nowrap;}
+.blk.now{background:var(--qb-dim);border-radius:10px;}
+.blk.now .bn,.blk.now .bc{color:var(--qb);}
+.blk.fin .bc{color:var(--vid);}
+.cell.rest{border-style:dashed;}
 .pv{border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin-top:8px;background:var(--surface2);}
 .pvq{font-size:14px;font-weight:700;} .pva{font-size:13.5px;color:var(--kt);margin-top:4px;}
 .pvx{float:right;color:var(--alert);font-size:12.5px;font-weight:700;cursor:pointer;}
@@ -262,19 +299,31 @@ textarea.fld{min-height:100px;resize:vertical;}
   <div id="viewerBanner" class="banner" style="display:none;"></div>
 
   <div class="card qbcard">
-    <div class="qtop"><span class="qlab">QB</span><span class="qnum" id="qToday">0</span><span class="qgoal">/ 100問</span></div>
-    <div class="qsub" id="qSub">今日の目標：100問</div>
+    <div class="qtop"><span class="qlab">今日のQB</span><span class="qnum" id="qToday">0</span><span class="qgoal" id="qGoal">/ 0問</span></div>
+    <div class="qsub" id="qSub"></div>
     <div class="bar" id="qBar"><i style="width:0"></i></div>
-    <button class="btn qb" id="openRec">記録する（科目から選択）</button>
+    <div class="plist" id="todayPlan"></div>
+    <button class="btn qb" id="openRec">記録する</button>
     <div class="todaylist" id="todayList"></div>
   </div>
+
+  <div class="sect"><span>12/31までにQB1周</span><span id="planDays"></span></div>
+  <div class="card" id="progCard"></div>
+
+  <div class="sect"><span>心電図の本（12/6が目安）</span></div>
+  <div class="card" id="ecgCard"></div>
 
   <button class="bigbtn" id="openOral">
     <div><div class="t">口頭試問</div><div class="s" id="oralSub">作成・1周目・2周目の進み具合をみる</div></div>
     <span class="arrow">›</span>
   </button>
 
-  <div class="sect"><span>毎日の記録（10/12〜）</span><span id="qbTotals"></span></div>
+  <div class="fold">
+    <h2><span>究極MAP<small id="umapSum" style="color:var(--soft);font-weight:600;margin-left:8px;"></small></span><button id="umapToggle">ひらく</button></h2>
+    <div class="fbody" id="umapBody"></div>
+  </div>
+
+  <div class="sect"><span>毎日の記録（10/12〜）</span></div>
   <div class="stats" id="qbStats"></div>
   <div class="card">
     <div class="calnav">
@@ -283,8 +332,13 @@ textarea.fld{min-height:100px;resize:vertical;}
       <button id="calNext" aria-label="次の月">▶</button>
     </div>
     <div class="cal" id="calGrid"></div>
-    <div class="legend"><span><i style="background:var(--vid)"></i>100問達成</span><span><i style="background:var(--qb)"></i>途中</span><span><i style="background:var(--alert)"></i>0問</span></div>
+    <div class="legend"><span><i style="background:var(--vid)"></i>目標達成</span><span><i style="background:var(--qb)"></i>途中</span><span><i style="background:var(--alert)"></i>0問</span><span>✈︎ 旅行</span></div>
     <div class="daydetail" id="dayDetail"></div>
+  </div>
+
+  <div class="fold">
+    <h2>予定（11/3〜1/19） <button id="planToggle">ひらく</button></h2>
+    <div class="fbody" id="planBody"></div>
   </div>
 
   <div class="fold">
@@ -435,6 +489,7 @@ A: 答え
 <div class="modal" id="recModal">
   <div class="sheet">
     <div class="sh-head"><span>QBを記録する</span><button id="recClose" aria-label="閉じる">×</button></div>
+    <div class="subj-chips" id="recPick" style="margin-bottom:10px;"></div>
     <select class="fld" id="recSubj"></select>
     <input class="fld" type="number" inputmode="numeric" id="recNum" placeholder="何問？">
     <div class="chips" id="recQuick"><button data-n="10">+10</button><button data-n="20">+20</button><button data-n="50">+50</button><button data-n="100">100</button></div>
@@ -501,19 +556,67 @@ let qUser=null;   // QB用DBにログインしている人
 let cUser=null;   // カード用DBにログインしている人
 
 /* ============================================================
-   ホーム：QB 1日100問
+   ホーム：11/3〜の計画（本線＋必修＋公衆衛生）とQB記録
    ============================================================ */
-const START='2026-10-12', GOAL=100, EXAM='2027-01-18';
+const START='2026-10-12', OLD_GOAL=100, EXAM='2027-01-19', PLAN_START='2026-11-03', QB_END='2026-12-31';
 const QB_SUBJECTS=[["消化管",291,112],["肝胆膵",195,68],["循環器",378,131],["内分泌",298,116],["腎",186,87],["免疫",157,77],["血液",202,81],["感染症",239,123],["呼吸器",295,131],["神経",361,158],["中毒",63,30],["救急",136,85],["麻酔",32,10],["総論",147,75],["小児",423,184],["婦人",204,79],["産",337,107],["眼",151,73],["耳鼻",151,74],["整形",152,78],["精神",205,85],["皮膚",150,86],["泌尿器",150,65],["放射線",53,26],["公衆衛生",605,322],["必修",1418,754]];
 const MEDU4=[["腎",5,7],["内分泌",8,12],["血液",9,10],["免疫",5,7],["感染症",7,9],["呼吸器",9,12],["循環器",8,14],["消化管",6,9],["肝胆膵",5,8],["神経",12,15],["産婦人科",12,15],["小児",13,16],["小児外科",4,4],["整形",5,7],["眼",6,7],["耳鼻",6,7],["泌尿器",6,6],["精神",9,6],["皮膚",9,6],["放射線",3,3],["救急",5,7],["中毒麻酔",5,4],["公衆衛生",16,17]];
+const QB_TOTAL={};QB_SUBJECTS.forEach(s=>QB_TOTAL[s[0]]=s[1]);
+const sumTotal=subj=>subj.reduce((a,s)=>a+(QB_TOTAL[s]||0),0);
+const TRIP=['2026-12-21','2026-12-22','2026-12-23'];
+
+/* 本線：動画→QB（1科ずつ） */
+const BLOCKS=[
+  {from:'2026-11-04',to:'2026-11-09',name:'産婦人科',subj:['産','婦人'],video:'2〜3コマ'},
+  {from:'2026-11-10',to:'2026-11-15',name:'小児',subj:['小児'],video:'2〜3コマ'},
+  {from:'2026-11-16',to:'2026-11-17',name:'眼',subj:['眼'],video:'3〜4コマ'},
+  {from:'2026-11-18',to:'2026-11-19',name:'耳鼻',subj:['耳鼻'],video:'3〜4コマ'},
+  {from:'2026-11-20',to:'2026-11-21',name:'整形',subj:['整形'],video:'3〜4コマ'},
+  {from:'2026-11-22',to:'2026-11-24',name:'精神',subj:['精神'],video:'2コマ'},
+  {from:'2026-11-25',to:'2026-11-26',name:'皮膚',subj:['皮膚'],video:'3コマ'},
+  {from:'2026-11-27',to:'2026-11-28',name:'泌尿器',subj:['泌尿器'],video:'3コマ'},
+  {from:'2026-11-29',to:'2026-11-29',name:'放射線',subj:['放射線'],video:'3コマ'}
+].map(b=>Object.assign(b,{total:sumTotal(b.subj)}));
+/* 毎日の別枠 */
+const SIDES=[
+  {name:'必修',subj:['必修'],from:'2026-11-04',to:'2026-12-18',when:'スキマ'},
+  {name:'公衆衛生',subj:['公衆衛生'],from:'2026-11-03',to:'2026-12-16',when:'夜'}
+].map(b=>Object.assign(b,{total:sumTotal(b.subj)}));
 
 let qbRows=[];          // {id,day,subject,count}
-let qbMsg='';           // テーブル未作成などの案内
+let qbMsg='';
 let calMonth=null, selDay=null;
 
-function dayMap(){
-  const m={};qbRows.forEach(r=>{m[r.day]=(m[r.day]||0)+(+r.count);});return m;
+function dayMap(){const m={};qbRows.forEach(r=>{m[r.day]=(m[r.day]||0)+(+r.count);});return m;}
+/* 11/3以降にその科で解いた数（before の前日まで） */
+function doneBefore(subj,before){let n=0;qbRows.forEach(r=>{if(r.day>=PLAN_START&&r.day<before&&subj.includes(r.subject))n+=r.count;});return n;}
+function doneOn(subj,day){let n=0;qbRows.forEach(r=>{if(r.day===day&&subj.includes(r.subject))n+=r.count;});return n;}
+const doneAll=subj=>doneBefore(subj,'9999-12-31');
+/* その日の目標＝（残りの問題数）÷（締め切りまでの残り日数）→ 遅れても先に進んでも自動で調整 */
+function targetFor(it,day){
+  if(day<it.from||day>it.to)return 0;
+  const rem=it.total-doneBefore(it.subj,day);
+  return rem>0?Math.ceil(rem/(daysBetween(day,it.to)+1)):0;
 }
+const blockOf=day=>BLOCKS.find(b=>day>=b.from&&day<=b.to)||null;
+function goalFor(day){
+  if(day<START)return 0;
+  if(day<PLAN_START)return OLD_GOAL;
+  if(TRIP.includes(day))return 0;
+  const b=blockOf(day);
+  return (b?targetFor(b,day):0)+SIDES.reduce((a,s)=>a+targetFor(s,day),0);
+}
+/* 昨日までに終わっている予定の数 */
+function expectedBy(it,day){
+  if(day<=it.from)return 0;
+  if(day>it.to)return it.total;
+  return Math.round(it.total*daysBetween(it.from,day)/(daysBetween(it.from,it.to)+1));
+}
+function pace(done,exp){
+  const d=done-exp;
+  return d>=0?'<b class="ahead">予定どおり'+(d>0?'（+'+d+'問）':'')+'</b>':'<b class="behind">予定より '+(-d)+'問 おくれ</b>';
+}
+
 async function loadQB(){
   qbRows=[];qbMsg='';
   if(!sbQ)return;
@@ -538,51 +641,108 @@ async function loadQB(){
     else qbMsg='QB記録の読み込みでエラー：'+m;
     console.warn('loadQB',e);
   }
+  await loadExtras();
 }
 
 function renderHome(){
   const t=today();
   $('hDate').innerHTML=(+t.slice(5,7))+'/'+(+t.slice(8))+'<small>'+wdOf(t)+'</small>';
   const left=daysBetween(t,EXAM);
-  $('hSub').textContent=left>=0?'模試② 1/18 まであと'+left+'日':'';
+  $('hSub').textContent=left>=0?'模試 1/19 まであと'+left+'日':'';
   const vb=$('viewerBanner');
   if(!qUser){vb.style.display='block';vb.textContent='ログインしていません。WJの記録を表示中です（閲覧のみ）。自分の記録をつけるには右上の🔑からログイン。';}
   else vb.style.display='none';
   $('authBtn').textContent=(qUser||cUser)?'ログアウト':'🔑 ログイン';
-
   const dm=dayMap();
-  const todayN=dm[t]||0;
-  $('qToday').textContent=todayN;
-  const pct=Math.min(100,Math.round(todayN/GOAL*100));
-  $('qBar').querySelector('i').style.width=pct+'%';
-  $('qBar').classList.toggle('done',todayN>=GOAL);
-  $('qSub').textContent=qbMsg?qbMsg:(t<START?'10/12からスタート':(todayN>=GOAL?'今日の100問、達成 🎉':'今日の目標：100問・あと'+(GOAL-todayN)+'問'));
-  $('qSub').style.color=qbMsg?'var(--alert)':'';
-  $('openRec').textContent=qUser?'記録する（科目から選択）':'ログインして記録する';
-
-  // 今日の記録リスト
-  const tl=$('todayList');
-  const todays=qbRows.filter(r=>r.day===t);
-  tl.innerHTML=todays.map(r=>'<div class="trow"><span><b>'+esc(r.subject)+'</b>　'+r.count+'問</span>'+(qUser&&r.id?'<button data-del="'+r.id+'">取り消す</button>':'')+'</div>').join('');
-
+  renderToday(dm,t);
+  renderProgress(t);
+  renderEcg(t);
   renderStats(dm,t);
   renderCal(dm,t);
   renderDayDetail(dm,t);
+  renderPlan(t);
   renderOralSub();
+  renderUmap();
 }
+
+/* ---- 今日のQB ---- */
+function renderToday(dm,t){
+  const n=dm[t]||0,goal=goalFor(t),trip=TRIP.includes(t);
+  $('qToday').textContent=n;
+  $('qGoal').textContent=goal?'/ '+goal+'問':'問';
+  $('qBar').querySelector('i').style.width=(goal?Math.min(100,Math.round(n/goal*100)):(n>0?100:0))+'%';
+  $('qBar').classList.toggle('done',goal>0&&n>=goal);
+  let sub;
+  if(qbMsg)sub=qbMsg;
+  else if(trip)sub='旅行の日。休んでOK ✈︎';
+  else if(goal&&n>=goal)sub='今日の目標、達成 🎉';
+  else if(goal)sub='今日の目標まで あと'+(goal-n)+'問';
+  else sub='今日は決まった目標なし。メジャーをスキマで';
+  $('qSub').textContent=sub;$('qSub').style.color=qbMsg?'var(--alert)':'';
+  $('openRec').textContent=qUser?'記録する':'ログインして記録する';
+
+  const rows=[],used=[];
+  const row=(tag,name,small,done,target)=>'<div class="tp"><span class="tag">'+tag+'</span><div class="tl1">'+esc(name)+(small?'<small>'+small+'</small>':'')+'</div><span class="tn'+(target&&done>=target?' done':'')+'">'+done+(target?' / '+target:'')+'</span></div>';
+  if(t>=PLAN_START&&!trip){
+    const b=blockOf(t);
+    if(b){
+      used.push(...b.subj);
+      const tg=targetFor(b,t);
+      rows.push(row('本線',b.name,fmt(b.from)+'〜'+fmt(b.to)+'・動画 '+b.video+'／日'+(tg?'':'・問題はぜんぶ済み ✓'),doneOn(b.subj,t),tg));
+    }else if(t<='2026-12-06'){
+      BLOCKS.filter(x=>x.to<t&&doneAll(x.subj)<x.total).forEach(x=>{
+        used.push(...x.subj);
+        rows.push(row('のこり',x.name,'11月の科の残り '+(x.total-doneAll(x.subj))+'問',doneOn(x.subj,t),0));
+      });
+    }
+    SIDES.forEach(s=>{
+      if(t<s.from)return;
+      const tg=targetFor(s,t),d=doneOn(s.subj,t),fin=doneAll(s.subj)>=s.total;
+      if(!tg&&!d&&t>s.to)return;
+      used.push(...s.subj);
+      rows.push(row(s.when,s.name,tg?'':(fin?'1周おわり ✓':''),d,tg));
+    });
+    const other=qbRows.filter(r=>r.day===t&&!used.includes(r.subject)).reduce((a,r)=>a+r.count,0);
+    rows.push(row('スキマ','そのほか（メジャーなど）','',other,0));
+  }
+  $('todayPlan').innerHTML=rows.join('');
+
+  const todays=qbRows.filter(r=>r.day===t);
+  $('todayList').innerHTML=todays.length?'<div class="hsub" style="margin-bottom:2px;">今日の記録</div>'+todays.map(r=>'<div class="trow"><span><b>'+esc(r.subject)+'</b>　'+r.count+'問</span>'+(qUser&&r.id?'<button data-del="'+r.id+'">取り消す</button>':'')+'</div>').join(''):'';
+}
+
+/* ---- 12/31までの進み具合 ---- */
+function renderProgress(t){
+  $('planDays').textContent=t<=QB_END?'12/31まで あと'+daysBetween(t,QB_END)+'日':'';
+  const pg=(name,small,done,total,exp,cls)=>{
+    done=Math.min(done,total);
+    return '<div class="pg"><div class="ph"><span>'+esc(name)+'</span><span>'+done.toLocaleString()+' / '+total.toLocaleString()+'</span></div>'+
+      '<div class="bar '+(cls||'')+(done>=total?' done':'')+'"><i style="width:'+Math.round(done/Math.max(1,total)*100)+'%"></i></div>'+
+      '<div class="pn">'+small+(t>=PLAN_START&&done<total?'・'+pace(done,exp):(done>=total?'・<b class="ahead">おわり ✓</b>':''))+'</div></div>';
+  };
+  let h='';
+  const b=blockOf(t);
+  if(b)h+=pg('いまの科：'+b.name,fmt(b.from)+'〜'+fmt(b.to),doneAll(b.subj),b.total,expectedBy(b,t));
+  const bt=BLOCKS.reduce((a,x)=>a+x.total,0),bd=BLOCKS.reduce((a,x)=>a+Math.min(x.total,doneAll(x.subj)),0),be=BLOCKS.reduce((a,x)=>a+expectedBy(x,t),0);
+  h+=pg('11月の本線（産婦・小児・マイナー）','11/29まで',bd,bt,be);
+  SIDES.forEach(s=>{h+=pg(s.name,fmt(s.to)+'まで・'+s.when,doneAll(s.subj),s.total,expectedBy(s,t),'kt');});
+  $('progCard').innerHTML=h;
+}
+
+/* ---- 統計・カレンダー ---- */
 function renderStats(dm,t){
-  const days=Object.keys(dm).filter(d=>d>=START);
-  const total=days.reduce((a,d)=>a+dm[d],0);
-  const elapsed=Math.max(0,daysBetween(START,t)+1);
-  const okDays=days.filter(d=>dm[d]>=GOAL).length;
+  const total=Object.keys(dm).filter(d=>d>=START).reduce((a,d)=>a+dm[d],0);
+  let goalDays=0,okDays=0;
+  for(let d=START;d<=t;d=addDays(d,1)){const g=goalFor(d);if(g>0){goalDays++;if((dm[d]||0)>=g)okDays++;}}
+  const ok=x=>{const g=goalFor(x);return g>0&&(dm[x]||0)>=g;};
   let streak=0,d=t;
-  if((dm[d]||0)<GOAL)d=addDays(d,-1);
-  while(d>=START&&(dm[d]||0)>=GOAL){streak++;d=addDays(d,-1);}
+  if(!ok(d))d=addDays(d,-1);
+  while(d>=START){if(ok(d))streak++;else if(goalFor(d)>0)break;d=addDays(d,-1);}
+  const sm=s=>'<small style="font-size:12px;color:var(--soft)">'+s+'</small>';
   $('qbStats').innerHTML=
-    '<div class="stat"><div class="k">累計</div><div class="v">'+total.toLocaleString()+'<small style="font-size:12px;color:var(--soft)">問</small></div></div>'+
-    '<div class="stat"><div class="k">100問達成</div><div class="v">'+okDays+'<small style="font-size:12px;color:var(--soft)">/'+elapsed+'日</small></div></div>'+
-    '<div class="stat"><div class="k">連続達成</div><div class="v">'+streak+'<small style="font-size:12px;color:var(--soft)">日</small></div></div>';
-  $('qbTotals').textContent='';
+    '<div class="stat"><div class="k">累計</div><div class="v">'+total.toLocaleString()+sm('問')+'</div></div>'+
+    '<div class="stat"><div class="k">目標達成</div><div class="v">'+okDays+sm('/'+goalDays+'日')+'</div></div>'+
+    '<div class="stat"><div class="k">連続達成</div><div class="v">'+streak+sm('日')+'</div></div>';
 }
 const CAL_MONTHS=['2026-10','2026-11','2026-12','2027-01'];
 function renderCal(dm,t){
@@ -595,26 +755,25 @@ function renderCal(dm,t){
   let h=WD.split('').map(x=>'<i>'+x+'</i>').join('');
   for(let i=0;i<first.getDay();i++)h+='<span></span>';
   for(let dd=1;dd<=last;dd++){
-    const d=y+'-'+pad(m)+'-'+pad(dd),n=dm[d]||0;
+    const d=y+'-'+pad(m)+'-'+pad(dd),n=dm[d]||0,trip=TRIP.includes(d);
     if(d>=START)monthTotal+=n;
     let cls='cell';
     if(d<START||d>EXAM)cls+=' out';
-    else if(n>=GOAL)cls+=' ok';
-    else if(n>0)cls+=' part';
-    else if(d<t)cls+=' miss';
+    else if(trip)cls+=' rest'+(n>0?' ok':'');
+    else if(d<=t){const g=goalFor(d);if(g>0){if(n>=g)cls+=' ok';else if(n>0)cls+=' part';else if(d<t)cls+=' miss';}else if(n>0)cls+=' ok';}
     if(d===t)cls+=' today';
     if(d===selDay)cls+=' sel';
-    h+='<button class="'+cls+'" data-day="'+d+'"><b>'+dd+'</b><span>'+(d<START||(d>t&&n===0)?'':n)+'</span></button>';
+    const lab=d<START?'':(trip&&!n?'✈︎':(d>t&&n===0?'':n));
+    h+='<button class="'+cls+'" data-day="'+d+'"><b>'+dd+'</b><span>'+lab+'</span></button>';
   }
   $('calGrid').innerHTML=h;
   $('calTitle').innerHTML=y+'年'+m+'月<small>この月 '+monthTotal.toLocaleString()+'問</small>';
 }
 function renderDayDetail(dm,t){
-  const d=selDay||t;
-  const rows=qbRows.filter(r=>r.day===d);
-  const bySub={};rows.forEach(r=>{bySub[r.subject]=(bySub[r.subject]||0)+r.count;});
+  const d=selDay||t,g=d<=t?goalFor(d):0;
+  const bySub={};qbRows.filter(r=>r.day===d).forEach(r=>{bySub[r.subject]=(bySub[r.subject]||0)+r.count;});
   const keys=Object.keys(bySub);
-  $('dayDetail').innerHTML='<h4>'+fmt(d)+'（'+wdOf(d)+'）　'+(dm[d]||0)+'問</h4>'+
+  $('dayDetail').innerHTML='<h4>'+fmt(d)+'（'+wdOf(d)+'）　'+(dm[d]||0)+'問'+(g?'<span style="color:var(--soft);font-weight:600;"> / 目標 '+g+'</span>':'')+'</h4>'+
     (keys.length?keys.map(k=>'<div class="trow"><span>'+esc(k)+'</span><b>'+bySub[k]+'問</b></div>').join(''):'<div class="empty">この日の記録はありません</div>');
 }
 $('calPrev').onclick=()=>{const i=CAL_MONTHS.indexOf(calMonth);if(i>0){calMonth=CAL_MONTHS[i-1];renderHome();}};
@@ -628,13 +787,57 @@ $('todayList').addEventListener('click',async e=>{
   await loadQB();renderHome();toast('取り消しました');
 });
 
+/* ---- 予定一覧 ---- */
+function renderPlan(t){
+  const line=(dates,name,right,cls)=>'<div class="blk'+(cls?' '+cls:'')+'"><span class="bd">'+dates+'</span><span class="bn">'+name+'</span><span class="bc">'+(right||'')+'</span></div>';
+  const rng=(a,b)=>fmt(a)+(a!==b?'〜'+fmt(b):'');
+  let h='<div class="tl">本線（動画→QB）</div>';
+  BLOCKS.forEach(b=>{
+    const d=Math.min(b.total,doneAll(b.subj)),fin=d>=b.total;
+    h+=line(rng(b.from,b.to),esc(b.name)+'<small>動画 '+b.video+'／日</small>',(fin?'✓ ':'')+d+'/'+b.total,(t>=b.from&&t<=b.to)?'now':(fin?'fin':''));
+  });
+  h+=line('11/30','予備日<small>遅れた分をここで</small>','');
+  h+=line('12/1〜','メジャーの残り<small>問題数は決めずにスキマで</small>','');
+  h+='<div class="tl">毎日の別枠</div>';
+  SIDES.forEach(s=>{
+    const d=Math.min(s.total,doneAll(s.subj));
+    h+=line(rng(s.from,s.to),esc(s.name)+'<small>'+s.when+'・1日 約'+Math.ceil(s.total/(daysBetween(s.from,s.to)+1))+'問</small>',(d>=s.total?'✓ ':'')+d+'/'+s.total,d>=s.total?'fin':'');
+  });
+  h+='<div class="tl">心電図の本（目安・守れなくてもOK）</div>';
+  const cur=ecgCur();
+  ECG_MILES.slice(1).forEach(m=>{h+=line(fmt(m[0]),'p'+m[1]+'まで<small>'+esc(m[2])+'</small>',cur>=m[1]?'✓':'',cur>=m[1]?'fin':'');});
+  h+='<div class="tl">そのほか</div>';
+  h+=line('スキマ','循環器・心電図・究極MAP','');
+  h+=line('12/7〜','循環器内科・心臓血管外科の実習','');
+  h+=line('12/21〜23','旅行 ✈︎','');
+  h+=line('1/19','模試（全範囲）','');
+  $('planBody').innerHTML=h;
+}
+$('planToggle').onclick=()=>{const b=$('planBody'),o=b.style.display==='block';b.style.display=o?'none':'block';$('planToggle').textContent=o?'ひらく':'とじる';};
+
 /* ---- 記録モーダル ---- */
 $('recSubj').innerHTML='<option value="">科目をえらぶ</option>'+QB_SUBJECTS.map(s=>'<option>'+s[0]+'</option>').join('');
+function recCandidates(){
+  const t=today(),c=[],b=blockOf(t);
+  if(b)c.push(...b.subj);
+  BLOCKS.filter(x=>x.to<t&&doneAll(x.subj)<x.total).forEach(x=>c.push(...x.subj));
+  SIDES.forEach(s=>{if(t>=s.from&&doneAll(s.subj)<s.total)c.push(...s.subj);});
+  return [...new Set(c)];
+}
+function renderRecPick(){
+  const cur=$('recSubj').value,c=recCandidates();
+  $('recPick').innerHTML=c.length?c.map(s=>'<button class="subj-chip'+(s===cur?' on':'')+'" data-s="'+esc(s)+'">'+esc(s)+'</button>').join(''):'';
+  $('recPick').style.display=c.length?'flex':'none';
+}
+$('recPick').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;$('recSubj').value=b.dataset.s;renderRecPick();});
+$('recSubj').addEventListener('change',renderRecPick);
 $('openRec').onclick=()=>{
   if(!qUser){openLogin();return;}
   const t=today();
   $('recDate').max=t;$('recDate').value=t;$('recNum').value='';$('recMsg').textContent='';
-  const last=lsGet('qb.subj');if(last&&QB_SUBJECTS.some(s=>s[0]===last))$('recSubj').value=last;
+  const c=recCandidates(),last=lsGet('qb.subj');
+  $('recSubj').value=c[0]||((last&&QB_SUBJECTS.some(s=>s[0]===last))?last:'');
+  renderRecPick();
   $('recModal').classList.add('show');
 };
 $('recClose').onclick=()=>$('recModal').classList.remove('show');
@@ -674,6 +877,105 @@ function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
   $('refToggle').onclick=()=>{const b=$('refBody'),o=b.style.display==='block';b.style.display=o?'none':'block';$('refToggle').textContent=o?'ひらく':'とじる';};
 })();
 $('buildLine').textContent='build '+((document.querySelector('meta[name=app-build]')||{}).content||'');
+
+
+/* ============================================================
+   究極MAP（見たら「見た」）と心電図の本（何ページまで読んだか）
+   ============================================================ */
+const UMAP=[["腎","29:06"],["内分泌代謝","49:05"],["血液","28:15"],["免疫","18:33"],["感染症","30:32"],["呼吸器","33:43"],["循環器","43:31"],["消化管","28:06"],["肝胆膵","30:34"],["神経","39:07"],["産婦人科","1:03:09"],["小児科","22:59"],["加齢老年学","12:21"],["整形外科","18:05"],["眼科","16:56"],["耳鼻咽喉科","15:41"],["泌尿器科","17:20"],["精神科","27:40"],["皮膚科","20:38"],["放射線科","11:16"],["救急","24:50"],["中毒麻酔","13:01"],["公衆衛生","1:26:18"],["必修総論","20:46"]];
+const ECG_TOTAL=220;
+const ECG_MILES=[['2026-11-03',0,''],['2026-11-10',50,'第2度房室ブロックまで'],['2026-11-17',100,'5章おわり・不整脈ぜんぶ'],['2026-11-24',150,'6章おわり・虚血性心疾患'],['2026-12-01',185,'7章おわり'],['2026-12-06',220,'8・9章で読了']];
+const ECG_CH=[[1,1,'心電図を読む前に'],[2,14,'超緊急な不整脈'],[3,38,'緊急な不整脈'],[4,70,'経過観察でよい不整脈'],[5,86,'不整脈アドバンス'],[6,102,'虚血性心疾患'],[7,150,'丁寧に見る心電図'],[8,186,'複数の疾患を考える心電図'],[9,213,'系統的な読み方と鑑別診断']];
+let umapRows=[],umapMsg='',ecgRows=[],ecgMsg='';
+const ecgCur=()=>ecgRows.length?ecgRows[ecgRows.length-1].page:0;
+
+async function loadExtras(){
+  umapRows=[];umapMsg='';ecgRows=[];ecgMsg='';
+  if(!sbQ||!qUser)return;
+  const noTable=/schema cache|does not exist|Could not find/i;
+  const SQLMSG='の表がまだ作られていません。渡したSQL（setup_1103.sql）をSupabaseのSQL Editorで1回実行してください。';
+  try{
+    const {data,error}=await withTimeout(sbQ.from('umap_views').select('id,umap_no,viewed_on').order('id'),8000,'究極MAPの読み込み');
+    if(error)throw error;umapRows=data||[];
+  }catch(e){const m=String((e&&e.message)||e);umapMsg=noTable.test(m)?'究極MAP用'+SQLMSG:'究極MAPの読み込みでエラー：'+m;console.warn('umap',e);}
+  try{
+    const {data,error}=await withTimeout(sbQ.from('ecg_pages').select('id,page,day').order('id'),8000,'心電図の本の読み込み');
+    if(error)throw error;ecgRows=data||[];
+  }catch(e){const m=String((e&&e.message)||e);ecgMsg=noTable.test(m)?'心電図の本用'+SQLMSG:'心電図の本の読み込みでエラー：'+m;console.warn('ecg',e);}
+}
+
+/* ---- 究極MAP ---- */
+function renderUmap(){
+  const cnt={},last={};
+  umapRows.forEach(r=>{cnt[r.umap_no]=(cnt[r.umap_no]||0)+1;last[r.umap_no]=String(r.viewed_on).slice(0,10);});
+  const seen=UMAP.filter((_,i)=>cnt[i+1]).length;
+  $('umapSum').textContent=qUser&&!umapMsg?'見た '+seen+'/24本・のべ'+umapRows.length+'回':'';
+  const body=$('umapBody');
+  if(!qUser){body.innerHTML='<div class="empty">ログインすると「見た」を記録できます。</div>';return;}
+  if(umapMsg){body.innerHTML='<div class="empty" style="color:var(--alert)">'+esc(umapMsg)+'</div>';return;}
+  body.innerHTML=UMAP.map((u,i)=>{
+    const n=i+1,c=cnt[n]||0;
+    return '<div class="urow"><span class="un">'+pad(n)+'</span><div class="ut">'+esc(u[0])+'<small>'+u[1]+(c?'・最後 '+fmt(last[n]):'')+'</small></div>'+
+      '<button class="ucnt'+(c?' on':'')+'" data-undo="'+n+'"'+(c?'':' disabled')+'>'+(c?'✓ '+c+'回':'—')+'</button>'+
+      '<button class="useen" data-seen="'+n+'">見た</button></div>';
+  }).join('')+'<div class="hsub" style="margin-top:10px;">「✓ 〇回」を押すと、1回取り消せます。</div>';
+}
+$('umapToggle').onclick=()=>{const b=$('umapBody'),o=b.style.display==='block';b.style.display=o?'none':'block';$('umapToggle').textContent=o?'ひらく':'とじる';};
+$('umapBody').addEventListener('click',async e=>{
+  if(!qUser)return;
+  const s=e.target.closest('[data-seen]');
+  if(s){
+    const n=+s.dataset.seen;s.disabled=true;
+    const {error}=await sbQ.from('umap_views').insert({umap_no:n,viewed_on:today()});
+    s.disabled=false;
+    if(error){toast('記録できませんでした：'+error.message);return;}
+    await loadExtras();renderUmap();toast('Umap'+pad(n)+' '+UMAP[n-1][0]+' 見た ✓');
+    return;
+  }
+  const u=e.target.closest('[data-undo]');
+  if(u){
+    const n=+u.dataset.undo,mine=umapRows.filter(r=>r.umap_no===n);if(!mine.length)return;
+    if(!confirm('Umap'+pad(n)+' '+UMAP[n-1][0]+' の「見た」を1回取り消す？'))return;
+    const {error}=await sbQ.from('umap_views').delete().eq('id',mine[mine.length-1].id);
+    if(error){toast('取り消せませんでした：'+error.message);return;}
+    await loadExtras();renderUmap();toast('1回取り消しました');
+  }
+});
+
+/* ---- 心電図の本 ---- */
+function ecgTarget(day){
+  const M=ECG_MILES;
+  if(day<=M[0][0])return 0;
+  for(let i=1;i<M.length;i++){
+    if(day<=M[i][0]){const [d0,p0]=M[i-1],[d1,p1]=M[i];return Math.round(p0+(p1-p0)*daysBetween(d0,day)/daysBetween(d0,d1));}
+  }
+  return ECG_TOTAL;
+}
+function ecgChapter(p){let c=ECG_CH[0];ECG_CH.forEach(x=>{if(p>=x[1])c=x;});return c;}
+function renderEcg(t){
+  t=t||today();
+  const box=$('ecgCard'),tg=ecgTarget(t);
+  if(!qUser){box.innerHTML='<div class="empty">ログインすると、読んだページを記録できます。（今日の目安：p'+tg+'）</div>';return;}
+  if(ecgMsg){box.innerHTML='<div class="empty" style="color:var(--alert)">'+esc(ecgMsg)+'</div>';return;}
+  const cur=ecgCur(),ch=ecgChapter(Math.max(1,cur)),diff=cur-tg,next=ECG_MILES.slice(1).find(m=>m[1]>cur);
+  box.innerHTML='<div class="pg" style="padding-top:0;"><div class="ph"><span>'+(cur?'第'+ch[0]+'章 '+esc(ch[2]):'まだ読んでいない')+'</span><span>p'+cur+' / '+ECG_TOTAL+'</span></div>'+
+    '<div class="bar kt'+(cur>=ECG_TOTAL?' done':'')+'"><i style="width:'+Math.min(100,Math.round(cur/ECG_TOTAL*100))+'%"></i></div>'+
+    '<div class="pn">'+(cur>=ECG_TOTAL?'<b class="ahead">読み終わり 🎉</b>':'今日の目安 p'+tg+'・'+(diff>=0?'<b class="ahead">目安どおり'+(diff>0?'（+'+diff+'ページ）':'')+'</b>':'<b class="behind">目安まで '+(-diff)+'ページ</b>（守れなくてもOK）'))+'</div>'+
+    (next?'<div class="pn">次の区切り：'+fmt(next[0])+'までに p'+next[1]+'（'+esc(next[2])+'）</div>':'')+'</div>'+
+    '<div class="ecgrow"><input class="fld" type="number" inputmode="numeric" id="ecgIn" placeholder="何ページまで読んだ？"><button class="btn kt small" id="ecgGo">記録</button></div>'+
+    '<div class="msg" id="ecgMsgEl">まちがえたら、正しいページを入れ直せばOK。</div>';
+  $('ecgGo').onclick=saveEcg;
+  $('ecgIn').addEventListener('keydown',e=>{if(e.key==='Enter')saveEcg();});
+}
+async function saveEcg(){
+  const raw=$('ecgIn').value,v=Math.round(+raw),msg=$('ecgMsgEl');
+  if(raw===''||!(v>=0&&v<=ECG_TOTAL)){showMsg(msg,'0〜220のページ数を入れてください',true);return;}
+  $('ecgGo').disabled=true;
+  const {error}=await sbQ.from('ecg_pages').insert({page:v,day:today()});
+  if(error){$('ecgGo').disabled=false;showMsg(msg,'保存できませんでした：'+error.message,true);return;}
+  await loadExtras();renderEcg();renderPlan(today());renderUmap();
+  toast('心電図の本：p'+v+'まで ✓');
+}
 
 /* ============================================================
    画面切り替え・ログイン
