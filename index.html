@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0E1B24">
-<meta name="app-build" content="2026-11-17-plan3">
+<meta name="app-build" content="2026-11-17-plan4">
 <style>
 :root{
   --bg:#0E1B24; --surface:#142532; --surface2:#1A2F3E; --line:#243E4E; --line2:#2E4C5E;
@@ -388,10 +388,6 @@ textarea.fld{min-height:100px;resize:vertical;}
     <span class="arrow">›</span>
   </button>
 
-  <div class="fold">
-    <h2><span>⑤ 攻めNIGHTプリント<small id="snSum" style="color:var(--soft);font-weight:600;margin-left:8px;"></small></span><button data-fold="snBody">ひらく</button></h2>
-    <div class="fbody" id="snBody"></div>
-  </div>
 
   <div class="fold">
     <h2><span>QB① 科目ごとの残り</span><button data-fold="qbRemBody">ひらく</button></h2>
@@ -684,10 +680,6 @@ const TRACKS=[
 ];
 TRACKS.forEach(t=>{if(t.kind==='qb')t.total=t.subj.reduce((a,s)=>a+(QB_REM0[s]||0),0);});
 const TR=id=>TRACKS.find(t=>t.id===id);
-const COUNTERS=[
-  {id:'book4',name:'④ 内科外来マニュアル',total:28,unit:'テーマ',note:'⑤の補助。⑤の「広げる」で同じ症候を開く'},
-  {id:'book7',name:'⑦ 青本（面接・小論文）',total:20,unit:'テーマ',note:'毎日でなくてOK。終わったら受ける病院の過去問へ'}
-];
 /* ⑤ 攻めNIGHTプリント */
 const SN=["","胸痛","下痢","腹痛","便秘","発熱①","発熱②","リンパ節腫脹①","リンパ節腫脹②","浮腫","血痰・喀血","動悸","頭痛①","頭痛②","めまい","悪心・嘔吐","全身倦怠感","意識障害","失神","下血＋腹痛","吐血","関節痛","腰・背部痛","乏尿","血尿","体重減少","体重増加","筋力低下","けいれん","呼吸困難①","呼吸困難②","黄疸","腹部膨満","食思不振","嚥下困難","歩行障害","感覚障害","不安・抑うつ","認知障害","咳嗽","尿失禁","発疹","月経異常"];
 const SN_N=42;
@@ -837,7 +829,6 @@ function renderHome(){
   renderStats(dm,t);
   renderCal(dm,t);
   renderDayDetail(dm,t);
-  renderSN();
   renderQbRem();
   renderM4();
   renderSched(t);
@@ -892,20 +883,8 @@ function renderTodo(t){
     h+='<div class="task"><div class="tt"><span class="tag">本</span><div class="tname">'+esc(tr.name)+'<small>'+small+'</small></div><span class="tval'+(done?' done':'')+'">'+val+'</span></div>'+
       (cur<tr.total?'<div class="inrow"><input class="fld" type="number" inputmode="numeric" id="pg-'+id+'" placeholder="何ページまで読んだ？"><button class="tbtn fill" data-page="'+id+'">記録</button></div>':'')+'</div>';
   });
-  /* ⑤ */
-  const nx=snNext(),dn=snToday(t);
-  if(nx){
-    const lab='第'+nx.th+'夜 '+SN[nx.th]+' — '+'①②③'[nx.s-1]+SN_STEPS[nx.s-1];
-    let small,btn;
-    if(dn>0){small='今日の1コマ 済 ✓（次：'+esc(lab)+'）';btn='<button class="tbtn ghost" data-sn="'+nx.th+'-'+nx.s+'">もう1コマ済</button>';}
-    else{small=esc(SN_HINT[nx.s-1])+(rest?'（今日は休み）':(hasSched()&&c<2?'（今日は時間が少ないので、できたらでOK）':''));btn='<button class="tbtn fill" data-sn="'+nx.th+'-'+nx.s+'">済</button>';}
-    h+='<div class="task"><div class="tt"><span class="tag">1日1コマ</span><div class="tname">'+(dn>0?'⑤ 攻めNIGHT':'⑤ '+esc(lab))+'<small>'+small+'</small></div>'+btn+'</div></div>';
-  }else h+='<div class="task"><div class="tt"><span class="tag">⑤</span><div class="tname">⑤ 攻めNIGHT 42テーマぜんぶ終わり 🎉</div></div></div>';
-  /* 時事 */
-  const jr=jijiRow(t);
-  h+='<div class="task"><div class="tt"><span class="tag">朝</span><div class="tname">医系時事（Museから届いたもの）<small>読んだ日 '+jijiDays()+'日</small></div>'+
-    (jr?'<button class="tbtn ok" data-jiji="undo">✓ 読んだ</button>':'<button class="tbtn fill" data-jiji="do">読んだ</button>')+'</div></div>';
   $('todoCard').innerHTML=h;
+  wrap.style.display=h?'':'none';
 }
 $('todoCard').addEventListener('click',async e=>{
   const pb=e.target.closest('[data-page]');
@@ -917,15 +896,6 @@ $('todoCard').addEventListener('click',async e=>{
     pb.disabled=false;
     if(error){toast('保存できませんでした：'+error.message);return;}
     await reloadMine();toast(tr.name+'：p'+v+'まで ✓');return;
-  }
-  const sb=e.target.closest('[data-sn]');
-  if(sb){const [th,s]=sb.dataset.sn.split('-').map(Number);await setSN(th,s,true);return;}
-  const jb=e.target.closest('[data-jiji]');
-  if(jb){
-    jb.disabled=true;
-    if(jb.dataset.jiji==='do'){const {error}=await sbQ.from('prog_logs').insert({item:'jiji',value:1,day:today()});if(error){toast('保存できませんでした：'+error.message);jb.disabled=false;return;}toast('時事 読んだ ✓');}
-    else{const r=jijiRow(today());if(r&&confirm('「読んだ」を取り消す？')){const {error}=await sbQ.from('prog_logs').delete().eq('id',r.id);if(error){toast('取り消せませんでした：'+error.message);jb.disabled=false;return;}}}
-    await reloadMine();
   }
 });
 async function setSN(th,s,on){
@@ -991,68 +961,11 @@ function renderProgress(t){
     const small=fmt(tr.to)+'まで'+(tr.soft?'（ゆるい目安）':'')+(tr.id==='qb'?'・11/17の残りから':'');
     h+=pg(tr.name,small,done,tr.total,tr.unit,(t>tr.to&&done<tr.total)?null:exp,tr.kind==='page'?'kt':'');
   });
-  if(!qUser){$('progCard').innerHTML=h+'<div class="hsub" style="margin-top:8px;">本・プリントなどの進み具合は、ログインすると表示されます。</div>';return;}
-  /* ⑤ */
-  const st=snStepsDone(),th=snThemesDone();
-  let possible=0;for(let d=t;d<=KOSHIEN;d=addDays(d,1)){if(d===t&&snToday(t))continue;const x=myDays[d];if(x?(!x.rest&&+x.hours>0):d>EXAM)possible++;}
-  const proj=Math.min(SN_N,Math.floor((st+possible)/3));
-  h+=pg('⑤ 攻めNIGHTプリント','1日1コマ・のんびり。このペースなら1/30までに約'+proj+'テーマ（いま'+th+'テーマ）',st,SN_N*3,'コマ',null,'kt');
-  /* ④⑦ */
-  COUNTERS.forEach(c=>{
-    const v=counterVal(c.id);
-    h+='<div class="pg"><div class="ph"><span>'+esc(c.name)+'</span><span class="cnt"><button data-cnt="'+c.id+'" data-d="-1">−</button><span style="min-width:58px;text-align:center;">'+v+' / '+c.total+'</span><button data-cnt="'+c.id+'" data-d="1">＋</button></span></div>'+
-      '<div class="bar kt'+(v>=c.total?' done':'')+'"><i style="width:'+Math.round(Math.min(v,c.total)/c.total*100)+'%"></i></div><div class="pn">'+esc(c.note)+'</div></div>';
-  });
+  if(!qUser){$('progCard').innerHTML=h+'<div class="hsub" style="margin-top:8px;">本やmedu4の進み具合は、ログインすると表示されます。</div>';return;}
   h+='<div class="pg"><div class="ph"><span>② medu4</span><span>'+m4Count()+' / '+MEDU4_TOTAL+'コマ</span></div><div class="bar kt"><i style="width:'+Math.round(m4Count()/MEDU4_TOTAL*100)+'%"></i></div><div class="pn">予定には入れない。見たら下の「medu4」で〇</div></div>';
   $('progCard').innerHTML=h;
 }
-$('progCard').addEventListener('click',async e=>{
-  const b=e.target.closest('[data-cnt]');if(!b||!qUser)return;
-  const c=COUNTERS.find(x=>x.id===b.dataset.cnt),v=Math.max(0,Math.min(c.total,counterVal(c.id)+(+b.dataset.d)));
-  if(v===counterVal(c.id))return;
-  b.disabled=true;
-  const {error}=await sbQ.from('prog_logs').insert({item:c.id,value:v,day:today()});
-  b.disabled=false;
-  if(error){toast('保存できませんでした：'+error.message);return;}
-  await reloadMine();toast(c.name+'：'+v+'/'+c.total);
-});
 
-/* ---- ⑤ 攻めNIGHT（並び替え・チェック） ---- */
-function renderSN(){
-  $('snSum').textContent=qUser&&!mineMsg?snThemesDone()+'/42テーマ・'+snStepsDone()+'/126コマ':'';
-  const body=$('snBody');
-  if(!qUser){body.innerHTML='<div class="empty">ログインすると記録・並び替えができます。</div>';return;}
-  const nx=snNext();
-  body.innerHTML='<div class="hsub" style="margin-bottom:6px;line-height:1.7;">1テーマ＝3コマ：①聞く（動画＋左ページ）→ ②やってみる（右ページでロールプレイ）→ ③広げる（④⑥・元のQB）。<br>上から順に「今日のやること」に出ます。▲▼で順番を変えられます。</div>'+
-    snOrder.map((th,i)=>{
-      const isNext=nx&&nx.th===th;
-      return '<div class="snrow'+(isNext?' next':'')+'"><span class="sno">'+(i+1)+'</span><div class="snn">'+esc(SN[th])+'<small>第'+th+'夜'+(isNext?'・次はここ':'')+'</small></div>'+
-        '<div class="sst">'+[1,2,3].map(s=>'<button class="'+(snDone[snKey(th,s)]?'on':'')+'" data-st="'+th+'-'+s+'">'+'①②③'[s-1]+'</button>').join('')+'</div>'+
-        '<div class="ord-btns"><button data-mv="'+i+'" data-d="-1"'+(i===0?' disabled':'')+'>▲</button><button data-mv="'+i+'" data-d="1"'+(i===snOrder.length-1?' disabled':'')+'>▼</button></div></div>';
-    }).join('')+
-    '<button class="btn ghost small" id="snReset" style="margin-top:10px;">順番を最初の並び（循環器系が先）にもどす</button>';
-}
-$('snBody').addEventListener('click',async e=>{
-  if(!qUser)return;
-  const st=e.target.closest('[data-st]');
-  if(st){const [th,s]=st.dataset.st.split('-').map(Number);const on=!snDone[snKey(th,s)];
-    if(!on&&!confirm('第'+th+'夜 '+SN[th]+' '+'①②③'[s-1]+' の「済」を取り消す？'))return;
-    await setSN(th,s,on);return;}
-  const mv=e.target.closest('[data-mv]');
-  if(mv){const i=+mv.dataset.mv,j=i+(+mv.dataset.d);if(j<0||j>=snOrder.length)return;
-    const o=snOrder.slice();[o[i],o[j]]=[o[j],o[i]];snOrder=o;renderSN();renderTodo(today());await saveOrder();return;}
-  if(e.target.id==='snReset'){if(!confirm('順番を最初の並びにもどす？'))return;snOrder=SN_DEFAULT.slice();renderSN();renderTodo(today());await saveOrder();}
-});
-let orderTimer=null;
-function saveOrder(){
-  clearTimeout(orderTimer);
-  return new Promise(res=>{orderTimer=setTimeout(async()=>{
-    settings=Object.assign({},settings,{snOrder});
-    const {error}=await sbQ.from('user_settings').upsert({user_id:qUser.id,data:settings},{onConflict:'user_id'});
-    if(error)toast('順番を保存できませんでした：'+error.message);
-    res();
-  },500);});
-}
 
 /* ---- QB 科目ごとの残り ---- */
 function renderQbRem(){
@@ -1136,12 +1049,8 @@ function renderPlan(){
     '<li><b>② medu4</b>：見たら〇。予定には入れない</li>'+
     '<li><b>③ 心電図の本</b>（220p）：12/7ごろまでにひととおり <small>（ゆるい目安）</small></li>'+
     '<li><b>JPTECの本</b>（266p）：12/4まで</li>'+
-    '<li><b>⑤ 攻めNIGHTプリント</b>（42テーマ×3コマ）：1日1コマ、のんびり。順番は自由に並び替え</li>'+
-    '<li><b>④ 内科外来マニュアル</b>（28テーマ）・<b>⑥ オスキー対策ノート</b>：⑤の補助</li>'+
-    '<li><b>⑦ 青本</b>（20テーマ）→ 受ける病院の過去問：毎日でなくてOK</li>'+
-    '<li><b>医系時事</b>：Museから毎朝届いたものを読む</li>'+
     '<li><b>週に1日は何もしない日</b></li>'+
-    '<li>1/19 国試模試 → そのあとはマッチング・国試・OSCE対策に本腰</li></ul>';
+    '<li>1/19 国試模試</li></ul>';
 }
 
 /* ---- 統計・カレンダー（QB） ---- */
