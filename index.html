@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0E1B24">
-<meta name="app-build" content="2026-11-03-plan2">
+<meta name="app-build" content="2026-11-17-plan3">
 <style>
 :root{
   --bg:#0E1B24; --surface:#142532; --surface2:#1A2F3E; --line:#243E4E; --line2:#2E4C5E;
@@ -275,6 +275,67 @@ textarea.fld{min-height:100px;resize:vertical;}
 .pv{border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin-top:8px;background:var(--surface2);}
 .pvq{font-size:14px;font-weight:700;} .pva{font-size:13.5px;color:var(--kt);margin-top:4px;}
 .pvx{float:right;color:var(--alert);font-size:12.5px;font-weight:700;cursor:pointer;}
+/* ---------- 11/17版で追加 ---------- */
+.hnote{font-size:12px;color:var(--kt);margin-top:2px;cursor:pointer;}
+.restb{background:var(--vid-dim);border:1px solid rgba(94,224,140,.45);color:var(--vid);border-radius:14px;padding:12px 14px;font-size:14px;font-weight:800;margin:6px 0 12px;line-height:1.6;}
+.restb small{display:block;font-size:12px;font-weight:600;opacity:.85;}
+.task{padding:11px 0;border-top:1px solid var(--line);}
+.task:first-child{border-top:none;padding-top:0;}
+.task:last-child{padding-bottom:0;}
+.task .tt{display:flex;align-items:center;gap:8px;}
+.task .tname{flex:1;min-width:0;font-size:14.5px;font-weight:800;line-height:1.45;}
+.task .tname small{display:block;font-size:12px;color:var(--soft);font-weight:500;margin-top:2px;line-height:1.55;}
+.task .tval{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.task .tval.done{color:var(--vid);}
+.task .tag{font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;background:var(--surface2);color:var(--soft);border:1px solid var(--line2);white-space:nowrap;align-self:flex-start;margin-top:2px;}
+.tbtn{border:1px solid var(--kt);background:transparent;color:var(--kt);border-radius:9px;padding:8px 13px;font-size:13px;font-weight:800;white-space:nowrap;}
+.tbtn.fill{background:var(--kt);color:var(--kt-ink);}
+.tbtn.ok{border-color:var(--vid);color:var(--vid);}
+.tbtn.ghost{border-color:var(--line2);color:var(--soft);}
+.tbtn[disabled]{opacity:.35;}
+.inrow{display:flex;gap:8px;margin-top:8px;}
+.inrow .fld{flex:1;margin:0;padding:9px 11px;}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+.wchip{border-radius:11px;border:1px solid var(--line2);background:var(--surface2);padding:7px 0;display:flex;flex-direction:column;align-items:center;gap:1px;font-weight:800;color:var(--soft);}
+.wchip b{font-size:12px;}
+.wchip span{font-size:11px;font-weight:600;}
+.wchip.on{background:var(--vid-dim);border-color:var(--vid);color:var(--vid);}
+.wchip.today{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--text);}
+.wchip.zero{border-style:dashed;}
+.wchip[disabled]{opacity:.35;}
+.cnt{display:flex;align-items:center;gap:6px;}
+.cnt button{width:34px;height:32px;border-radius:9px;border:1px solid var(--line2);background:transparent;color:var(--text);font-size:16px;font-weight:800;}
+.snrow{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line);}
+.snrow:first-child{border-top:none;}
+.snrow .sno{width:30px;flex:none;font-size:11.5px;color:var(--faint);font-weight:800;font-variant-numeric:tabular-nums;}
+.snrow .snn{flex:1;min-width:0;font-size:13.5px;font-weight:800;}
+.snrow .snn small{display:block;font-size:11px;color:var(--soft);font-weight:500;}
+.snrow.next{background:var(--kt-dim);border-radius:10px;padding-left:6px;padding-right:6px;}
+.sst{display:flex;gap:4px;}
+.sst button{font-size:11px;font-weight:800;padding:5px 7px;border-radius:8px;border:1px solid var(--line2);background:transparent;color:var(--faint);}
+.sst button.on{background:var(--vid-dim);color:var(--vid);border-color:var(--vid);}
+.mrowm{padding:10px 0;border-top:1px solid var(--line);}
+.mrowm:first-child{border-top:none;}
+.mrowm .mh{display:flex;justify-content:space-between;font-size:13.5px;font-weight:800;margin-bottom:6px;}
+.mrowm .mh span:last-child{font-variant-numeric:tabular-nums;color:var(--soft);}
+.mrowm .mh span.full{color:var(--vid);}
+.kchips{display:flex;flex-wrap:wrap;gap:5px;}
+.kchip{min-width:34px;padding:6px 0;border-radius:8px;border:1px solid var(--line2);background:transparent;color:var(--faint);font-size:12.5px;font-weight:800;}
+.kchip.on{background:var(--kt-dim);color:var(--kt);border-color:var(--kt);}
+.sched{display:flex;gap:10px;align-items:flex-start;padding:9px 6px;border-top:1px solid var(--line);cursor:pointer;}
+.sched:first-child{border-top:none;}
+.sched .sd{width:70px;flex:none;font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums;}
+.sched .sn{flex:1;min-width:0;font-size:13px;line-height:1.55;}
+.sched .sh{font-size:12px;color:var(--soft);white-space:nowrap;font-variant-numeric:tabular-nums;}
+.sched.rest .sh{color:var(--vid);font-weight:800;}
+.sched.now{background:var(--qb-dim);border-radius:10px;}
+.plist2 li{margin:4px 0;}
+.plist2{margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.65;color:var(--text);}
+.plist2 small{color:var(--soft);}
+.hchips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;}
+.hchips button{flex:1;min-width:40px;padding:8px 0;border-radius:9px;border:1px solid var(--line2);background:transparent;color:var(--soft);font-size:13px;font-weight:800;}
+.hchips button.on{background:var(--kt);border-color:var(--kt);color:var(--kt-ink);}
+
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
 </style>
 </head>
@@ -284,6 +345,7 @@ textarea.fld{min-height:100px;resize:vertical;}
   <div>
     <div class="hdate" id="hDate">--</div>
     <div class="hsub" id="hSub"></div>
+    <div class="hnote" id="hNote"></div>
   </div>
   <div class="hbtns">
     <button class="pillbtn" id="refreshBtn">🔄</button>
@@ -297,21 +359,29 @@ textarea.fld{min-height:100px;resize:vertical;}
 <!-- ================= ホーム ================= -->
 <div class="view active" id="view-home">
   <div id="viewerBanner" class="banner" style="display:none;"></div>
+  <div id="mineErr" class="banner" style="display:none;background:var(--alert-dim);color:var(--alert);border-color:rgba(255,122,107,.45);"></div>
+  <div id="restBanner" class="restb" style="display:none;"></div>
 
   <div class="card qbcard">
     <div class="qtop"><span class="qlab">今日のQB</span><span class="qnum" id="qToday">0</span><span class="qgoal" id="qGoal">/ 0問</span></div>
     <div class="qsub" id="qSub"></div>
     <div class="bar" id="qBar"><i style="width:0"></i></div>
-    <div class="plist" id="todayPlan"></div>
     <button class="btn qb" id="openRec">記録する</button>
     <div class="todaylist" id="todayList"></div>
   </div>
 
-  <div class="sect"><span>12/31までにQB1周</span><span id="planDays"></span></div>
-  <div class="card" id="progCard"></div>
+  <div id="todoWrap">
+    <div class="sect"><span>今日のやること</span><span id="todoNote"></span></div>
+    <div class="card" id="todoCard"></div>
+  </div>
 
-  <div class="sect"><span>心電図の本（12/6が目安）</span></div>
-  <div class="card" id="ecgCard"></div>
+  <div id="weekWrap">
+    <div class="sect"><span>今週の「何もしない日」</span><span id="weekRange"></span></div>
+    <div class="card" id="weekCard"></div>
+  </div>
+
+  <div class="sect"><span>締め切りまでの進み具合</span></div>
+  <div class="card" id="progCard"></div>
 
   <button class="bigbtn" id="openOral">
     <div><div class="t">口頭試問</div><div class="s" id="oralSub">作成・1周目・2周目の進み具合をみる</div></div>
@@ -319,11 +389,26 @@ textarea.fld{min-height:100px;resize:vertical;}
   </button>
 
   <div class="fold">
-    <h2><span>究極MAP<small id="umapSum" style="color:var(--soft);font-weight:600;margin-left:8px;"></small></span><button id="umapToggle">ひらく</button></h2>
+    <h2><span>⑤ 攻めNIGHTプリント<small id="snSum" style="color:var(--soft);font-weight:600;margin-left:8px;"></small></span><button data-fold="snBody">ひらく</button></h2>
+    <div class="fbody" id="snBody"></div>
+  </div>
+
+  <div class="fold">
+    <h2><span>QB① 科目ごとの残り</span><button data-fold="qbRemBody">ひらく</button></h2>
+    <div class="fbody" id="qbRemBody"></div>
+  </div>
+
+  <div class="fold">
+    <h2><span>② medu4（見たら〇）<small id="m4Sum" style="color:var(--soft);font-weight:600;margin-left:8px;"></small></span><button data-fold="m4Body">ひらく</button></h2>
+    <div class="fbody" id="m4Body"></div>
+  </div>
+
+  <div class="fold">
+    <h2><span>究極MAP<small id="umapSum" style="color:var(--soft);font-weight:600;margin-left:8px;"></small></span><button data-fold="umapBody">ひらく</button></h2>
     <div class="fbody" id="umapBody"></div>
   </div>
 
-  <div class="sect"><span>毎日の記録（10/12〜）</span></div>
+  <div class="sect"><span>QBの毎日の記録（10/12〜）</span></div>
   <div class="stats" id="qbStats"></div>
   <div class="card">
     <div class="calnav">
@@ -332,21 +417,27 @@ textarea.fld{min-height:100px;resize:vertical;}
       <button id="calNext" aria-label="次の月">▶</button>
     </div>
     <div class="cal" id="calGrid"></div>
-    <div class="legend"><span><i style="background:var(--vid)"></i>目標達成</span><span><i style="background:var(--qb)"></i>途中</span><span><i style="background:var(--alert)"></i>0問</span><span>✈︎ 旅行</span></div>
+    <div class="legend" id="calLegend"></div>
     <div class="daydetail" id="dayDetail"></div>
   </div>
 
+  <div class="fold" id="schedFold" style="display:none;">
+    <h2><span>🔒 予定（自分だけ見えます）</span><button data-fold="schedBody">ひらく</button></h2>
+    <div class="fbody" id="schedBody"></div>
+  </div>
+
   <div class="fold">
-    <h2>予定（11/3〜1/19） <button id="planToggle">ひらく</button></h2>
+    <h2><span>勉強計画（教材と締め切り）</span><button data-fold="planBody">ひらく</button></h2>
     <div class="fbody" id="planBody"></div>
   </div>
 
   <div class="fold">
-    <h2>データ一覧 <button id="refToggle">ひらく</button></h2>
+    <h2><span>データ一覧</span><button data-fold="refBody">ひらく</button></h2>
     <div class="fbody" id="refBody"></div>
   </div>
   <div class="hsub" id="buildLine" style="text-align:center;margin-top:10px;"></div>
 </div>
+
 
 <!-- ================= 口頭試問 ================= -->
 <div class="view" id="view-oral">
@@ -514,6 +605,24 @@ A: 答え
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- 予定を書くモーダル（自分だけ） -->
+<div class="modal" id="dayModal">
+  <div class="sheet">
+    <div class="sh-head"><span>🔒 予定を書く</span><button id="dayClose" aria-label="閉じる">×</button></div>
+    <label class="l" style="margin-top:0;">日付</label>
+    <input class="fld" type="date" id="dDay">
+    <label class="l">この日に勉強に使えそうな時間（計画の配分に使います）</label>
+    <div class="hchips" id="dHourChips"><button data-h="0">0</button><button data-h="1.5">1.5</button><button data-h="2">2</button><button data-h="3">3</button><button data-h="4.5">4.5</button><button data-h="6">6</button><button data-h="8">8</button></div>
+    <input class="fld" type="number" inputmode="decimal" step="0.5" min="0" max="16" id="dHours" placeholder="時間">
+    <label class="pick-chk" style="margin:0 2px 10px;"><input type="checkbox" id="dRest"> 何もしない日にする</label>
+    <label class="l" style="margin-top:4px;">予定のメモ（自分だけ見えます）</label>
+    <textarea class="fld" id="dNote" style="min-height:70px;" placeholder="例：放射線科実習・エコー部"></textarea>
+    <button class="btn kt" id="dSave">保存する</button>
+    <div class="msg" id="dMsg"></div>
+  </div>
+</div>
+
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ============================================================
@@ -556,66 +665,93 @@ let qUser=null;   // QB用DBにログインしている人
 let cUser=null;   // カード用DBにログインしている人
 
 /* ============================================================
-   ホーム：11/3〜の計画（本線＋必修＋公衆衛生）とQB記録
+   計画（11/17〜）
+   ・予定（何時に何があるか）は Supabase の my_days にだけ入っていて、ログインした本人しか読めない
+   ・このファイルに書いてあるのは「教材と締め切り」だけ（見られてもOKな勉強計画）
    ============================================================ */
-const START='2026-10-12', OLD_GOAL=100, EXAM='2027-01-19', PLAN_START='2026-11-03', QB_END='2026-12-31';
+const START='2026-10-12', NEW_START='2026-11-17', EXAM='2027-01-19', KOSHIEN='2027-01-30';
 const QB_SUBJECTS=[["消化管",291,112],["肝胆膵",195,68],["循環器",378,131],["内分泌",298,116],["腎",186,87],["免疫",157,77],["血液",202,81],["感染症",239,123],["呼吸器",295,131],["神経",361,158],["中毒",63,30],["救急",136,85],["麻酔",32,10],["総論",147,75],["小児",423,184],["婦人",204,79],["産",337,107],["眼",151,73],["耳鼻",151,74],["整形",152,78],["精神",205,85],["皮膚",150,86],["泌尿器",150,65],["放射線",53,26],["公衆衛生",605,322],["必修",1418,754]];
 const MEDU4=[["腎",5,7],["内分泌",8,12],["血液",9,10],["免疫",5,7],["感染症",7,9],["呼吸器",9,12],["循環器",8,14],["消化管",6,9],["肝胆膵",5,8],["神経",12,15],["産婦人科",12,15],["小児",13,16],["小児外科",4,4],["整形",5,7],["眼",6,7],["耳鼻",6,7],["泌尿器",6,6],["精神",9,6],["皮膚",9,6],["放射線",3,3],["救急",5,7],["中毒麻酔",5,4],["公衆衛生",16,17]];
-const QB_TOTAL={};QB_SUBJECTS.forEach(s=>QB_TOTAL[s[0]]=s[1]);
-const sumTotal=subj=>subj.reduce((a,s)=>a+(QB_TOTAL[s]||0),0);
-const TRIP=['2026-12-21','2026-12-22','2026-12-23'];
+const MEDU4_TOTAL=MEDU4.reduce((a,r)=>a+r[2],0);
+/* 11/17朝のQBの残り（QBオンラインの画面から） */
+const QB_REM0={"消化管":0,"肝胆膵":27,"循環器":303,"内分泌":98,"腎":70,"免疫":80,"血液":0,"感染症":144,"呼吸器":113,"神経":79,"中毒":60,"救急":84,"麻酔":19,"総論":121,"小児":347,"婦人":182,"産":336,"眼":151,"耳鼻":150,"整形":143,"精神":9,"皮膚":142,"泌尿器":149,"放射線":53,"公衆衛生":587,"必修":1366};
+const NON_HISSU=QB_SUBJECTS.map(s=>s[0]).filter(s=>s!=='必修');
+const TRACKS=[
+  {id:'qb',kind:'qb',name:'QB①（必修以外）',subj:NON_HISSU,from:NEW_START,to:'2026-12-31',unit:'問'},
+  {id:'hissu',kind:'qb',name:'QB① 必修',subj:['必修'],from:'2027-01-01',to:'2027-01-18',unit:'問'},
+  {id:'jptec',kind:'page',name:'JPTECの本',total:266,from:NEW_START,to:'2026-12-04',unit:'p'},
+  {id:'ecg',kind:'page',name:'③ 心電図の本',total:220,from:NEW_START,to:'2026-12-06',unit:'p',soft:true}
+];
+TRACKS.forEach(t=>{if(t.kind==='qb')t.total=t.subj.reduce((a,s)=>a+(QB_REM0[s]||0),0);});
+const TR=id=>TRACKS.find(t=>t.id===id);
+const COUNTERS=[
+  {id:'book4',name:'④ 内科外来マニュアル',total:28,unit:'テーマ',note:'⑤の補助。⑤の「広げる」で同じ症候を開く'},
+  {id:'book7',name:'⑦ 青本（面接・小論文）',total:20,unit:'テーマ',note:'毎日でなくてOK。終わったら受ける病院の過去問へ'}
+];
+/* ⑤ 攻めNIGHTプリント */
+const SN=["","胸痛","下痢","腹痛","便秘","発熱①","発熱②","リンパ節腫脹①","リンパ節腫脹②","浮腫","血痰・喀血","動悸","頭痛①","頭痛②","めまい","悪心・嘔吐","全身倦怠感","意識障害","失神","下血＋腹痛","吐血","関節痛","腰・背部痛","乏尿","血尿","体重減少","体重増加","筋力低下","けいれん","呼吸困難①","呼吸困難②","黄疸","腹部膨満","食思不振","嚥下困難","歩行障害","感覚障害","不安・抑うつ","認知障害","咳嗽","尿失禁","発疹","月経異常"];
+const SN_N=42;
+const SN_STEPS=['聞く','やってみる','広げる'];
+const SN_HINT=['動画を見ながら左ページ（トーク）を読む','右ページの症例で、問診→身体診察→鑑別→プレゼンを自分で言ってみる','④内科外来マニュアル・⑥オスキー対策ノートの同じ症候を開いて、元のQB問題を解く（余力があればエコーをメモ）'];
+const SN_DEFAULT=(()=>{const first=[1,11,9,18,29,30];const r=first.slice();for(let i=1;i<=SN_N;i++)if(!first.includes(i))r.push(i);return r;})();
 
-/* 本線：動画→QB（1科ずつ） */
-const BLOCKS=[
-  {from:'2026-11-04',to:'2026-11-09',name:'産婦人科',subj:['産','婦人'],video:'2〜3コマ'},
-  {from:'2026-11-10',to:'2026-11-15',name:'小児',subj:['小児'],video:'2〜3コマ'},
-  {from:'2026-11-16',to:'2026-11-17',name:'眼',subj:['眼'],video:'3〜4コマ'},
-  {from:'2026-11-18',to:'2026-11-19',name:'耳鼻',subj:['耳鼻'],video:'3〜4コマ'},
-  {from:'2026-11-20',to:'2026-11-21',name:'整形',subj:['整形'],video:'3〜4コマ'},
-  {from:'2026-11-22',to:'2026-11-24',name:'精神',subj:['精神'],video:'2コマ'},
-  {from:'2026-11-25',to:'2026-11-26',name:'皮膚',subj:['皮膚'],video:'3コマ'},
-  {from:'2026-11-27',to:'2026-11-28',name:'泌尿器',subj:['泌尿器'],video:'3コマ'},
-  {from:'2026-11-29',to:'2026-11-29',name:'放射線',subj:['放射線'],video:'3コマ'}
-].map(b=>Object.assign(b,{total:sumTotal(b.subj)}));
-/* 毎日の別枠 */
-const SIDES=[
-  {name:'必修',subj:['必修'],from:'2026-11-04',to:'2026-12-18',when:'スキマ'},
-  {name:'公衆衛生',subj:['公衆衛生'],from:'2026-11-03',to:'2026-12-16',when:'夜'}
-].map(b=>Object.assign(b,{total:sumTotal(b.subj)}));
-
-let qbRows=[];          // {id,day,subject,count}
-let qbMsg='';
+let qbRows=[], qbMsg='';
+let myDays={}, progRows=[], snDone={}, m4Done={}, settings={}, mineMsg='';
+let snOrder=SN_DEFAULT.slice();
 let calMonth=null, selDay=null;
+const hasSched=()=>!!qUser&&Object.keys(myDays).length>0;
 
-function dayMap(){const m={};qbRows.forEach(r=>{m[r.day]=(m[r.day]||0)+(+r.count);});return m;}
-/* 11/3以降にその科で解いた数（before の前日まで） */
-function doneBefore(subj,before){let n=0;qbRows.forEach(r=>{if(r.day>=PLAN_START&&r.day<before&&subj.includes(r.subject))n+=r.count;});return n;}
-function doneOn(subj,day){let n=0;qbRows.forEach(r=>{if(r.day===day&&subj.includes(r.subject))n+=r.count;});return n;}
-const doneAll=subj=>doneBefore(subj,'9999-12-31');
-/* その日の目標＝（残りの問題数）÷（締め切りまでの残り日数）→ 遅れても先に進んでも自動で調整 */
-function targetFor(it,day){
-  if(day<it.from||day>it.to)return 0;
-  const rem=it.total-doneBefore(it.subj,day);
-  return rem>0?Math.ceil(rem/(daysBetween(day,it.to)+1)):0;
+/* ---- 予定から「その日に使える時間」 ---- */
+const capOf=d=>{const x=myDays[d];return x?(x.rest?0:(+x.hours||0)):0;};
+function capSum(a,b){let s=0;for(let d=a;d<=b;d=addDays(d,1))s+=capOf(d);return s;}
+
+/* ---- 進み具合 ---- */
+function qbDoneSubj(s,before){let n=0;qbRows.forEach(r=>{if(r.subject===s&&r.day>=NEW_START&&r.day<before)n+=r.count;});return Math.min(n,QB_REM0[s]||0);}
+function pageAt(item,before){let v=0;progRows.forEach(r=>{if(r.item===item&&r.day<before)v=r.value;});return v;}
+function trackDone(t,before){
+  before=before||'9999-12-31';
+  if(t.kind==='qb')return t.subj.reduce((a,s)=>a+qbDoneSubj(s,before),0);
+  return Math.min(t.total,pageAt(t.id,before));
 }
-const blockOf=day=>BLOCKS.find(b=>day>=b.from&&day<=b.to)||null;
-function goalFor(day){
-  if(day<START)return 0;
-  if(day<PLAN_START)return OLD_GOAL;
-  if(TRIP.includes(day))return 0;
-  const b=blockOf(day);
-  return (b?targetFor(b,day):0)+SIDES.reduce((a,s)=>a+targetFor(s,day),0);
+/* その日の目標＝残り ×（その日の時間）÷（締め切りまでの時間の合計） → 遅れても進んでも自動で調整 */
+function trackTarget(t,day){
+  if(!hasSched()||day<t.from||day>t.to)return 0;
+  const c=capOf(day);if(!c)return 0;
+  const rem=t.total-trackDone(t,day);if(rem<=0)return 0;
+  const S=capSum(day,t.to);
+  return S>0?Math.ceil(rem*c/S):rem;
 }
-/* 昨日までに終わっている予定の数 */
-function expectedBy(it,day){
-  if(day<=it.from)return 0;
-  if(day>it.to)return it.total;
-  return Math.round(it.total*daysBetween(it.from,day)/(daysBetween(it.from,it.to)+1));
+/* 前日までに終わっている予定の量 */
+function trackExpected(t,day){
+  if(day<=t.from)return 0;
+  if(day>t.to)return t.total;
+  const all=capSum(t.from,t.to);if(!all)return 0;
+  return Math.round(t.total*capSum(t.from,addDays(day,-1))/all);
 }
-function pace(done,exp){
+function pace(done,exp,unit){
   const d=done-exp;
-  return d>=0?'<b class="ahead">予定どおり'+(d>0?'（+'+d+'問）':'')+'</b>':'<b class="behind">予定より '+(-d)+'問 おくれ</b>';
+  return d>=0?'<b class="ahead">予定どおり'+(d>0?'（+'+d+unit+'）':'')+'</b>':'<b class="behind">予定より '+(-d)+unit+' おくれ</b>';
 }
+const qbGoal=d=>(d<NEW_START)?0:trackTarget(TR('qb'),d)+trackTarget(TR('hissu'),d);
+const counterVal=id=>{let v=0;progRows.forEach(r=>{if(r.item===id)v=r.value;});return v;};
+const jijiRow=d=>progRows.find(r=>r.item==='jiji'&&r.day===d);
+const jijiDays=()=>new Set(progRows.filter(r=>r.item==='jiji').map(r=>r.day)).size;
+const snKey=(th,s)=>th+'-'+s;
+const snStepsDone=()=>Object.keys(snDone).length;
+const snThemesDone=()=>{let n=0;for(let i=1;i<=SN_N;i++)if(snDone[snKey(i,1)]&&snDone[snKey(i,2)]&&snDone[snKey(i,3)])n++;return n;};
+function snNext(){
+  /* 途中まで進めたテーマがあれば、そのテーマを先に終わらせる */
+  for(const th of snOrder){const d=[1,2,3].filter(s=>snDone[snKey(th,s)]).length;if(d>0&&d<3)for(let s=1;s<=3;s++)if(!snDone[snKey(th,s)])return {th,s};}
+  for(const th of snOrder)for(let s=1;s<=3;s++)if(!snDone[snKey(th,s)])return {th,s};
+  return null;
+}
+const snToday=d=>Object.values(snDone).filter(x=>x===d).length;
+const m4Count=()=>Object.keys(m4Done).length;
+
+/* ============================================================
+   読み込み
+   ============================================================ */
+function dayMap(){const m={};qbRows.forEach(r=>{m[r.day]=(m[r.day]||0)+(+r.count);});return m;}
 
 async function loadQB(){
   qbRows=[];qbMsg='';
@@ -641,108 +777,389 @@ async function loadQB(){
     else qbMsg='QB記録の読み込みでエラー：'+m;
     console.warn('loadQB',e);
   }
-  await loadExtras();
+  await Promise.all([loadMine(),loadUmap()]);
 }
 
+async function loadMine(){
+  myDays={};progRows=[];snDone={};m4Done={};settings={};mineMsg='';snOrder=SN_DEFAULT.slice();
+  if(!sbQ||!qUser)return;
+  try{
+    const res=await withTimeout(Promise.all([
+      sbQ.from('my_days').select('day,hours,rest,note'),
+      sbQ.from('prog_logs').select('id,item,value,day').order('id'),
+      sbQ.from('semenight_steps').select('theme,step,done_on'),
+      sbQ.from('medu4_done').select('subject,koma,done_on'),
+      sbQ.from('user_settings').select('data').maybeSingle()
+    ]),10000,'計画データの読み込み');
+    const bad=res.find(x=>x&&x.error);if(bad)throw bad.error;
+    (res[0].data||[]).forEach(r=>{myDays[String(r.day).slice(0,10)]={hours:+r.hours,rest:!!r.rest,note:r.note||''};});
+    progRows=(res[1].data||[]).map(r=>({id:r.id,item:r.item,value:+r.value,day:String(r.day).slice(0,10)}));
+    (res[2].data||[]).forEach(r=>{snDone[snKey(r.theme,r.step)]=String(r.done_on).slice(0,10);});
+    (res[3].data||[]).forEach(r=>{m4Done[r.subject+'|'+r.koma]=String(r.done_on).slice(0,10);});
+    settings=(res[4].data&&res[4].data.data)||{};
+    if(Array.isArray(settings.snOrder)){
+      const o=settings.snOrder.filter(n=>n>=1&&n<=SN_N);
+      SN_DEFAULT.forEach(n=>{if(!o.includes(n))o.push(n);});
+      snOrder=[...new Set(o)];
+    }
+    if(!Object.keys(myDays).length)mineMsg='予定がまだ入っていません。渡した setup_1117.sql を、SupabaseのSQL Editorで1回実行してください（最後に64と出れば成功）。';
+  }catch(e){
+    const m=String((e&&e.message)||e);
+    mineMsg=/schema cache|does not exist|Could not find|relation/i.test(m)?'計画用の表がまだ作られていません。渡した setup_1117.sql を、SupabaseのSQL Editorで1回実行してください。':'計画データの読み込みでエラー：'+m;
+    console.warn('loadMine',e);
+  }
+}
+async function reloadMine(){await loadMine();renderHome();}
+
+/* ============================================================
+   ホームを描く
+   ============================================================ */
 function renderHome(){
   const t=today();
   $('hDate').innerHTML=(+t.slice(5,7))+'/'+(+t.slice(8))+'<small>'+wdOf(t)+'</small>';
-  const left=daysBetween(t,EXAM);
-  $('hSub').textContent=left>=0?'模試 1/19 まであと'+left+'日':'';
+  const left=daysBetween(t,EXAM),kl=daysBetween(t,KOSHIEN);
+  $('hSub').textContent=(left>=0?'模試 1/19まであと'+left+'日':'')+(qUser&&kl>=0?'・甲子園 1/30まであと'+kl+'日':'');
+  const me=qUser&&myDays[t];
+  $('hNote').textContent=me&&me.note?'🔒 '+me.note:'';
   const vb=$('viewerBanner');
-  if(!qUser){vb.style.display='block';vb.textContent='ログインしていません。WJの記録を表示中です（閲覧のみ）。自分の記録をつけるには右上の🔑からログイン。';}
+  if(!qUser){vb.style.display='block';vb.textContent='ログインしていません。WJのQBの記録だけを表示中です（閲覧のみ）。自分の記録をつけるには右上の🔑からログイン。';}
   else vb.style.display='none';
+  const me2=$('mineErr');me2.style.display=qUser&&mineMsg?'block':'none';me2.textContent=mineMsg;
   $('authBtn').textContent=(qUser&&cUser)?'ログアウト':(qUser||cUser)?'🔑 ログイン（半分）':'🔑 ログイン';
+  const rb=$('restBanner'),isRest=hasSched()&&myDays[t]&&myDays[t].rest;
+  rb.style.display=isRest?'block':'none';
+  if(isRest)rb.innerHTML='今日は何もしない日 🌿<small>目標はぜんぶゼロ。やりたくなったら記録はできます。</small>';
   const dm=dayMap();
-  renderToday(dm,t);
+  renderQBToday(dm,t);
+  renderTodo(t);
+  renderWeek(t);
   renderProgress(t);
-  renderEcg(t);
   renderStats(dm,t);
   renderCal(dm,t);
   renderDayDetail(dm,t);
-  renderPlan(t);
+  renderSN();
+  renderQbRem();
+  renderM4();
+  renderSched(t);
+  renderPlan();
   renderOralSub();
   renderUmap();
 }
 
 /* ---- 今日のQB ---- */
-function renderToday(dm,t){
-  const n=dm[t]||0,goal=goalFor(t),trip=TRIP.includes(t);
+function renderQBToday(dm,t){
+  const n=dm[t]||0,goal=qbGoal(t);
   $('qToday').textContent=n;
   $('qGoal').textContent=goal?'/ '+goal+'問':'問';
   $('qBar').querySelector('i').style.width=(goal?Math.min(100,Math.round(n/goal*100)):(n>0?100:0))+'%';
   $('qBar').classList.toggle('done',goal>0&&n>=goal);
   let sub;
+  const q=trackTarget(TR('qb'),t),h=trackTarget(TR('hissu'),t);
   if(qbMsg)sub=qbMsg;
-  else if(trip)sub='旅行の日。休んでOK ✈︎';
+  else if(!qUser)sub='';
+  else if(!hasSched())sub='予定が読み込めると、今日の目標が出ます';
+  else if(myDays[t]&&myDays[t].rest)sub='今日は休み。目標なし 🌿';
   else if(goal&&n>=goal)sub='今日の目標、達成 🎉';
-  else if(goal)sub='今日の目標まで あと'+(goal-n)+'問';
-  else sub='今日は決まった目標なし。メジャーをスキマで';
+  else if(goal)sub=(q?'必修以外 '+q+'問':'')+(q&&h?'・':'')+(h?'必修 '+h+'問':'')+' → あと'+(goal-n)+'問';
+  else if(t>'2027-01-18')sub='模試まで走りきった！ここからは自由に';
+  else sub='今日は決まった目標なし';
   $('qSub').textContent=sub;$('qSub').style.color=qbMsg?'var(--alert)':'';
   $('openRec').textContent=qUser?'記録する':'ログインして記録する';
-
-  const rows=[],used=[];
-  const row=(tag,name,small,done,target)=>'<div class="tp"><span class="tag">'+tag+'</span><div class="tl1">'+esc(name)+(small?'<small>'+small+'</small>':'')+'</div><span class="tn'+(target&&done>=target?' done':'')+'">'+done+(target?' / '+target:'')+'</span></div>';
-  if(t>=PLAN_START&&!trip){
-    const b=blockOf(t);
-    if(b){
-      used.push(...b.subj);
-      const tg=targetFor(b,t);
-      rows.push(row('本線',b.name,fmt(b.from)+'〜'+fmt(b.to)+'・動画 '+b.video+'／日'+(tg?'':'・問題はぜんぶ済み ✓'),doneOn(b.subj,t),tg));
-    }else if(t<='2026-12-06'){
-      BLOCKS.filter(x=>x.to<t&&doneAll(x.subj)<x.total).forEach(x=>{
-        used.push(...x.subj);
-        rows.push(row('のこり',x.name,'11月の科の残り '+(x.total-doneAll(x.subj))+'問',doneOn(x.subj,t),0));
-      });
-    }
-    SIDES.forEach(s=>{
-      if(t<s.from)return;
-      const tg=targetFor(s,t),d=doneOn(s.subj,t),fin=doneAll(s.subj)>=s.total;
-      if(!tg&&!d&&t>s.to)return;
-      used.push(...s.subj);
-      rows.push(row(s.when,s.name,tg?'':(fin?'1周おわり ✓':''),d,tg));
-    });
-    const other=qbRows.filter(r=>r.day===t&&!used.includes(r.subject)).reduce((a,r)=>a+r.count,0);
-    rows.push(row('スキマ','そのほか（メジャーなど）','',other,0));
-  }
-  $('todayPlan').innerHTML=rows.join('');
-
   const todays=qbRows.filter(r=>r.day===t);
   $('todayList').innerHTML=todays.length?'<div class="hsub" style="margin-bottom:2px;">今日の記録</div>'+todays.map(r=>'<div class="trow"><span><b>'+esc(r.subject)+'</b>　'+r.count+'問</span>'+(qUser&&r.id?'<button data-del="'+r.id+'">取り消す</button>':'')+'</div>').join(''):'';
 }
 
-/* ---- 12/31までの進み具合 ---- */
-function renderProgress(t){
-  $('planDays').textContent=t<=QB_END?'12/31まで あと'+daysBetween(t,QB_END)+'日':'';
-  const pg=(name,small,done,total,exp,cls)=>{
-    done=Math.min(done,total);
-    return '<div class="pg"><div class="ph"><span>'+esc(name)+'</span><span>'+done.toLocaleString()+' / '+total.toLocaleString()+'</span></div>'+
-      '<div class="bar '+(cls||'')+(done>=total?' done':'')+'"><i style="width:'+Math.round(done/Math.max(1,total)*100)+'%"></i></div>'+
-      '<div class="pn">'+small+(t>=PLAN_START&&done<total?'・'+pace(done,exp):(done>=total?'・<b class="ahead">おわり ✓</b>':''))+'</div></div>';
-  };
+/* ---- 今日のやること ---- */
+function renderTodo(t){
+  const wrap=$('todoWrap');
+  if(!qUser){wrap.style.display='none';return;}
+  wrap.style.display='';
+  const c=capOf(t),rest=!!(myDays[t]&&myDays[t].rest);
+  $('todoNote').textContent=hasSched()&&!rest&&c?'使えそうな時間 約'+c+'時間':'';
   let h='';
-  const b=blockOf(t);
-  if(b)h+=pg('いまの科：'+b.name,fmt(b.from)+'〜'+fmt(b.to),doneAll(b.subj),b.total,expectedBy(b,t));
-  const bt=BLOCKS.reduce((a,x)=>a+x.total,0),bd=BLOCKS.reduce((a,x)=>a+Math.min(x.total,doneAll(x.subj)),0),be=BLOCKS.reduce((a,x)=>a+expectedBy(x,t),0);
-  h+=pg('11月の本線（産婦・小児・マイナー）','11/29まで',bd,bt,be);
-  SIDES.forEach(s=>{h+=pg(s.name,fmt(s.to)+'まで・'+s.when,doneAll(s.subj),s.total,expectedBy(s,t),'kt');});
-  $('progCard').innerHTML=h;
+  /* 本（ページ） */
+  ['jptec','ecg'].forEach(id=>{
+    const tr=TR(id),cur=trackDone(tr),before=trackDone(tr,t),tg=trackTarget(tr,t);
+    if(cur>=tr.total&&t>tr.to)return;
+    if(id==='jptec'&&t>'2026-12-05')return; // コースが終わったら出さない
+    let small,val,done=false;
+    if(cur>=tr.total){small='読み終わり 🎉';done=true;}
+    else if(t>tr.to)small='締め切り（'+fmt(tr.to)+'）をすぎました・残り '+(tr.total-cur)+'ページ'+(tr.soft?'（ゆるい目安なのでOK）':'');
+    else if(rest)small='今日は休み';
+    else if(tg){const goalP=Math.min(tr.total,before+tg);done=cur>=goalP;small='今日の目安：p'+goalP+'まで（'+tg+'ページ）・'+fmt(tr.to)+'まで'+(tr.soft?'（ゆるめ）':'');}
+    else small=hasSched()?'今日は目安なし':'';
+    val='p'+cur+' / '+tr.total;
+    h+='<div class="task"><div class="tt"><span class="tag">本</span><div class="tname">'+esc(tr.name)+'<small>'+small+'</small></div><span class="tval'+(done?' done':'')+'">'+val+'</span></div>'+
+      (cur<tr.total?'<div class="inrow"><input class="fld" type="number" inputmode="numeric" id="pg-'+id+'" placeholder="何ページまで読んだ？"><button class="tbtn fill" data-page="'+id+'">記録</button></div>':'')+'</div>';
+  });
+  /* ⑤ */
+  const nx=snNext(),dn=snToday(t);
+  if(nx){
+    const lab='第'+nx.th+'夜 '+SN[nx.th]+' — '+'①②③'[nx.s-1]+SN_STEPS[nx.s-1];
+    let small,btn;
+    if(dn>0){small='今日の1コマ 済 ✓（次：'+esc(lab)+'）';btn='<button class="tbtn ghost" data-sn="'+nx.th+'-'+nx.s+'">もう1コマ済</button>';}
+    else{small=esc(SN_HINT[nx.s-1])+(rest?'（今日は休み）':(hasSched()&&c<2?'（今日は時間が少ないので、できたらでOK）':''));btn='<button class="tbtn fill" data-sn="'+nx.th+'-'+nx.s+'">済</button>';}
+    h+='<div class="task"><div class="tt"><span class="tag">1日1コマ</span><div class="tname">'+(dn>0?'⑤ 攻めNIGHT':'⑤ '+esc(lab))+'<small>'+small+'</small></div>'+btn+'</div></div>';
+  }else h+='<div class="task"><div class="tt"><span class="tag">⑤</span><div class="tname">⑤ 攻めNIGHT 42テーマぜんぶ終わり 🎉</div></div></div>';
+  /* 時事 */
+  const jr=jijiRow(t);
+  h+='<div class="task"><div class="tt"><span class="tag">朝</span><div class="tname">医系時事（Museから届いたもの）<small>読んだ日 '+jijiDays()+'日</small></div>'+
+    (jr?'<button class="tbtn ok" data-jiji="undo">✓ 読んだ</button>':'<button class="tbtn fill" data-jiji="do">読んだ</button>')+'</div></div>';
+  $('todoCard').innerHTML=h;
+}
+$('todoCard').addEventListener('click',async e=>{
+  const pb=e.target.closest('[data-page]');
+  if(pb){
+    const id=pb.dataset.page,tr=TR(id),inp=$('pg-'+id),raw=inp.value,v=Math.round(+raw);
+    if(raw===''||!(v>=0&&v<=tr.total)){toast('0〜'+tr.total+'のページ数を入れてください');return;}
+    pb.disabled=true;
+    const {error}=await sbQ.from('prog_logs').insert({item:id,value:v,day:today()});
+    pb.disabled=false;
+    if(error){toast('保存できませんでした：'+error.message);return;}
+    await reloadMine();toast(tr.name+'：p'+v+'まで ✓');return;
+  }
+  const sb=e.target.closest('[data-sn]');
+  if(sb){const [th,s]=sb.dataset.sn.split('-').map(Number);await setSN(th,s,true);return;}
+  const jb=e.target.closest('[data-jiji]');
+  if(jb){
+    jb.disabled=true;
+    if(jb.dataset.jiji==='do'){const {error}=await sbQ.from('prog_logs').insert({item:'jiji',value:1,day:today()});if(error){toast('保存できませんでした：'+error.message);jb.disabled=false;return;}toast('時事 読んだ ✓');}
+    else{const r=jijiRow(today());if(r&&confirm('「読んだ」を取り消す？')){const {error}=await sbQ.from('prog_logs').delete().eq('id',r.id);if(error){toast('取り消せませんでした：'+error.message);jb.disabled=false;return;}}}
+    await reloadMine();
+  }
+});
+async function setSN(th,s,on){
+  if(!qUser)return;
+  if(on){
+    const {error}=await sbQ.from('semenight_steps').upsert({user_id:qUser.id,theme:th,step:s,done_on:today()},{onConflict:'user_id,theme,step'});
+    if(error){toast('保存できませんでした：'+error.message);return;}
+    toast('第'+th+'夜 '+SN[th]+' '+'①②③'[s-1]+SN_STEPS[s-1]+' 済 ✓');
+  }else{
+    const {error}=await sbQ.from('semenight_steps').delete().eq('user_id',qUser.id).eq('theme',th).eq('step',s);
+    if(error){toast('取り消せませんでした：'+error.message);return;}
+  }
+  await reloadMine();
 }
 
-/* ---- 統計・カレンダー ---- */
+/* ---- 今週の何もしない日（月〜日） ---- */
+function weekStart(d){const x=new Date(d+'T00:00:00');return addDays(d,-((x.getDay()+6)%7));}
+function renderWeek(t){
+  const wrap=$('weekWrap');
+  if(!qUser||!hasSched()){wrap.style.display='none';return;}
+  wrap.style.display='';
+  const ws=weekStart(t),days=[...Array(7)].map((_,i)=>addDays(ws,i));
+  $('weekRange').textContent=fmt(days[0])+'〜'+fmt(days[6]);
+  const restDay=days.find(d=>myDays[d]&&myDays[d].rest);
+  $('weekCard').innerHTML='<div class="week">'+days.map(d=>{
+    const x=myDays[d],on=x&&x.rest,zero=x&&!x.rest&&!(+x.hours);
+    return '<button class="wchip'+(on?' on':'')+(zero?' zero':'')+(d===t?' today':'')+'" data-rest="'+d+'"'+(d<t?' disabled':'')+'><b>'+wdOf(d)+'</b><span>'+fmt(d)+'</span><span>'+(on?'休み':'')+'</span></button>';
+  }).join('')+'</div><div class="hsub" style="margin-top:10px;line-height:1.6;">'+
+    (restDay?fmt(restDay)+'（'+wdOf(restDay)+'）が何もしない日。別の日をタップすると入れかわります。':'今週はまだ決まっていません。休む日をタップしてください。')+
+    '<br>点線の日は予定で勉強できない日（旅行など）。</div>';
+}
+$('weekCard').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-rest]');if(!b||b.disabled)return;
+  const d=b.dataset.rest,t=today(),ws=weekStart(d),x=myDays[d];
+  if(x&&x.rest){
+    if(!confirm(fmt(d)+'（'+wdOf(d)+'）を「何もしない日」から外す？'))return;
+    await saveDays([{day:d,rest:false}]);return;
+  }
+  if(!confirm(fmt(d)+'（'+wdOf(d)+'）を何もしない日にする？\n（今週ほかに休みの日があれば、そちらは外します）'))return;
+  const rows=[{day:d,rest:true}];
+  for(let i=0;i<7;i++){const dd=addDays(ws,i);if(dd!==d&&dd>=t&&myDays[dd]&&myDays[dd].rest)rows.push({day:dd,rest:false});}
+  await saveDays(rows);
+});
+async function saveDays(rows){
+  const payload=rows.map(r=>{const x=myDays[r.day]||{hours:8,rest:false,note:''};return {user_id:qUser.id,day:r.day,hours:r.hours!=null?r.hours:x.hours,rest:r.rest!=null?r.rest:x.rest,note:r.note!=null?r.note:x.note};});
+  const {error}=await sbQ.from('my_days').upsert(payload,{onConflict:'user_id,day'});
+  if(error){toast('保存できませんでした：'+error.message);return false;}
+  await reloadMine();toast('予定を保存しました');return true;
+}
+
+/* ---- 締め切りまでの進み具合 ---- */
+function renderProgress(t){
+  const pg=(name,small,done,total,unit,exp,cls)=>{
+    done=Math.min(done,total);
+    return '<div class="pg"><div class="ph"><span>'+esc(name)+'</span><span>'+done.toLocaleString()+' / '+total.toLocaleString()+(unit==='p'?'p':'')+'</span></div>'+
+      '<div class="bar '+(cls||'')+(done>=total?' done':'')+'"><i style="width:'+Math.round(done/Math.max(1,total)*100)+'%"></i></div>'+
+      '<div class="pn">'+small+(done>=total?'・<b class="ahead">おわり ✓</b>':(exp!=null?'・'+pace(done,exp,unit==='p'?'ページ':'問'):''))+'</div></div>';
+  };
+  let h='';
+  TRACKS.forEach(tr=>{
+    if(!qUser&&tr.kind!=='qb')return;
+    const done=trackDone(tr),exp=hasSched()&&t>=tr.from?trackExpected(tr,t):null;
+    const small=fmt(tr.to)+'まで'+(tr.soft?'（ゆるい目安）':'')+(tr.id==='qb'?'・11/17の残りから':'');
+    h+=pg(tr.name,small,done,tr.total,tr.unit,(t>tr.to&&done<tr.total)?null:exp,tr.kind==='page'?'kt':'');
+  });
+  if(!qUser){$('progCard').innerHTML=h+'<div class="hsub" style="margin-top:8px;">本・プリントなどの進み具合は、ログインすると表示されます。</div>';return;}
+  /* ⑤ */
+  const st=snStepsDone(),th=snThemesDone();
+  let possible=0;for(let d=t;d<=KOSHIEN;d=addDays(d,1)){if(d===t&&snToday(t))continue;const x=myDays[d];if(x?(!x.rest&&+x.hours>0):d>EXAM)possible++;}
+  const proj=Math.min(SN_N,Math.floor((st+possible)/3));
+  h+=pg('⑤ 攻めNIGHTプリント','1日1コマ・のんびり。このペースなら1/30までに約'+proj+'テーマ（いま'+th+'テーマ）',st,SN_N*3,'コマ',null,'kt');
+  /* ④⑦ */
+  COUNTERS.forEach(c=>{
+    const v=counterVal(c.id);
+    h+='<div class="pg"><div class="ph"><span>'+esc(c.name)+'</span><span class="cnt"><button data-cnt="'+c.id+'" data-d="-1">−</button><span style="min-width:58px;text-align:center;">'+v+' / '+c.total+'</span><button data-cnt="'+c.id+'" data-d="1">＋</button></span></div>'+
+      '<div class="bar kt'+(v>=c.total?' done':'')+'"><i style="width:'+Math.round(Math.min(v,c.total)/c.total*100)+'%"></i></div><div class="pn">'+esc(c.note)+'</div></div>';
+  });
+  h+='<div class="pg"><div class="ph"><span>② medu4</span><span>'+m4Count()+' / '+MEDU4_TOTAL+'コマ</span></div><div class="bar kt"><i style="width:'+Math.round(m4Count()/MEDU4_TOTAL*100)+'%"></i></div><div class="pn">予定には入れない。見たら下の「medu4」で〇</div></div>';
+  $('progCard').innerHTML=h;
+}
+$('progCard').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-cnt]');if(!b||!qUser)return;
+  const c=COUNTERS.find(x=>x.id===b.dataset.cnt),v=Math.max(0,Math.min(c.total,counterVal(c.id)+(+b.dataset.d)));
+  if(v===counterVal(c.id))return;
+  b.disabled=true;
+  const {error}=await sbQ.from('prog_logs').insert({item:c.id,value:v,day:today()});
+  b.disabled=false;
+  if(error){toast('保存できませんでした：'+error.message);return;}
+  await reloadMine();toast(c.name+'：'+v+'/'+c.total);
+});
+
+/* ---- ⑤ 攻めNIGHT（並び替え・チェック） ---- */
+function renderSN(){
+  $('snSum').textContent=qUser&&!mineMsg?snThemesDone()+'/42テーマ・'+snStepsDone()+'/126コマ':'';
+  const body=$('snBody');
+  if(!qUser){body.innerHTML='<div class="empty">ログインすると記録・並び替えができます。</div>';return;}
+  const nx=snNext();
+  body.innerHTML='<div class="hsub" style="margin-bottom:6px;line-height:1.7;">1テーマ＝3コマ：①聞く（動画＋左ページ）→ ②やってみる（右ページでロールプレイ）→ ③広げる（④⑥・元のQB）。<br>上から順に「今日のやること」に出ます。▲▼で順番を変えられます。</div>'+
+    snOrder.map((th,i)=>{
+      const isNext=nx&&nx.th===th;
+      return '<div class="snrow'+(isNext?' next':'')+'"><span class="sno">'+(i+1)+'</span><div class="snn">'+esc(SN[th])+'<small>第'+th+'夜'+(isNext?'・次はここ':'')+'</small></div>'+
+        '<div class="sst">'+[1,2,3].map(s=>'<button class="'+(snDone[snKey(th,s)]?'on':'')+'" data-st="'+th+'-'+s+'">'+'①②③'[s-1]+'</button>').join('')+'</div>'+
+        '<div class="ord-btns"><button data-mv="'+i+'" data-d="-1"'+(i===0?' disabled':'')+'>▲</button><button data-mv="'+i+'" data-d="1"'+(i===snOrder.length-1?' disabled':'')+'>▼</button></div></div>';
+    }).join('')+
+    '<button class="btn ghost small" id="snReset" style="margin-top:10px;">順番を最初の並び（循環器系が先）にもどす</button>';
+}
+$('snBody').addEventListener('click',async e=>{
+  if(!qUser)return;
+  const st=e.target.closest('[data-st]');
+  if(st){const [th,s]=st.dataset.st.split('-').map(Number);const on=!snDone[snKey(th,s)];
+    if(!on&&!confirm('第'+th+'夜 '+SN[th]+' '+'①②③'[s-1]+' の「済」を取り消す？'))return;
+    await setSN(th,s,on);return;}
+  const mv=e.target.closest('[data-mv]');
+  if(mv){const i=+mv.dataset.mv,j=i+(+mv.dataset.d);if(j<0||j>=snOrder.length)return;
+    const o=snOrder.slice();[o[i],o[j]]=[o[j],o[i]];snOrder=o;renderSN();renderTodo(today());await saveOrder();return;}
+  if(e.target.id==='snReset'){if(!confirm('順番を最初の並びにもどす？'))return;snOrder=SN_DEFAULT.slice();renderSN();renderTodo(today());await saveOrder();}
+});
+let orderTimer=null;
+function saveOrder(){
+  clearTimeout(orderTimer);
+  return new Promise(res=>{orderTimer=setTimeout(async()=>{
+    settings=Object.assign({},settings,{snOrder});
+    const {error}=await sbQ.from('user_settings').upsert({user_id:qUser.id,data:settings},{onConflict:'user_id'});
+    if(error)toast('順番を保存できませんでした：'+error.message);
+    res();
+  },500);});
+}
+
+/* ---- QB 科目ごとの残り ---- */
+function renderQbRem(){
+  const rows=QB_SUBJECTS.map(s=>{const n=s[0],r0=QB_REM0[n]||0,d=qbDoneSubj(n,'9999-12-31');return {n,r0,d,left:Math.max(0,r0-d)};});
+  const t=today();
+  $('qbRemBody').innerHTML='<div class="hsub" style="margin-bottom:6px;">11/17朝の残り（QBオンラインの画面）から、このアプリに記録した分を引いた数です。</div>'+
+    '<table class="ref"><tr><th>科目</th><th>11/17の残り</th><th>いまの残り</th></tr>'+
+    rows.map(r=>'<tr><td>'+esc(r.n)+(r.n==='循環器'&&t<'2026-12-07'?' <small style="color:var(--qb)">12/7の実習前がおすすめ</small>':'')+(r.n==='必修'?' <small style="color:var(--soft)">1/18まで</small>':'')+'</td><td>'+r.r0+'</td><td'+(r.left===0?' style="color:var(--vid)"':'')+'>'+(r.left===0?'✓':r.left)+'</td></tr>').join('')+
+    '<tr class="tot"><td>合計</td><td>'+rows.reduce((a,r)=>a+r.r0,0).toLocaleString()+'</td><td>'+rows.reduce((a,r)=>a+r.left,0).toLocaleString()+'</td></tr></table>';
+}
+
+/* ---- medu4 ---- */
+function renderM4(){
+  $('m4Sum').textContent=qUser&&!mineMsg?m4Count()+'/'+MEDU4_TOTAL+'コマ':'';
+  const body=$('m4Body');
+  if(!qUser){body.innerHTML='<div class="empty">ログインすると〇をつけられます。</div>';return;}
+  body.innerHTML='<div class="hsub" style="margin-bottom:6px;">見たコマの番号を押すと〇。もう一度押すと外れます。</div>'+MEDU4.map(r=>{
+    const [s,,k]=r;let n=0;for(let i=1;i<=k;i++)if(m4Done[s+'|'+i])n++;
+    return '<div class="mrowm"><div class="mh"><span>'+esc(s)+'</span><span class="'+(n===k?'full':'')+'">'+n+' / '+k+'</span></div><div class="kchips">'+
+      [...Array(k)].map((_,i)=>'<button class="kchip'+(m4Done[s+'|'+(i+1)]?' on':'')+'" data-m4="'+esc(s)+'|'+(i+1)+'">'+(i+1)+'</button>').join('')+'</div></div>';
+  }).join('');
+}
+$('m4Body').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-m4]');if(!b||!qUser)return;
+  const [s,k]=b.dataset.m4.split('|'),on=!m4Done[b.dataset.m4];
+  b.disabled=true;
+  const q=on?sbQ.from('medu4_done').upsert({user_id:qUser.id,subject:s,koma:+k,done_on:today()},{onConflict:'user_id,subject,koma'})
+            :sbQ.from('medu4_done').delete().eq('user_id',qUser.id).eq('subject',s).eq('koma',+k);
+  const {error}=await q;
+  b.disabled=false;
+  if(error){toast('保存できませんでした：'+error.message);return;}
+  if(on)m4Done[b.dataset.m4]=today();else delete m4Done[b.dataset.m4];
+  renderM4();renderProgress(today());
+});
+
+/* ---- 予定（自分だけ） ---- */
+function renderSched(t){
+  const f=$('schedFold');
+  if(!qUser){f.style.display='none';return;}
+  f.style.display='';
+  const days=Object.keys(myDays).filter(d=>d>=t).sort();
+  $('schedBody').innerHTML='<div class="hsub" style="margin-bottom:6px;line-height:1.6;">ここはログインした本人にしか見えません。タップすると直せます。「時間」は計画の配分に使います。</div>'+
+    (days.length?days.map(d=>{const x=myDays[d];
+      return '<div class="sched'+(x.rest?' rest':'')+(d===t?' now':'')+'" data-day="'+d+'"><span class="sd">'+fmt(d)+'（'+wdOf(d)+'）</span><span class="sn">'+(esc(x.note)||'<span style="color:var(--faint)">予定なし</span>')+'</span><span class="sh">'+(x.rest?'休み':(+x.hours?'約'+(+x.hours)+'h':'—'))+'</span></div>';
+    }).join(''):'<div class="empty">これからの予定はありません。</div>')+
+    '<button class="btn ghost small" id="schedAdd" style="margin-top:10px;">＋ 予定を書く（別の日）</button>';
+}
+$('schedBody').addEventListener('click',e=>{
+  if(e.target.id==='schedAdd'){openDay(addDays(today(),1));return;}
+  const r=e.target.closest('[data-day]');if(r)openDay(r.dataset.day);
+});
+$('hNote').onclick=()=>{if(qUser)openDay(today());};
+function openDay(d){
+  if(!qUser){openLogin();return;}
+  $('dDay').value=d;fillDay();$('dMsg').textContent='';
+  $('dayModal').classList.add('show');
+}
+function fillDay(){
+  const x=myDays[$('dDay').value]||{hours:8,rest:false,note:''};
+  $('dHours').value=x.hours;$('dRest').checked=!!x.rest;$('dNote').value=x.note||'';markHourChips();
+}
+function markHourChips(){[...$('dHourChips').children].forEach(b=>b.classList.toggle('on',+b.dataset.h===+$('dHours').value));}
+$('dDay').addEventListener('change',fillDay);
+$('dHours').addEventListener('input',markHourChips);
+$('dHourChips').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;$('dHours').value=b.dataset.h;markHourChips();});
+$('dayClose').onclick=()=>$('dayModal').classList.remove('show');
+$('dSave').onclick=async()=>{
+  const d=$('dDay').value,h=+$('dHours').value,msg=$('dMsg');
+  if(!d){showMsg(msg,'日付を入れてください',true);return;}
+  if(!(h>=0&&h<=16)){showMsg(msg,'時間は0〜16で入れてください',true);return;}
+  $('dSave').disabled=true;
+  const ok=await saveDays([{day:d,hours:h,rest:$('dRest').checked,note:$('dNote').value.trim()}]);
+  $('dSave').disabled=false;
+  if(ok)$('dayModal').classList.remove('show');
+};
+
+/* ---- 勉強計画（公開してOKな内容だけ） ---- */
+function renderPlan(){
+  $('planBody').innerHTML='<ul class="plist2">'+
+    '<li><b>QB①</b>：必修以外は12/31まで、必修は1/1〜1/18 <small>（その日の目標は、残りと予定から自動で計算）</small></li>'+
+    '<li><b>② medu4</b>：見たら〇。予定には入れない</li>'+
+    '<li><b>③ 心電図の本</b>（220p）：12/7ごろまでにひととおり <small>（ゆるい目安）</small></li>'+
+    '<li><b>JPTECの本</b>（266p）：12/4まで</li>'+
+    '<li><b>⑤ 攻めNIGHTプリント</b>（42テーマ×3コマ）：1日1コマ、のんびり。順番は自由に並び替え</li>'+
+    '<li><b>④ 内科外来マニュアル</b>（28テーマ）・<b>⑥ オスキー対策ノート</b>：⑤の補助</li>'+
+    '<li><b>⑦ 青本</b>（20テーマ）→ 受ける病院の過去問：毎日でなくてOK</li>'+
+    '<li><b>医系時事</b>：Museから毎朝届いたものを読む</li>'+
+    '<li><b>週に1日は何もしない日</b></li>'+
+    '<li>1/19 国試模試 → そのあとはマッチング・国試・OSCE対策に本腰</li></ul>';
+}
+
+/* ---- 統計・カレンダー（QB） ---- */
 function renderStats(dm,t){
   const total=Object.keys(dm).filter(d=>d>=START).reduce((a,d)=>a+dm[d],0);
-  let goalDays=0,okDays=0;
-  for(let d=START;d<=t;d=addDays(d,1)){const g=goalFor(d);if(g>0){goalDays++;if((dm[d]||0)>=g)okDays++;}}
-  const ok=x=>{const g=goalFor(x);return g>0&&(dm[x]||0)>=g;};
-  let streak=0,d=t;
-  if(!ok(d))d=addDays(d,-1);
-  while(d>=START){if(ok(d))streak++;else if(goalFor(d)>0)break;d=addDays(d,-1);}
+  let goalDays=0,okDays=0,streak=0;
+  if(hasSched()){
+    const G={};for(let d=NEW_START;d<=t;d=addDays(d,1))G[d]=qbGoal(d);
+    Object.keys(G).forEach(d=>{if(G[d]>0){goalDays++;if((dm[d]||0)>=G[d])okDays++;}});
+    let d=t;const ok=x=>G[x]>0&&(dm[x]||0)>=G[x];
+    if(!ok(d))d=addDays(d,-1);
+    while(d>=NEW_START){if(ok(d))streak++;else if(G[d]>0)break;d=addDays(d,-1);}
+  }
   const sm=s=>'<small style="font-size:12px;color:var(--soft)">'+s+'</small>';
   $('qbStats').innerHTML=
     '<div class="stat"><div class="k">累計</div><div class="v">'+total.toLocaleString()+sm('問')+'</div></div>'+
-    '<div class="stat"><div class="k">目標達成</div><div class="v">'+okDays+sm('/'+goalDays+'日')+'</div></div>'+
-    '<div class="stat"><div class="k">連続達成</div><div class="v">'+streak+sm('日')+'</div></div>';
+    '<div class="stat"><div class="k">目標達成（11/17〜）</div><div class="v">'+(hasSched()?okDays+sm('/'+goalDays+'日'):'—')+'</div></div>'+
+    '<div class="stat"><div class="k">連続達成</div><div class="v">'+(hasSched()?streak+sm('日'):'—')+'</div></div>';
 }
 const CAL_MONTHS=['2026-10','2026-11','2026-12','2027-01'];
 function renderCal(dm,t){
@@ -754,27 +1171,31 @@ function renderCal(dm,t){
   let monthTotal=0;
   let h=WD.split('').map(x=>'<i>'+x+'</i>').join('');
   for(let i=0;i<first.getDay();i++)h+='<span></span>';
+  const sched=hasSched();
   for(let dd=1;dd<=last;dd++){
-    const d=y+'-'+pad(m)+'-'+pad(dd),n=dm[d]||0,trip=TRIP.includes(d);
+    const d=y+'-'+pad(m)+'-'+pad(dd),n=dm[d]||0,x=sched?myDays[d]:null,rest=!!(x&&x.rest),zero=!!(x&&!x.rest&&!(+x.hours));
     if(d>=START)monthTotal+=n;
     let cls='cell';
     if(d<START||d>EXAM)cls+=' out';
-    else if(trip)cls+=' rest'+(n>0?' ok':'');
-    else if(d<=t){const g=goalFor(d);if(g>0){if(n>=g)cls+=' ok';else if(n>0)cls+=' part';else if(d<t)cls+=' miss';}else if(n>0)cls+=' ok';}
+    else if(rest||zero)cls+=' rest'+(n>0?' ok':'');
+    else if(d<=t){const g=qbGoal(d);if(g>0){if(n>=g)cls+=' ok';else if(n>0)cls+=' part';else if(d<t)cls+=' miss';}else if(n>0)cls+=' ok';}
     if(d===t)cls+=' today';
     if(d===selDay)cls+=' sel';
-    const lab=d<START?'':(trip&&!n?'✈︎':(d>t&&n===0?'':n));
+    let lab=d<START?'':(d>t&&n===0?'':n);
+    if(!n&&rest)lab='🌿';else if(!n&&zero&&x.note.indexOf('旅行')>=0)lab='✈︎';else if(!n&&zero)lab='—';
     h+='<button class="'+cls+'" data-day="'+d+'"><b>'+dd+'</b><span>'+lab+'</span></button>';
   }
   $('calGrid').innerHTML=h;
   $('calTitle').innerHTML=y+'年'+m+'月<small>この月 '+monthTotal.toLocaleString()+'問</small>';
+  $('calLegend').innerHTML='<span><i style="background:var(--vid)"></i>目標達成</span><span><i style="background:var(--qb)"></i>途中</span><span><i style="background:var(--alert)"></i>0問</span>'+(sched?'<span>🌿 何もしない日</span><span>点線＝勉強できない日</span>':'');
 }
 function renderDayDetail(dm,t){
-  const d=selDay||t,g=d<=t?goalFor(d):0;
+  const d=selDay||t,g=d<=t?qbGoal(d):0;
   const bySub={};qbRows.filter(r=>r.day===d).forEach(r=>{bySub[r.subject]=(bySub[r.subject]||0)+r.count;});
-  const keys=Object.keys(bySub);
+  const keys=Object.keys(bySub),x=hasSched()?myDays[d]:null;
   $('dayDetail').innerHTML='<h4>'+fmt(d)+'（'+wdOf(d)+'）　'+(dm[d]||0)+'問'+(g?'<span style="color:var(--soft);font-weight:600;"> / 目標 '+g+'</span>':'')+'</h4>'+
-    (keys.length?keys.map(k=>'<div class="trow"><span>'+esc(k)+'</span><b>'+bySub[k]+'問</b></div>').join(''):'<div class="empty">この日の記録はありません</div>');
+    (x&&(x.note||x.rest)?'<div class="hsub" style="margin-bottom:4px;">🔒 '+(x.rest?'何もしない日':'')+(x.rest&&x.note&&x.note!=='何もしない日'?'・':'')+(x.note!=='何もしない日'?esc(x.note):'')+'</div>':'')+
+    (keys.length?keys.map(k=>'<div class="trow"><span>'+esc(k)+'</span><b>'+bySub[k]+'問</b></div>').join(''):'<div class="empty">この日のQBの記録はありません</div>');
 }
 $('calPrev').onclick=()=>{const i=CAL_MONTHS.indexOf(calMonth);if(i>0){calMonth=CAL_MONTHS[i-1];renderHome();}};
 $('calNext').onclick=()=>{const i=CAL_MONTHS.indexOf(calMonth);if(i<CAL_MONTHS.length-1){calMonth=CAL_MONTHS[i+1];renderHome();}};
@@ -787,46 +1208,23 @@ $('todayList').addEventListener('click',async e=>{
   await loadQB();renderHome();toast('取り消しました');
 });
 
-/* ---- 予定一覧 ---- */
-function renderPlan(t){
-  const line=(dates,name,right,cls)=>'<div class="blk'+(cls?' '+cls:'')+'"><span class="bd">'+dates+'</span><span class="bn">'+name+'</span><span class="bc">'+(right||'')+'</span></div>';
-  const rng=(a,b)=>fmt(a)+(a!==b?'〜'+fmt(b):'');
-  let h='<div class="tl">本線（動画→QB）</div>';
-  BLOCKS.forEach(b=>{
-    const d=Math.min(b.total,doneAll(b.subj)),fin=d>=b.total;
-    h+=line(rng(b.from,b.to),esc(b.name)+'<small>動画 '+b.video+'／日</small>',(fin?'✓ ':'')+d+'/'+b.total,(t>=b.from&&t<=b.to)?'now':(fin?'fin':''));
-  });
-  h+=line('11/30','予備日<small>遅れた分をここで</small>','');
-  h+=line('12/1〜','メジャーの残り<small>問題数は決めずにスキマで</small>','');
-  h+='<div class="tl">毎日の別枠</div>';
-  SIDES.forEach(s=>{
-    const d=Math.min(s.total,doneAll(s.subj));
-    h+=line(rng(s.from,s.to),esc(s.name)+'<small>'+s.when+'・1日 約'+Math.ceil(s.total/(daysBetween(s.from,s.to)+1))+'問</small>',(d>=s.total?'✓ ':'')+d+'/'+s.total,d>=s.total?'fin':'');
-  });
-  h+='<div class="tl">心電図の本（目安・守れなくてもOK）</div>';
-  const cur=ecgCur();
-  ECG_MILES.slice(1).forEach(m=>{h+=line(fmt(m[0]),'p'+m[1]+'まで<small>'+esc(m[2])+'</small>',cur>=m[1]?'✓':'',cur>=m[1]?'fin':'');});
-  h+='<div class="tl">そのほか</div>';
-  h+=line('スキマ','循環器・心電図・究極MAP','');
-  h+=line('12/7〜','循環器内科・心臓血管外科の実習','');
-  h+=line('12/21〜23','旅行 ✈︎','');
-  h+=line('1/19','模試（全範囲）','');
-  $('planBody').innerHTML=h;
-}
-$('planToggle').onclick=()=>{const b=$('planBody'),o=b.style.display==='block';b.style.display=o?'none':'block';$('planToggle').textContent=o?'ひらく':'とじる';};
+/* ---- ひらく／とじる ---- */
+document.querySelectorAll('[data-fold]').forEach(btn=>btn.addEventListener('click',()=>{
+  const b=$(btn.dataset.fold),o=b.style.display==='block';b.style.display=o?'none':'block';btn.textContent=o?'ひらく':'とじる';
+}));
 
-/* ---- 記録モーダル ---- */
+/* ---- QB記録モーダル ---- */
 $('recSubj').innerHTML='<option value="">科目をえらぶ</option>'+QB_SUBJECTS.map(s=>'<option>'+s[0]+'</option>').join('');
 function recCandidates(){
-  const t=today(),c=[],b=blockOf(t);
-  if(b)c.push(...b.subj);
-  BLOCKS.filter(x=>x.to<t&&doneAll(x.subj)<x.total).forEach(x=>c.push(...x.subj));
-  SIDES.forEach(s=>{if(t>=s.from&&doneAll(s.subj)<s.total)c.push(...s.subj);});
-  return [...new Set(c)];
+  const t=today();
+  let c=QB_SUBJECTS.map(s=>s[0]).filter(s=>(QB_REM0[s]||0)-qbDoneSubj(s,'9999-12-31')>0);
+  if(t<'2026-12-07'&&c.includes('循環器'))c=['循環器'].concat(c.filter(s=>s!=='循環器'));
+  if(t>='2027-01-01'&&c.includes('必修'))c=['必修'].concat(c.filter(s=>s!=='必修'));
+  return c;
 }
 function renderRecPick(){
   const cur=$('recSubj').value,c=recCandidates();
-  $('recPick').innerHTML=c.length?c.map(s=>'<button class="subj-chip'+(s===cur?' on':'')+'" data-s="'+esc(s)+'">'+esc(s)+'</button>').join(''):'';
+  $('recPick').innerHTML=c.map(s=>'<button class="subj-chip'+(s===cur?' on':'')+'" data-s="'+esc(s)+'">'+esc(s)+'</button>').join('');
   $('recPick').style.display=c.length?'flex':'none';
 }
 $('recPick').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;$('recSubj').value=b.dataset.s;renderRecPick();});
@@ -835,8 +1233,8 @@ $('openRec').onclick=()=>{
   if(!qUser){openLogin();return;}
   const t=today();
   $('recDate').max=t;$('recDate').value=t;$('recNum').value='';$('recMsg').textContent='';
-  const c=recCandidates(),last=lsGet('qb.subj');
-  $('recSubj').value=c[0]||((last&&QB_SUBJECTS.some(s=>s[0]===last))?last:'');
+  const last=lsGet('qb.subj');
+  $('recSubj').value=(last&&QB_SUBJECTS.some(s=>s[0]===last))?last:'';
   renderRecPick();
   $('recModal').classList.add('show');
 };
@@ -874,37 +1272,22 @@ function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
     '<div class="tl">medu4（chapter数／コマ数）</div><table class="ref"><tr><th>科目</th><th>chapter</th><th>コマ</th></tr>'+
     MEDU4.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>').join('')+
     '<tr class="tot"><td>合計</td><td>'+sum(MEDU4,1)+'</td><td>'+sum(MEDU4,2)+'</td></tr></table>';
-  $('refToggle').onclick=()=>{const b=$('refBody'),o=b.style.display==='block';b.style.display=o?'none':'block';$('refToggle').textContent=o?'ひらく':'とじる';};
 })();
 $('buildLine').textContent='build '+((document.querySelector('meta[name=app-build]')||{}).content||'');
 
-
 /* ============================================================
-   究極MAP（見たら「見た」）と心電図の本（何ページまで読んだか）
+   究極MAP（見たら「見た」）
    ============================================================ */
 const UMAP=[["腎","29:06"],["内分泌代謝","49:05"],["血液","28:15"],["免疫","18:33"],["感染症","30:32"],["呼吸器","33:43"],["循環器","43:31"],["消化管","28:06"],["肝胆膵","30:34"],["神経","39:07"],["産婦人科","1:03:09"],["小児科","22:59"],["加齢老年学","12:21"],["整形外科","18:05"],["眼科","16:56"],["耳鼻咽喉科","15:41"],["泌尿器科","17:20"],["精神科","27:40"],["皮膚科","20:38"],["放射線科","11:16"],["救急","24:50"],["中毒麻酔","13:01"],["公衆衛生","1:26:18"],["必修総論","20:46"]];
-const ECG_TOTAL=220;
-const ECG_MILES=[['2026-11-03',0,''],['2026-11-10',50,'第2度房室ブロックまで'],['2026-11-17',100,'5章おわり・不整脈ぜんぶ'],['2026-11-24',150,'6章おわり・虚血性心疾患'],['2026-12-01',185,'7章おわり'],['2026-12-06',220,'8・9章で読了']];
-const ECG_CH=[[1,1,'心電図を読む前に'],[2,14,'超緊急な不整脈'],[3,38,'緊急な不整脈'],[4,70,'経過観察でよい不整脈'],[5,86,'不整脈アドバンス'],[6,102,'虚血性心疾患'],[7,150,'丁寧に見る心電図'],[8,186,'複数の疾患を考える心電図'],[9,213,'系統的な読み方と鑑別診断']];
-let umapRows=[],umapMsg='',ecgRows=[],ecgMsg='';
-const ecgCur=()=>ecgRows.length?ecgRows[ecgRows.length-1].page:0;
-
-async function loadExtras(){
-  umapRows=[];umapMsg='';ecgRows=[];ecgMsg='';
+let umapRows=[],umapMsg='';
+async function loadUmap(){
+  umapRows=[];umapMsg='';
   if(!sbQ||!qUser)return;
-  const noTable=/schema cache|does not exist|Could not find/i;
-  const SQLMSG='の表がまだ作られていません。渡したSQL（setup_1103.sql）をSupabaseのSQL Editorで1回実行してください。';
   try{
     const {data,error}=await withTimeout(sbQ.from('umap_views').select('id,umap_no,viewed_on').order('id'),8000,'究極MAPの読み込み');
     if(error)throw error;umapRows=data||[];
-  }catch(e){const m=String((e&&e.message)||e);umapMsg=noTable.test(m)?'究極MAP用'+SQLMSG:'究極MAPの読み込みでエラー：'+m;console.warn('umap',e);}
-  try{
-    const {data,error}=await withTimeout(sbQ.from('ecg_pages').select('id,page,day').order('id'),8000,'心電図の本の読み込み');
-    if(error)throw error;ecgRows=data||[];
-  }catch(e){const m=String((e&&e.message)||e);ecgMsg=noTable.test(m)?'心電図の本用'+SQLMSG:'心電図の本の読み込みでエラー：'+m;console.warn('ecg',e);}
+  }catch(e){const m=String((e&&e.message)||e);umapMsg=/schema cache|does not exist|Could not find/i.test(m)?'究極MAP用の表がまだ作られていません。':'究極MAPの読み込みでエラー：'+m;console.warn('umap',e);}
 }
-
-/* ---- 究極MAP ---- */
 const UMAP_FROM='2026-11-04';
 function renderUmap(){
   const cnt={},pre={},last={};
@@ -914,7 +1297,7 @@ function renderUmap(){
   });
   const since=umapRows.filter(r=>String(r.viewed_on).slice(0,10)>=UMAP_FROM).length;
   const seen=UMAP.filter((_,i)=>cnt[i+1]).length;
-  $('umapSum').textContent=qUser&&!umapMsg?'11/4から のべ'+since+'回・'+seen+'/24本':'';
+  $('umapSum').textContent=qUser&&!umapMsg?'のべ'+since+'回・'+seen+'/24本':'';
   const body=$('umapBody');
   if(!qUser){body.innerHTML='<div class="empty">ログインすると「見た」を記録できます。</div>';return;}
   if(umapMsg){body.innerHTML='<div class="empty" style="color:var(--alert)">'+esc(umapMsg)+'</div>';return;}
@@ -926,7 +1309,6 @@ function renderUmap(){
       '<button class="useen" data-seen="'+n+'">見た</button></div>';
   }).join('')+'<div class="hsub" style="margin-top:10px;">回数のところを押すと、最後の1回を取り消せます。</div>';
 }
-$('umapToggle').onclick=()=>{const b=$('umapBody'),o=b.style.display==='block';b.style.display=o?'none':'block';$('umapToggle').textContent=o?'ひらく':'とじる';};
 $('umapBody').addEventListener('click',async e=>{
   if(!qUser)return;
   const s=e.target.closest('[data-seen]');
@@ -935,7 +1317,7 @@ $('umapBody').addEventListener('click',async e=>{
     const {error}=await sbQ.from('umap_views').insert({umap_no:n,viewed_on:today()});
     s.disabled=false;
     if(error){toast('記録できませんでした：'+error.message);return;}
-    await loadExtras();renderUmap();toast('Umap'+pad(n)+' '+UMAP[n-1][0]+' 見た ✓');
+    await loadUmap();renderUmap();toast('Umap'+pad(n)+' '+UMAP[n-1][0]+' 見た ✓');
     return;
   }
   const u=e.target.closest('[data-undo]');
@@ -944,44 +1326,10 @@ $('umapBody').addEventListener('click',async e=>{
     if(!confirm('Umap'+pad(n)+' '+UMAP[n-1][0]+' の「見た」を1回取り消す？'))return;
     const {error}=await sbQ.from('umap_views').delete().eq('id',mine[mine.length-1].id);
     if(error){toast('取り消せませんでした：'+error.message);return;}
-    await loadExtras();renderUmap();toast('1回取り消しました');
+    await loadUmap();renderUmap();toast('1回取り消しました');
   }
 });
 
-/* ---- 心電図の本 ---- */
-function ecgTarget(day){
-  const M=ECG_MILES;
-  if(day<=M[0][0])return 0;
-  for(let i=1;i<M.length;i++){
-    if(day<=M[i][0]){const [d0,p0]=M[i-1],[d1,p1]=M[i];return Math.round(p0+(p1-p0)*daysBetween(d0,day)/daysBetween(d0,d1));}
-  }
-  return ECG_TOTAL;
-}
-function ecgChapter(p){let c=ECG_CH[0];ECG_CH.forEach(x=>{if(p>=x[1])c=x;});return c;}
-function renderEcg(t){
-  t=t||today();
-  const box=$('ecgCard'),tg=ecgTarget(t);
-  if(!qUser){box.innerHTML='<div class="empty">ログインすると、読んだページを記録できます。（今日の目安：p'+tg+'）</div>';return;}
-  if(ecgMsg){box.innerHTML='<div class="empty" style="color:var(--alert)">'+esc(ecgMsg)+'</div>';return;}
-  const cur=ecgCur(),ch=ecgChapter(Math.max(1,cur)),diff=cur-tg,next=ECG_MILES.slice(1).find(m=>m[1]>cur);
-  box.innerHTML='<div class="pg" style="padding-top:0;"><div class="ph"><span>'+(cur?'第'+ch[0]+'章 '+esc(ch[2]):'まだ読んでいない')+'</span><span>p'+cur+' / '+ECG_TOTAL+'</span></div>'+
-    '<div class="bar kt'+(cur>=ECG_TOTAL?' done':'')+'"><i style="width:'+Math.min(100,Math.round(cur/ECG_TOTAL*100))+'%"></i></div>'+
-    '<div class="pn">'+(cur>=ECG_TOTAL?'<b class="ahead">読み終わり 🎉</b>':'今日の目安 p'+tg+'・'+(diff>=0?'<b class="ahead">目安どおり'+(diff>0?'（+'+diff+'ページ）':'')+'</b>':'<b class="behind">目安まで '+(-diff)+'ページ</b>（守れなくてもOK）'))+'</div>'+
-    (next?'<div class="pn">次の区切り：'+fmt(next[0])+'までに p'+next[1]+'（'+esc(next[2])+'）</div>':'')+'</div>'+
-    '<div class="ecgrow"><input class="fld" type="number" inputmode="numeric" id="ecgIn" placeholder="何ページまで読んだ？"><button class="btn kt small" id="ecgGo">記録</button></div>'+
-    '<div class="msg" id="ecgMsgEl">まちがえたら、正しいページを入れ直せばOK。</div>';
-  $('ecgGo').onclick=saveEcg;
-  $('ecgIn').addEventListener('keydown',e=>{if(e.key==='Enter')saveEcg();});
-}
-async function saveEcg(){
-  const raw=$('ecgIn').value,v=Math.round(+raw),msg=$('ecgMsgEl');
-  if(raw===''||!(v>=0&&v<=ECG_TOTAL)){showMsg(msg,'0〜220のページ数を入れてください',true);return;}
-  $('ecgGo').disabled=true;
-  const {error}=await sbQ.from('ecg_pages').insert({page:v,day:today()});
-  if(error){$('ecgGo').disabled=false;showMsg(msg,'保存できませんでした：'+error.message,true);return;}
-  await loadExtras();renderEcg();renderPlan(today());renderUmap();
-  toast('心電図の本：p'+v+'まで ✓');
-}
 
 /* ============================================================
    画面切り替え・ログイン
@@ -1039,15 +1387,6 @@ $('refreshBtn').onclick=async()=>{
 };
 $('loPass').addEventListener('keydown',e=>{if(e.key==='Enter')$('loSub').click();});
 
-(async function init(){
-  renderHome();
-  if(!sbQ){return;}
-  try{const {data}=await withTimeout(sbQ.auth.getSession(),8000,'ログイン状態の確認');qUser=(data&&data.session&&data.session.user)||null;}catch(e){showErr('ログイン確認',e);}
-  try{sbQ.auth.onAuthStateChange((ev,s)=>{qUser=(s&&s.user)||null;});}catch(e){}
-  try{const {data}=await withTimeout(sbC.auth.getSession(),8000,'カードDBのログイン確認');if(data&&data.session&&data.session.user)await onCardLogin(data.session.user);}catch(e){console.warn('card session',e);cardErr=(e&&e.message)||String(e);setOralLoginMsg();}
-  await loadQB();
-  renderHome();
-})();
 
 /* ============================================================
    口頭試問
@@ -1668,6 +2007,19 @@ $('manBtn').onclick=async()=>{
   $('manQ').value='';$('manA').value='';showMsg($('manMsg'),'追加しました');
   await cLoadAll();cRenderAll();
 };
+
+/* ============================================================
+   起動
+   ============================================================ */
+(async function init(){
+  renderHome();
+  if(!sbQ){return;}
+  try{const {data}=await withTimeout(sbQ.auth.getSession(),8000,'ログイン状態の確認');qUser=(data&&data.session&&data.session.user)||null;}catch(e){showErr('ログイン確認',e);}
+  try{sbQ.auth.onAuthStateChange((ev,s)=>{qUser=(s&&s.user)||null;});}catch(e){}
+  try{const {data}=await withTimeout(sbC.auth.getSession(),8000,'カードDBのログイン確認');if(data&&data.session&&data.session.user)await onCardLogin(data.session.user);}catch(e){console.warn('card session',e);cardErr=(e&&e.message)||String(e);setOralLoginMsg();}
+  await loadQB();
+  renderHome();
+})();
 </script>
 </body>
 </html>
