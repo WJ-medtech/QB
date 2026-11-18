@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0E1B24">
-<meta name="app-build" content="2026-11-17-plan4">
+<meta name="app-build" content="2026-11-18-plan6">
 <style>
 :root{
   --bg:#0E1B24; --surface:#142532; --surface2:#1A2F3E; --line:#243E4E; --line2:#2E4C5E;
@@ -668,14 +668,14 @@ let cUser=null;   // カード用DBにログインしている人
 const START='2026-10-12', NEW_START='2026-11-17', EXAM='2027-01-19', KOSHIEN='2027-01-30';
 const QB_SUBJECTS=[["消化管",291,112],["肝胆膵",195,68],["循環器",378,131],["内分泌",298,116],["腎",186,87],["免疫",157,77],["血液",202,81],["感染症",239,123],["呼吸器",295,131],["神経",361,158],["中毒",63,30],["救急",136,85],["麻酔",32,10],["総論",147,75],["小児",423,184],["婦人",204,79],["産",337,107],["眼",151,73],["耳鼻",151,74],["整形",152,78],["精神",205,85],["皮膚",150,86],["泌尿器",150,65],["放射線",53,26],["公衆衛生",605,322],["必修",1418,754]];
 const MEDU4=[["腎",5,7],["内分泌",8,12],["血液",9,10],["免疫",5,7],["感染症",7,9],["呼吸器",9,12],["循環器",8,14],["消化管",6,9],["肝胆膵",5,8],["神経",12,15],["産婦人科",12,15],["小児",13,16],["小児外科",4,4],["整形",5,7],["眼",6,7],["耳鼻",6,7],["泌尿器",6,6],["精神",9,6],["皮膚",9,6],["放射線",3,3],["救急",5,7],["中毒麻酔",5,4],["公衆衛生",16,17]];
-const MEDU4_TOTAL=MEDU4.reduce((a,r)=>a+r[2],0);
+const MEDU4_TOTAL=MEDU4.reduce((a,r)=>a+r[1],0); /* chapter単位で〇 */
 /* 11/17朝のQBの残り（QBオンラインの画面から） */
 const QB_REM0={"消化管":0,"肝胆膵":27,"循環器":303,"内分泌":98,"腎":70,"免疫":80,"血液":0,"感染症":144,"呼吸器":113,"神経":79,"中毒":60,"救急":84,"麻酔":19,"総論":121,"小児":347,"婦人":182,"産":336,"眼":151,"耳鼻":150,"整形":143,"精神":9,"皮膚":142,"泌尿器":149,"放射線":53,"公衆衛生":587,"必修":1366};
 const NON_HISSU=QB_SUBJECTS.map(s=>s[0]).filter(s=>s!=='必修');
 const TRACKS=[
   {id:'qb',kind:'qb',name:'QB①（必修以外）',subj:NON_HISSU,from:NEW_START,to:'2026-12-31',unit:'問'},
   {id:'hissu',kind:'qb',name:'QB① 必修',subj:['必修'],from:'2027-01-01',to:'2027-01-18',unit:'問'},
-  {id:'jptec',kind:'page',name:'JPTECの本',total:266,from:NEW_START,to:'2026-12-04',unit:'p'},
+  {id:'jptec',kind:'page',name:'JPTECの本',total:266,from:null,to:'2026-12-04',unit:'p'},
   {id:'ecg',kind:'page',name:'③ 心電図の本',total:220,from:NEW_START,to:'2026-12-06',unit:'p',soft:true}
 ];
 TRACKS.forEach(t=>{if(t.kind==='qb')t.total=t.subj.reduce((a,s)=>a+(QB_REM0[s]||0),0);});
@@ -707,7 +707,7 @@ function trackDone(t,before){
 }
 /* その日の目標＝残り ×（その日の時間）÷（締め切りまでの時間の合計） → 遅れても進んでも自動で調整 */
 function trackTarget(t,day){
-  if(!hasSched()||day<t.from||day>t.to)return 0;
+  if(!hasSched()||!t.from||day<t.from||day>t.to)return 0;
   const c=capOf(day);if(!c)return 0;
   const rem=t.total-trackDone(t,day);if(rem<=0)return 0;
   const S=capSum(day,t.to);
@@ -715,6 +715,7 @@ function trackTarget(t,day){
 }
 /* 前日までに終わっている予定の量 */
 function trackExpected(t,day){
+  if(!t.from)return 0;
   if(day<=t.from)return 0;
   if(day>t.to)return t.total;
   const all=capSum(t.from,t.to);if(!all)return 0;
@@ -738,7 +739,7 @@ function snNext(){
   return null;
 }
 const snToday=d=>Object.values(snDone).filter(x=>x===d).length;
-const m4Count=()=>Object.keys(m4Done).length;
+const m4Count=()=>MEDU4.reduce((a,r)=>{let n=0;for(let i=1;i<=r[1];i++)if(m4Done[r[0]+'|'+i])n++;return a+n;},0);
 
 /* ============================================================
    読み込み
@@ -773,7 +774,7 @@ async function loadQB(){
 }
 
 async function loadMine(){
-  myDays={};progRows=[];snDone={};m4Done={};settings={};mineMsg='';snOrder=SN_DEFAULT.slice();
+  myDays={};progRows=[];snDone={};m4Done={};settings={};mineMsg='';TR('jptec').from=null;snOrder=SN_DEFAULT.slice();
   if(!sbQ||!qUser)return;
   try{
     const res=await withTimeout(Promise.all([
@@ -789,6 +790,7 @@ async function loadMine(){
     (res[2].data||[]).forEach(r=>{snDone[snKey(r.theme,r.step)]=String(r.done_on).slice(0,10);});
     (res[3].data||[]).forEach(r=>{m4Done[r.subject+'|'+r.koma]=String(r.done_on).slice(0,10);});
     settings=(res[4].data&&res[4].data.data)||{};
+    TR('jptec').from=settings.jptecFrom||null;
     if(Array.isArray(settings.snOrder)){
       const o=settings.snOrder.filter(n=>n>=1&&n<=SN_N);
       SN_DEFAULT.forEach(n=>{if(!o.includes(n))o.push(n);});
@@ -873,6 +875,10 @@ function renderTodo(t){
     const tr=TR(id),cur=trackDone(tr),before=trackDone(tr,t),tg=trackTarget(tr,t);
     if(cur>=tr.total&&t>tr.to)return;
     if(id==='jptec'&&t>'2026-12-05')return; // コースが終わったら出さない
+    if(id==='jptec'&&!tr.from){
+      h+='<div class="task"><div class="tt"><span class="tag">本</span><div class="tname">JPTECの本<small>まだ届いていない。届いたら押すと、その日から12/4までで1日のページ数を計算します</small></div><button class="tbtn fill" data-arrive="1">届いた</button></div></div>';
+      return;
+    }
     let small,val,done=false;
     if(cur>=tr.total){small='読み終わり 🎉';done=true;}
     else if(t>tr.to)small='締め切り（'+fmt(tr.to)+'）をすぎました・残り '+(tr.total-cur)+'ページ'+(tr.soft?'（ゆるい目安なのでOK）':'');
@@ -896,6 +902,16 @@ $('todoCard').addEventListener('click',async e=>{
     pb.disabled=false;
     if(error){toast('保存できませんでした：'+error.message);return;}
     await reloadMine();toast(tr.name+'：p'+v+'まで ✓');return;
+  }
+  const ab=e.target.closest('[data-arrive]');
+  if(ab){
+    if(!confirm('JPTECの本、今日から読み始める？\n（今日〜12/4で1日のページ数を計算します）'))return;
+    ab.disabled=true;
+    settings=Object.assign({},settings,{jptecFrom:today()});
+    const {error}=await sbQ.from('user_settings').upsert({user_id:qUser.id,data:settings},{onConflict:'user_id'});
+    ab.disabled=false;
+    if(error){toast('保存できませんでした：'+error.message);return;}
+    await reloadMine();toast('JPTECの本：今日からスタート 📕');
   }
 });
 async function setSN(th,s,on){
@@ -958,11 +974,11 @@ function renderProgress(t){
   TRACKS.forEach(tr=>{
     if(!qUser&&tr.kind!=='qb')return;
     const done=trackDone(tr),exp=hasSched()&&t>=tr.from?trackExpected(tr,t):null;
-    const small=fmt(tr.to)+'まで'+(tr.soft?'（ゆるい目安）':'')+(tr.id==='qb'?'・11/17の残りから':'');
+    const small=(tr.id==='jptec'&&!tr.from?'本が届いたら計画スタート・':'')+fmt(tr.to)+'まで'+(tr.soft?'（ゆるい目安）':'')+(tr.id==='qb'?'・11/17の残りから':'');
     h+=pg(tr.name,small,done,tr.total,tr.unit,(t>tr.to&&done<tr.total)?null:exp,tr.kind==='page'?'kt':'');
   });
   if(!qUser){$('progCard').innerHTML=h+'<div class="hsub" style="margin-top:8px;">本やmedu4の進み具合は、ログインすると表示されます。</div>';return;}
-  h+='<div class="pg"><div class="ph"><span>② medu4</span><span>'+m4Count()+' / '+MEDU4_TOTAL+'コマ</span></div><div class="bar kt"><i style="width:'+Math.round(m4Count()/MEDU4_TOTAL*100)+'%"></i></div><div class="pn">予定には入れない。見たら下の「medu4」で〇</div></div>';
+  h+='<div class="pg"><div class="ph"><span>② medu4</span><span>'+m4Count()+' / '+MEDU4_TOTAL+'chapter</span></div><div class="bar kt"><i style="width:'+Math.round(m4Count()/MEDU4_TOTAL*100)+'%"></i></div><div class="pn">予定には入れない。見たら下の「medu4」で〇</div></div>';
   $('progCard').innerHTML=h;
 }
 
@@ -979,11 +995,11 @@ function renderQbRem(){
 
 /* ---- medu4 ---- */
 function renderM4(){
-  $('m4Sum').textContent=qUser&&!mineMsg?m4Count()+'/'+MEDU4_TOTAL+'コマ':'';
+  $('m4Sum').textContent=qUser&&!mineMsg?m4Count()+'/'+MEDU4_TOTAL+'chapter':'';
   const body=$('m4Body');
   if(!qUser){body.innerHTML='<div class="empty">ログインすると〇をつけられます。</div>';return;}
-  body.innerHTML='<div class="hsub" style="margin-bottom:6px;">見たコマの番号を押すと〇。もう一度押すと外れます。</div>'+MEDU4.map(r=>{
-    const [s,,k]=r;let n=0;for(let i=1;i<=k;i++)if(m4Done[s+'|'+i])n++;
+  body.innerHTML='<div class="hsub" style="margin-bottom:6px;">見たchapterの番号を押すと〇。もう一度押すと外れます。</div>'+MEDU4.map(r=>{
+    const [s,k]=r;let n=0;for(let i=1;i<=k;i++)if(m4Done[s+'|'+i])n++;
     return '<div class="mrowm"><div class="mh"><span>'+esc(s)+'</span><span class="'+(n===k?'full':'')+'">'+n+' / '+k+'</span></div><div class="kchips">'+
       [...Array(k)].map((_,i)=>'<button class="kchip'+(m4Done[s+'|'+(i+1)]?' on':'')+'" data-m4="'+esc(s)+'|'+(i+1)+'">'+(i+1)+'</button>').join('')+'</div></div>';
   }).join('');
